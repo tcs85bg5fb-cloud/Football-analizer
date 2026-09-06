@@ -1,11 +1,11 @@
 const SOURCES = [
   {
     season: '2025/26',
-    url: 'https://www.football-data.co.uk/mmz4281/2526/E0.csv'
+    file: '/E0_2025-26.csv'
   },
   {
     season: '2026/27',
-    url: 'https://www.football-data.co.uk/mmz4281/2627/E0.csv'
+    file: '/E0_2026-27.csv'
   }
 ];
 
@@ -23,7 +23,8 @@ export default {
       });
     }
 
-    // Dane meczowe z Football-Data
+    // Dane meczowe są przechowywane lokalnie jako Static Assets.
+    // Dzięki temu aplikacja nie zależy od chwilowej dostępności Football-Data.
     if (url.pathname === '/api/data') {
       const cache = caches.default;
       const cacheKey = new Request(url.toString(), request);
@@ -36,22 +37,15 @@ export default {
       try {
         const results = await Promise.all(
           SOURCES.map(async (s) => {
-            const r = await fetch(s.url, {
-              headers: {
-                'User-Agent':
-                  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1',
-                'Accept': 'text/csv,text/plain,*/*'
-              },
-              cf: {
-                cacheTtl: 86400,
-                cacheEverything: true
-              }
+            const assetUrl = new URL(s.file, request.url);
+            const assetRequest = new Request(assetUrl.toString(), {
+              method: 'GET'
             });
 
+            const r = await env.ASSETS.fetch(assetRequest);
+
             if (!r.ok) {
-              throw new Error(
-                `Football-Data HTTP ${r.status} for ${s.season}`
-              );
+              throw new Error(`Local asset HTTP ${r.status} for ${s.season}`);
             }
 
             return {
@@ -63,6 +57,7 @@ export default {
 
         const body = JSON.stringify({
           fetchedAt: new Date().toISOString(),
+          source: 'local-static-assets',
           sources: results
         });
 
@@ -70,14 +65,12 @@ export default {
           status: 200,
           headers: {
             'content-type': 'application/json; charset=utf-8',
-            'cache-control':
-              'public, max-age=86400, s-maxage=86400',
+            'cache-control': 'public, max-age=86400, s-maxage=86400',
             'access-control-allow-origin': '*'
           }
         });
 
         await cache.put(cacheKey, response.clone());
-
         return response;
       } catch (e) {
         return new Response(
@@ -87,8 +80,7 @@ export default {
           {
             status: 502,
             headers: {
-              'content-type':
-                'application/json; charset=utf-8',
+              'content-type': 'application/json; charset=utf-8',
               'access-control-allow-origin': '*'
             }
           }
