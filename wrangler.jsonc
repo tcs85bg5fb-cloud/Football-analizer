@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "football-analyzer",
+  "name": "football-analizer",
   "main": "worker.js",
   "compatibility_date": "2026-09-05",
   "assets": {
