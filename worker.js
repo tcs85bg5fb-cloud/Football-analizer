@@ -236,7 +236,7 @@ async function importSeason(env, request, source) {
     };
   }
 
-  const league = await env.DB
+  await env.DB
     .prepare(`
       INSERT OR IGNORE INTO leagues
         (name, country, code, source)
@@ -266,7 +266,9 @@ async function importSeason(env, request, source) {
     .first();
 
   if (!leagueRow) {
-    throw new Error('Could not find Premier League after insert');
+    throw new Error(
+      'Could not find Premier League after insert'
+    );
   }
 
   const leagueId = leagueRow.id;
@@ -327,9 +329,17 @@ async function importSeason(env, request, source) {
     const away = clean(row.AwayTeam);
     const referee = clean(row.Referee);
 
-    if (home) teams.add(home);
-    if (away) teams.add(away);
-    if (referee) referees.add(referee);
+    if (home) {
+      teams.add(home);
+    }
+
+    if (away) {
+      teams.add(away);
+    }
+
+    if (referee) {
+      referees.add(referee);
+    }
   }
 
   for (const team of teams) {
@@ -397,13 +407,19 @@ async function importSeason(env, request, source) {
   const teamMap = new Map();
 
   for (const team of teamRows.results || []) {
-    teamMap.set(team.source_name, team.id);
+    teamMap.set(
+      team.source_name,
+      team.id
+    );
   }
 
   const refereeMap = new Map();
 
   for (const referee of refereeRows.results || []) {
-    refereeMap.set(referee.source_name, referee.id);
+    refereeMap.set(
+      referee.source_name,
+      referee.id
+    );
   }
 
   const statements = [];
@@ -426,6 +442,7 @@ async function importSeason(env, request, source) {
     }
 
     const refereeName = clean(row.Referee);
+
     const refereeId = refereeName
       ? (refereeMap.get(refereeName) ?? null)
       : null;
@@ -442,11 +459,12 @@ async function importSeason(env, request, source) {
     const rawData = JSON.stringify(row);
     const odds = JSON.stringify(getOdds(row));
 
-    /*
-      IMPORTANT:
-      The columns below are exactly 33 columns,
-      and the bind() below contains exactly 33 values.
-    */
+    const sourceMatchId = [
+      source.season,
+      date,
+      homeTeam,
+      awayTeam
+    ].join('|');
 
     const sql = `
       INSERT INTO matches
@@ -500,23 +518,9 @@ async function importSeason(env, request, source) {
       )
       VALUES
       (
-        ?, ?, ?, ?,
-        ?, ?, ?,
-        ?, ?, ?,
-        ?, ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?,
-        ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       )
       ON CONFLICT
       (
@@ -577,13 +581,6 @@ async function importSeason(env, request, source) {
         updated_at = CURRENT_TIMESTAMP
     `;
 
-    const sourceMatchId = [
-      source.season,
-      date,
-      homeTeam,
-      awayTeam
-    ].join('|');
-
     statements.push(
       env.DB
         .prepare(sql)
@@ -640,7 +637,9 @@ async function importSeason(env, request, source) {
     imported++;
 
     if (statements.length >= 50) {
-      await env.DB.batch(statements.splice(0));
+      await env.DB.batch(
+        statements.splice(0)
+      );
     }
   }
 
@@ -659,21 +658,19 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    /*
-      Simple Worker test
-    */
     if (url.pathname === '/api/test') {
-      return new Response('WORKER OK', {
-        status: 200,
-        headers: {
-          'content-type': 'text/plain; charset=utf-8'
+      return new Response(
+        'WORKER OK',
+        {
+          status: 200,
+          headers: {
+            'content-type':
+              'text/plain; charset=utf-8'
+          }
         }
-      });
+      );
     }
 
-    /*
-      D1 connection test
-    */
     if (url.pathname === '/api/db-test') {
       try {
         const counts = await getCounts(env);
@@ -681,13 +678,15 @@ export default {
         return new Response(
           JSON.stringify({
             ok: true,
-            database: 'football-analyzer-db',
+            database:
+              'football-analyzer-db',
             counts
           }),
           {
             status: 200,
             headers: {
-              'content-type': 'application/json; charset=utf-8'
+              'content-type':
+                'application/json; charset=utf-8'
             }
           }
         );
@@ -695,70 +694,81 @@ export default {
         return new Response(
           JSON.stringify({
             ok: false,
-            error: String(e.message || e)
+            error:
+              String(e.message || e)
           }),
           {
             status: 500,
             headers: {
-              'content-type': 'application/json; charset=utf-8'
+              'content-type':
+                'application/json; charset=utf-8'
             }
           }
         );
       }
     }
 
-    /*
-      Existing CSV API.
-      Reads the two local CSV assets.
-    */
     if (url.pathname === '/api/data') {
       const cache = caches.default;
+
       const cacheKey = new Request(
         url.toString(),
         request
       );
 
-      const cached = await cache.match(cacheKey);
+      const cached =
+        await cache.match(cacheKey);
 
       if (cached) {
         return cached;
       }
 
       try {
-        const results = await Promise.all(
-          SOURCES.map(async (source) => {
-            const csv = await getLocalCSV(
-              env,
-              request,
-              source.file,
-              source.season
-            );
+        const results =
+          await Promise.all(
+            SOURCES.map(
+              async (source) => {
+                const csv =
+                  await getLocalCSV(
+                    env,
+                    request,
+                    source.file,
+                    source.season
+                  );
 
-            return {
-              season: source.season,
-              csv
-            };
-          })
-        );
+                return {
+                  season:
+                    source.season,
+                  csv
+                };
+              }
+            )
+          );
 
-        const body = JSON.stringify({
-          fetchedAt: new Date().toISOString(),
-          source: 'local-static-assets',
-          sources: results
-        });
+        const body =
+          JSON.stringify({
+            fetchedAt:
+              new Date().toISOString(),
+            source:
+              'local-static-assets',
+            sources:
+              results
+          });
 
-        const response = new Response(body, {
-          status: 200,
-          headers: {
-            'content-type':
-              'application/json; charset=utf-8',
+        const response =
+          new Response(body, {
+            status: 200,
+            headers: {
+              'content-type':
+                'application/json; charset=utf-8',
 
-            'cache-control':
-              'public, max-age=86400, s-maxage=86400',
+              'cache-control':
+                'public, max-age=86400, s-maxage=86400',
 
-            'access-control-allow-origin': '*'
-          }
-        });
+              'access-control-allow-origin':
+                '*'
+            }
+          });
 
         await cache.put(
           cacheKey,
@@ -769,7 +779,8 @@ export default {
       } catch (e) {
         return new Response(
           JSON.stringify({
-            error: String(e.message || e)
+            error:
+              String(e.message || e)
           }),
           {
             status: 502,
@@ -777,18 +788,17 @@ export default {
               'content-type':
                 'application/json; charset=utf-8',
 
-              'access-control-allow-origin': '*'
+              'access-control-allow-origin':
+                '*'
             }
           }
         );
       }
     }
 
-    /*
-      One-time D1 import.
-    */
     if (url.pathname === '/api/import') {
-      const token = url.searchParams.get('token');
+      const token =
+        url.searchParams.get('token');
 
       if (token !== IMPORT_TOKEN) {
         return new Response(
@@ -819,7 +829,8 @@ export default {
           );
         }
 
-        const counts = await getCounts(env);
+        const counts =
+          await getCounts(env);
 
         return new Response(
           JSON.stringify({
@@ -839,7 +850,8 @@ export default {
         return new Response(
           JSON.stringify({
             ok: false,
-            error: String(e.message || e)
+            error:
+              String(e.message || e)
           }),
           {
             status: 500,
