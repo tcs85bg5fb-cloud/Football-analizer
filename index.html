@@ -1,69 +1,1814 @@
-<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111111"><title>Football Stats Analyzer</title><style>*{box-sizing:border-box}body{margin:0;background:#f2f2f7;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1050px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 1px 5px #0001}h1{margin:0 0 4px;font-size:28px}h2{margin:0 0 10px;font-size:20px}.muted{color:#6e6e73;font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}label{display:block;font-weight:600;font-size:13px;margin-bottom:6px}select{width:100%;padding:13px;border:1px solid #c7c7cc;border-radius:11px;background:#fff;font-size:17px}button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:11px;background:#111;color:#fff;font-size:17px;font-weight:700}.tabs{display:flex;gap:8px;overflow:auto;margin:8px 0}.tab{white-space:nowrap;border:1px solid #d1d1d6;background:#fff;color:#171717;padding:9px 12px;border-radius:10px;font-weight:600}.tab.active{background:#111;color:#fff}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;border-bottom:1px solid #eee;text-align:right}th:first-child,td:first-child{text-align:left}.scroll{overflow-x:auto}.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#eee;font-size:12px;font-weight:600}.metric{font-size:22px;font-weight:700}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.note{background:#f2f2f7;border-radius:12px;padding:11px;margin-top:10px}.small{font-size:12px;color:#6e6e73}.positive{font-weight:700}.section-title{display:flex;justify-content:space-between;gap:10px;align-items:center}.empty{padding:12px 0;color:#6e6e73}@media(max-width:700px){.grid,.two{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}main{padding:10px}table{font-size:13px}h1{font-size:25px}}</style></head><body><main>
-<section class="card"><h1>⚽ Football Stats Analyzer</h1><div class="muted">Premier League • 2025/26 + 2026/27</div><div class="note small">Pełny zestaw danych meczowych z Football-Data. Dane obu sezonów są dostępne dla analizy; statystyki są liczone osobno dla HOME/AWAY.</div></section>
-<section class="card"><div class="grid"><div><label for="home">Gospodarz</label><select id="home"></select></div><div><label for="away">Gość</label><select id="away"></select></div></div><div style="margin-top:12px"><label for="referee">Sędzia (opcjonalnie)</label><select id="referee"><option value="">Dowolny / nie wybieraj</option></select></div><button id="analyze">Analizuj mecz</button><div id="status" class="muted" style="margin-top:10px"></div></section>
-<div id="results"></div></main>
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>Football Stats Analyzer</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#f2f2f7;
+  color:#171717;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+
+main{
+  max-width:1050px;
+  margin:auto;
+  padding:14px
+}
+
+.card{
+  background:#fff;
+  border-radius:18px;
+  padding:18px;
+  margin:12px 0;
+  box-shadow:0 1px 5px #0001
+}
+
+h1{
+  margin:0 0 4px;
+  font-size:28px
+}
+
+h2{
+  margin:0 0 10px;
+  font-size:20px
+}
+
+.muted{
+  color:#6e6e73;
+  font-size:13px
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+
+.grid3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px
+}
+
+label{
+  display:block;
+  font-weight:600;
+  font-size:13px;
+  margin-bottom:6px
+}
+
+select{
+  width:100%;
+  padding:13px;
+  border:1px solid #c7c7cc;
+  border-radius:11px;
+  background:#fff;
+  font-size:17px
+}
+
+button{
+  width:100%;
+  margin-top:12px;
+  padding:14px;
+  border:0;
+  border-radius:11px;
+  background:#111;
+  color:#fff;
+  font-size:17px;
+  font-weight:700
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  overflow:auto;
+  margin:8px 0
+}
+
+.tab{
+  white-space:nowrap;
+  border:1px solid #d1d1d6;
+  background:#fff;
+  color:#171717;
+  padding:9px 12px;
+  border-radius:10px;
+  font-weight:600
+}
+
+.tab.active{
+  background:#111;
+  color:#fff
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px
+}
+
+th,td{
+  padding:8px;
+  border-bottom:1px solid #eee;
+  text-align:right
+}
+
+th:first-child,
+td:first-child{
+  text-align:left
+}
+
+.scroll{
+  overflow-x:auto
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:8px;
+  background:#eee;
+  font-size:12px;
+  font-weight:600
+}
+
+.metric{
+  font-size:22px;
+  font-weight:700
+}
+
+.two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.note{
+  background:#f2f2f7;
+  border-radius:12px;
+  padding:11px;
+  margin-top:10px
+}
+
+.small{
+  font-size:12px;
+  color:#6e6e73
+}
+
+.positive{
+  font-weight:700
+}
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center
+}
+
+.empty{
+  padding:12px 0;
+  color:#6e6e73
+}
+
+@media(max-width:700px){
+  .grid,
+  .two{
+    grid-template-columns:1fr
+  }
+
+  .grid3{
+    grid-template-columns:1fr 1fr
+  }
+
+  main{
+    padding:10px
+  }
+
+  table{
+    font-size:13px
+  }
+
+  h1{
+    font-size:25px
+  }
+}
+</style>
+</head>
+
+<body>
+<main>
+
+<section class="card">
+  <h1>⚽ Football Stats Analyzer</h1>
+
+  <div class="muted">
+    Premier League • 2025/26 + 2026/27
+  </div>
+
+  <div class="note small">
+    Dane są pobierane bezpośrednio z bazy D1. Analiza wykorzystuje dane
+    obu sezonów; statystyki są liczone osobno dla HOME/AWAY.
+  </div>
+</section>
+
+
+<section class="card">
+
+  <div class="grid">
+
+    <div>
+      <label for="home">Gospodarz</label>
+      <select id="home"></select>
+    </div>
+
+    <div>
+      <label for="away">Gość</label>
+      <select id="away"></select>
+    </div>
+
+  </div>
+
+  <div style="margin-top:12px">
+
+    <label for="referee">
+      Sędzia (opcjonalnie)
+    </label>
+
+    <select id="referee">
+      <option value="">
+        Dowolny / nie wybieraj
+      </option>
+    </select>
+
+  </div>
+
+  <button id="analyze">
+    Analizuj mecz
+  </button>
+
+  <div
+    id="status"
+    class="muted"
+    style="margin-top:10px">
+  </div>
+
+</section>
+
+
+<div id="results"></div>
+
+</main>
+
+
 <script>
-let DATA=[];
-let TEAMS=[];
-let REFEREES=[];
-let SOURCE_COLUMNS=[];
+
+let DATA = [];
+let TEAMS = [];
+let REFEREES = [];
+let SOURCE_COLUMNS = [];
+
+
+/* ==================================================
+   DANE Z D1
+   ================================================== */
+
+async function loadLiveData(){
+
+  const res = await fetch(
+    '/api/matches?limit=1000',
+    {
+      cache:'no-store'
+    }
+  );
+
+  if(!res.ok){
+
+    throw new Error(
+      'Nie udało się pobrać danych z bazy D1.'
+    );
+
+  }
+
+  const payload = await res.json();
+
+  if(!payload.ok){
+
+    throw new Error(
+      payload.error ||
+      'API D1 zwróciło błąd.'
+    );
+
+  }
+
+
+  const rows = [];
+  const cols = new Set();
+
+
+  /*
+    API zwraca dane z D1.
+    raw_data zawiera oryginalne kolumny
+    Football-Data.
+  */
+
+  (payload.matches || []).forEach(match => {
+
+    const raw =
+      match.raw_data &&
+      typeof match.raw_data === 'object'
+        ? match.raw_data
+        : {};
+
+
+    /*
+      Zachowujemy wszystkie oryginalne
+      kolumny Football-Data.
+    */
+
+    const m = {
+      ...raw,
+
+      Season: match.season,
+
+      Date:
+        raw.Date ||
+        formatISODate(match.match_date),
+
+      HomeTeam:
+        match.home_team,
+
+      AwayTeam:
+        match.away_team,
+
+      Referee:
+        match.referee,
+
+      FTHG:
+        match.home_goals,
+
+      FTAG:
+        match.away_goals,
+
+      FTR:
+        match.result,
+
+      HTHG:
+        match.home_ht_goals,
+
+      HTAG:
+        match.away_ht_goals,
+
+      HTR:
+        match.ht_result,
+
+      HS:
+        match.home_shots,
+
+      AS:
+        match.away_shots,
+
+      HST:
+        match.home_shots_on_target,
+
+      AST:
+        match.away_shots_on_target,
+
+      HxG:
+        match.home_xg,
+
+      AxG:
+        match.away_xg,
+
+      HC:
+        match.home_corners,
+
+      AC:
+        match.away_corners,
+
+      HF:
+        match.home_fouls,
+
+      AF:
+        match.away_fouls,
+
+      HY:
+        match.home_yellow_cards,
+
+      AY:
+        match.away_yellow_cards,
+
+      HR:
+        match.home_red_cards,
+
+      AR:
+        match.away_red_cards
+
+    };
+
+
+    rows.push(m);
+
+
+    Object.keys(raw).forEach(k => {
+      cols.add(k);
+    });
+
+  });
+
+
+  DATA = rows;
+
+  SOURCE_COLUMNS = [...cols];
+
+
+  TEAMS = [
+    ...new Set(
+      DATA.flatMap(m => [
+        m.HomeTeam,
+        m.AwayTeam
+      ])
+      .filter(Boolean)
+    )
+  ].sort(
+    (a,b) =>
+      a.localeCompare(
+        b,
+        'pl'
+      )
+  );
+
+
+  REFEREES = [
+    ...new Set(
+      DATA
+        .map(m => m.Referee)
+        .filter(Boolean)
+    )
+  ].sort(
+    (a,b) =>
+      a.localeCompare(
+        b,
+        'pl'
+      )
+  );
+
+
+  return payload;
+
+}
+
+
+/* ==================================================
+   POMOCNICZE
+   ================================================== */
+
+function formatISODate(value){
+
+  if(!value){
+    return '';
+  }
+
+  const m =
+    String(value)
+      .match(
+        /^(\d{4})-(\d{2})-(\d{2})/
+      );
+
+  if(!m){
+    return String(value);
+  }
+
+  return `${m[3]}/${m[2]}/${m[1]}`;
+
+}
+
 
 function parseCSV(text){
-  text=String(text||'').replace(/^\uFEFF/,'');
-  const rows=[]; let row=[]; let cell=''; let quoted=false;
-  for(let i=0;i<text.length;i++){const c=text[i];
-    if(quoted){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else quoted=false; } else cell+=c; }
-    else { if(c==='"') quoted=true; else if(c===','){row.push(cell);cell='';} else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell='';} else if(c!=='\r') cell+=c; }
+
+  text = String(text || '')
+    .replace(/^\uFEFF/, '');
+
+  const rows = [];
+
+  let row = [];
+  let cell = '';
+  let quoted = false;
+
+
+  for(
+    let i=0;
+    i<text.length;
+    i++
+  ){
+
+    const c = text[i];
+
+
+    if(quoted){
+
+      if(c === '"'){
+
+        if(text[i+1] === '"'){
+
+          cell += '"';
+          i++;
+
+        }else{
+
+          quoted = false;
+
+        }
+
+      }else{
+
+        cell += c;
+
+      }
+
+    }else{
+
+      if(c === '"'){
+
+        quoted = true;
+
+      }else if(c === ','){
+
+        row.push(cell);
+        cell = '';
+
+      }else if(c === '\n'){
+
+        row.push(cell);
+
+        rows.push(row);
+
+        row = [];
+        cell = '';
+
+      }else if(c !== '\r'){
+
+        cell += c;
+
+      }
+
+    }
+
   }
-  if(cell!==''||row.length){row.push(cell);rows.push(row)}
-  const headers=(rows.shift()||[]).map(h=>h.trim());
-  return rows.filter(r=>r.some(v=>String(v).trim()!=='')).map(r=>{const o={};headers.forEach((h,i)=>{let v=(r[i]??'').trim(); if(v==='') o[h]=null; else if(/^[-+]?\d+(\.\d+)?$/.test(v)) o[h]=Number(v); else o[h]=v;});return o;});
+
+
+  if(
+    cell !== '' ||
+    row.length
+  ){
+
+    row.push(cell);
+    rows.push(row);
+
+  }
+
+
+  const headers =
+    (rows.shift() || [])
+      .map(
+        h => h.trim()
+      );
+
+
+  return rows
+    .filter(
+      r =>
+        r.some(
+          v =>
+            String(v).trim() !== ''
+        )
+    )
+    .map(r => {
+
+      const o = {};
+
+      headers.forEach(
+        (h,i) => {
+
+          let v =
+            (r[i] ?? '')
+              .trim();
+
+
+          if(v === ''){
+
+            o[h] = null;
+
+          }else if(
+            /^[-+]?\d+(\.\d+)?$/.test(v)
+          ){
+
+            o[h] = Number(v);
+
+          }else{
+
+            o[h] = v;
+
+          }
+
+        }
+      );
+
+      return o;
+
+    });
+
 }
-async function loadLiveData(){
-  const res=await fetch('/api/data',{cache:'no-store'});
-  if(!res.ok) throw new Error('Nie udało się pobrać aktualnych danych.');
-  const payload=await res.json();
-  const rows=[]; const cols=new Set();
-  (payload.sources||[]).forEach(s=>{parseCSV(s.csv).forEach(m=>{m.Season=s.season;rows.push(m);Object.keys(m).forEach(k=>cols.add(k));});});
-  DATA=rows; SOURCE_COLUMNS=[...cols];
-  TEAMS=[...new Set(DATA.flatMap(m=>[m.HomeTeam,m.AwayTeam]).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-  REFEREES=[...new Set(DATA.map(m=>m.Referee).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-  return payload;
+
+
+function dateVal(s){
+
+  if(!s){
+    return 0;
+  }
+
+
+  const value =
+    String(s);
+
+
+  /*
+    dd/mm/yyyy
+  */
+
+  const p =
+    value.split('/');
+
+
+  if(p.length === 3){
+
+    return new Date(
+      Number(p[2]),
+      Number(p[1]) - 1,
+      Number(p[0])
+    ).getTime();
+
+  }
+
+
+  /*
+    yyyy-mm-dd
+  */
+
+  const iso =
+    value.match(
+      /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+
+  if(iso){
+
+    return new Date(
+      Number(iso[1]),
+      Number(iso[2]) - 1,
+      Number(iso[3])
+    ).getTime();
+
+  }
+
+
+  return 0;
+
 }
-const home=document.getElementById('home'),away=document.getElementById('away'),referee=document.getElementById('referee'),results=document.getElementById('results');
-const num=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
-const avg=a=>{a=a.filter(x=>x!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
-const f=x=>x==null?'—':x.toFixed(1);
-const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-function fillSelect(sel,items){items.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o)})}
-const statDefs=[
- ['Gole','FTHG','FTAG'],['Strzały','HS','AS'],['Strzały celne','HST','AST'],['xG','HxG','AxG'],['Faule','HF','AF'],['Rożne','HC','AC'],['Żółte kartki','HY','AY'],['Czerwone kartki','HR','AR']
+
+
+const num = v => {
+
+  const x =
+    Number(v);
+
+  return Number.isFinite(x)
+    ? x
+    : null;
+
+};
+
+
+const avg = a => {
+
+  a =
+    a.filter(
+      x => x != null
+    );
+
+  return a.length
+    ? a.reduce(
+        (x,y) => x+y,
+        0
+      ) / a.length
+    : null;
+
+};
+
+
+const f = x =>
+  x == null
+    ? '—'
+    : x.toFixed(1);
+
+
+const esc = s =>
+  String(s ?? '')
+    .replace(
+      /[&<>"]/g,
+      m =>
+        ({
+          '&':'&amp;',
+          '<':'&lt;',
+          '>':'&gt;',
+          '"':'&quot;'
+        }[m])
+    );
+
+
+function fillSelect(
+  sel,
+  items
+){
+
+  items.forEach(
+    t => {
+
+      const o =
+        document.createElement(
+          'option'
+        );
+
+      o.value = t;
+      o.textContent = t;
+
+      sel.appendChild(o);
+
+    }
+  );
+
+}
+
+
+/* ==================================================
+   STATYSTYKI
+   ================================================== */
+
+const statDefs = [
+
+  ['Gole','FTHG','FTAG'],
+
+  ['Strzały','HS','AS'],
+
+  ['Strzały celne','HST','AST'],
+
+  ['xG','HxG','AxG'],
+
+  ['Faule','HF','AF'],
+
+  ['Rożne','HC','AC'],
+
+  ['Żółte kartki','HY','AY'],
+
+  ['Czerwone kartki','HR','AR']
+
 ];
-function teamMatches(team,venue){return DATA.filter(m=>venue==='home'?m.HomeTeam===team:m.AwayTeam===team).sort((a,b)=>dateVal(b.Date)-dateVal(a.Date))}
-function dateVal(s){if(!s)return 0;const p=String(s).split('/');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]).getTime():0}
-function sideVal(m,venue,pair){return num(m[venue==='home'?pair[0]:pair[1]])}
-function stats(team,venue){const r=teamMatches(team,venue);const out={n:r.length};statDefs.forEach(([name,h,a])=>{const vals=r.map(m=>sideVal(m,venue,[h,a]));const opp=r.map(m=>sideVal(m,venue,[a,h]));out[name]={for:avg(vals),against:avg(opp)}});return out}
-function outcomeFor(m,team){const homeTeam=m.HomeTeam===team;if(m.FTHG==null||m.FTAG==null)return '—';const diff=Number(m.FTHG)-Number(m.FTAG);return (homeTeam?diff:-diff)>0?'W':(homeTeam?diff:-diff)<0?'L':'D'}
-function resultClass(x){return x==='W'?'W':x==='L'?'L':'D'}
-function summaryCard(team,venue){const s=stats(team,venue);const labels=['Gole','Strzały','Strzały celne','xG','Faule','Rożne','Żółte kartki','Czerwone kartki'];return `<section class="card"><div class="section-title"><h2>${esc(team)}</h2><span class="badge">${venue==='home'?'U siebie':'Na wyjeździe'} • ${s.n} meczów</span></div><div class="scroll"><table><tr><th>Statystyka</th><th>Drużyna</th><th>Przeciwko</th></tr>${labels.map(k=>`<tr><td>${k}</td><td>${f(s[k].for)}</td><td>${f(s[k].against)}</td></tr>`).join('')}</table></div></section>`}
-function recent(team,venue){const r=teamMatches(team,venue).slice(0,5);return `<section class="card"><div class="section-title"><h2>Ostatnie 5 — ${esc(team)}</h2><span class="badge">${venue==='home'?'HOME':'AWAY'}</span></div>${r.length?`<div class="scroll"><table><tr><th>Data</th><th>Mecz</th><th>Wynik</th><th>Strzały</th><th>Celne</th><th>Rożne</th><th>Faule</th><th>ŻK</th><th>CK</th></tr>${r.map(m=>`<tr><td>${esc(m.Date)}</td><td>${esc(m.HomeTeam)} – ${esc(m.AwayTeam)}</td><td><b>${esc(outcomeFor(m,team))}</b> ${m.FTHG??'—'}:${m.FTAG??'—'}</td><td>${m.HS??'—'}:${m.AS??'—'}</td><td>${m.HST??'—'}:${m.AST??'—'}</td><td>${m.HC??'—'}:${m.AC??'—'}</td><td>${m.HF??'—'}:${m.AF??'—'}</td><td>${m.HY??'—'}:${m.AY??'—'}</td><td>${m.HR??'—'}:${m.AR??'—'}</td></tr>`).join('')}</table></div>`:'<div class="empty">Brak danych.</div>'}</section>`}
-function refereeProfile(name){if(!name)return '';const r=DATA.filter(m=>m.Referee===name);const av=k=>avg(r.map(m=>num(m[k])));return `<section class="card"><div class="section-title"><h2>👨‍⚖️ Sędzia: ${esc(name)}</h2><span class="badge">${r.length} meczów w danych</span></div><div class="scroll"><table><tr><th>Statystyka</th><th>Średnia na mecz</th></tr><tr><td>Faule gospodarzy</td><td>${f(av('HF'))}</td></tr><tr><td>Faule gości</td><td>${f(av('AF'))}</td></tr><tr><td>Faule łącznie</td><td>${f(avg(r.map(m=>{const a=num(m.HF),b=num(m.AF);return a!=null&&b!=null?a+b:null})))}</td></tr><tr><td>Żółte gospodarzy</td><td>${f(av('HY'))}</td></tr><tr><td>Żółte gości</td><td>${f(av('AY'))}</td></tr><tr><td>Żółte łącznie</td><td>${f(avg(r.map(m=>{const a=num(m.HY),b=num(m.AY);return a!=null&&b!=null?a+b:null})))}</td></tr><tr><td>Czerwone łącznie</td><td>${f(avg(r.map(m=>{const a=num(m.HR),b=num(m.AR);return a!=null&&b!=null?a+b:null})))}</td></tr></table></div><div class="small">Profil liczony z meczów przypisanych do wybranego sędziego w załadowanych sezonach.</div></section>`}
-function h2h(h,a){return DATA.filter(m=>(m.HomeTeam===h&&m.AwayTeam===a)||(m.HomeTeam===a&&m.AwayTeam===h)).sort((x,y)=>dateVal(y.Date)-dateVal(x.Date)).slice(0,10)}
-function h2hCard(h,a){const r=h2h(h,a);return `<section class="card"><h2>H2H — ostatnie ${r.length}</h2>${r.length?`<div class="scroll"><table><tr><th>Data</th><th>Mecz</th><th>Wynik</th><th>Strzały</th><th>Celne</th><th>Rożne</th><th>Faule</th><th>ŻK</th><th>CK</th></tr>${r.map(m=>`<tr><td>${esc(m.Date)}</td><td>${esc(m.HomeTeam)} – ${esc(m.AwayTeam)}</td><td>${m.FTHG??'—'}:${m.FTAG??'—'}</td><td>${m.HS??'—'}:${m.AS??'—'}</td><td>${m.HST??'—'}:${m.AST??'—'}</td><td>${m.HC??'—'}:${m.AC??'—'}</td><td>${m.HF??'—'}:${m.AF??'—'}</td><td>${m.HY??'—'}:${m.AY??'—'}</td><td>${m.HR??'—'}:${m.AR??'—'}</td></tr>`).join('')}</table></div>`:'<div class="empty">Brak H2H w danych.</div>'}</section>`}
-function allDataNote(){return `<section class="card"><h2>📦 Dane wykorzystane przez analizator</h2><div class="muted">Załadowano wszystkie kolumny źródłowe z obu plików, w tym statystyki meczowe, sędziego, gole do przerwy i kursy bukmacherskie. Nie wszystkie pola są jeszcze prezentowane w UI — pozostają dostępne dla kolejnych modułów analitycznych.</div><div class="small" style="margin-top:8px">Kolumn źródłowych: ${SOURCE_COLUMNS.length} • rekordów: ${DATA.length}</div></section>`}
-function analyze(){const h=home.value,a=away.value;if(h===a){results.innerHTML='<section class="card">Wybierz dwie różne drużyny.</section>';return}const r=referee.value;results.innerHTML=`<section class="card"><h2>${esc(h)} – ${esc(a)}</h2><span class="badge">Premier League • MVP danych</span><div class="muted" style="margin-top:8px">2025/26 + 2026/27. Gospodarz: mecze u siebie; gość: mecze wyjazdowe.</div></section><div class="grid">${summaryCard(h,'home')}${summaryCard(a,'away')}</div>${recent(h,'home')}${recent(a,'away')}${h2hCard(h,a)}${refereeProfile(r)}${allDataNote()}`}
-async function boot(){
-  const status=document.getElementById('status');
-  status.textContent='Pobieranie najnowszych danych Premier League…';
-  try{
-    const payload=await loadLiveData();
-    fillSelect(home,TEAMS);fillSelect(away,TEAMS);fillSelect(referee,REFEREES);
-    home.value=TEAMS.includes('Arsenal')?'Arsenal':TEAMS[0]||'';
-    away.value=TEAMS.includes('Liverpool')?'Liverpool':TEAMS.find(t=>t!==home.value)||TEAMS[1]||'';
-    document.getElementById('analyze').onclick=analyze;
-    status.textContent=`Aktualne dane: ${DATA.length} meczów, ${TEAMS.length} drużyn i ${REFEREES.length} sędziów. Źródło sprawdzone: ${new Date(payload.fetchedAt).toLocaleString('pl-PL')}.`;
-    analyze();
-  }catch(e){ status.textContent=e.message+' Odśwież stronę za chwilę.'; results.innerHTML='<section class="card"><h2>Nie udało się załadować danych</h2><div class="muted">Źródło danych jest chwilowo niedostępne. Spróbuj ponownie.</div></section>'; }
+
+
+function teamMatches(
+  team,
+  venue
+){
+
+  return DATA
+
+    .filter(
+      m =>
+        venue === 'home'
+          ? m.HomeTeam === team
+          : m.AwayTeam === team
+    )
+
+    .sort(
+      (a,b) =>
+        dateVal(b.Date) -
+        dateVal(a.Date)
+    );
+
 }
+
+
+function sideVal(
+  m,
+  venue,
+  pair
+){
+
+  return num(
+    m[
+      venue === 'home'
+        ? pair[0]
+        : pair[1]
+    ]
+  );
+
+}
+
+
+function stats(
+  team,
+  venue
+){
+
+  const r =
+    teamMatches(
+      team,
+      venue
+    );
+
+
+  const out = {
+    n:r.length
+  };
+
+
+  statDefs.forEach(
+    ([name,h,a]) => {
+
+      const vals =
+        r.map(
+          m =>
+            sideVal(
+              m,
+              venue,
+              [h,a]
+            )
+        );
+
+
+      const opp =
+        r.map(
+          m =>
+            sideVal(
+              m,
+              venue,
+              [a,h]
+            )
+        );
+
+
+      out[name] = {
+        for:avg(vals),
+        against:avg(opp)
+      };
+
+    }
+  );
+
+
+  return out;
+
+}
+
+
+function outcomeFor(
+  m,
+  team
+){
+
+  const homeTeam =
+    m.HomeTeam === team;
+
+
+  if(
+    m.FTHG == null ||
+    m.FTAG == null
+  ){
+
+    return '—';
+
+  }
+
+
+  const diff =
+    Number(m.FTHG) -
+    Number(m.FTAG);
+
+
+  return (
+    homeTeam
+      ? diff
+      : -diff
+  ) > 0
+
+    ? 'W'
+
+    : (
+        homeTeam
+          ? diff
+          : -diff
+      ) < 0
+
+      ? 'L'
+
+      : 'D';
+
+}
+
+
+function resultClass(x){
+
+  return x === 'W'
+    ? 'W'
+    : x === 'L'
+      ? 'L'
+      : 'D';
+
+}
+
+
+/* ==================================================
+   KARTA STATYSTYK DRUŻYNY
+   ================================================== */
+
+function summaryCard(
+  team,
+  venue
+){
+
+  const s =
+    stats(
+      team,
+      venue
+    );
+
+
+  const labels = [
+    'Gole',
+    'Strzały',
+    'Strzały celne',
+    'xG',
+    'Faule',
+    'Rożne',
+    'Żółte kartki',
+    'Czerwone kartki'
+  ];
+
+
+  return `
+
+<section class="card">
+
+  <div class="section-title">
+
+    <h2>
+      ${esc(team)}
+    </h2>
+
+    <span class="badge">
+      ${
+        venue === 'home'
+          ? 'U siebie'
+          : 'Na wyjeździe'
+      }
+      • ${s.n} meczów
+    </span>
+
+  </div>
+
+
+  <div class="scroll">
+
+    <table>
+
+      <tr>
+        <th>Statystyka</th>
+        <th>Drużyna</th>
+        <th>Przeciwko</th>
+      </tr>
+
+
+      ${
+        labels.map(
+          k => `
+
+          <tr>
+
+            <td>
+              ${k}
+            </td>
+
+            <td>
+              ${f(s[k].for)}
+            </td>
+
+            <td>
+              ${f(s[k].against)}
+            </td>
+
+          </tr>
+
+        `
+        ).join('')
+      }
+
+    </table>
+
+  </div>
+
+</section>
+
+`;
+
+}
+
+
+/* ==================================================
+   OSTATNIE MECZE
+   ================================================== */
+
+function recent(
+  team,
+  venue
+){
+
+  const r =
+    teamMatches(
+      team,
+      venue
+    ).slice(
+      0,
+      5
+    );
+
+
+  return `
+
+<section class="card">
+
+  <div class="section-title">
+
+    <h2>
+      Ostatnie 5 — ${esc(team)}
+    </h2>
+
+    <span class="badge">
+      ${
+        venue === 'home'
+          ? 'HOME'
+          : 'AWAY'
+      }
+    </span>
+
+  </div>
+
+
+  ${
+    r.length
+
+      ? `
+
+      <div class="scroll">
+
+        <table>
+
+          <tr>
+            <th>Data</th>
+            <th>Mecz</th>
+            <th>Wynik</th>
+            <th>Strzały</th>
+            <th>Celne</th>
+            <th>Rożne</th>
+            <th>Faule</th>
+            <th>ŻK</th>
+            <th>CK</th>
+          </tr>
+
+
+          ${
+            r.map(
+              m => `
+
+              <tr>
+
+                <td>
+                  ${esc(m.Date)}
+                </td>
+
+                <td>
+                  ${esc(m.HomeTeam)}
+                  –
+                  ${esc(m.AwayTeam)}
+                </td>
+
+                <td>
+
+                  <b>
+                    ${esc(
+                      outcomeFor(
+                        m,
+                        team
+                      )
+                    )}
+                  </b>
+
+                  ${m.FTHG ?? '—'}
+                  :
+                  ${m.FTAG ?? '—'}
+
+                </td>
+
+                <td>
+                  ${m.HS ?? '—'}
+                  :
+                  ${m.AS ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HST ?? '—'}
+                  :
+                  ${m.AST ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HC ?? '—'}
+                  :
+                  ${m.AC ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HF ?? '—'}
+                  :
+                  ${m.AF ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HY ?? '—'}
+                  :
+                  ${m.AY ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HR ?? '—'}
+                  :
+                  ${m.AR ?? '—'}
+                </td>
+
+              </tr>
+
+            `
+            ).join('')
+          }
+
+        </table>
+
+      </div>
+
+      `
+
+      : `
+        <div class="empty">
+          Brak danych.
+        </div>
+      `
+  }
+
+</section>
+
+`;
+
+}
+
+
+/* ==================================================
+   PROFIL SĘDZIEGO
+   ================================================== */
+
+function refereeProfile(
+  name
+){
+
+  if(!name){
+    return '';
+  }
+
+
+  const r =
+    DATA.filter(
+      m =>
+        m.Referee === name
+    );
+
+
+  const av =
+    k =>
+      avg(
+        r.map(
+          m =>
+            num(m[k])
+        )
+      );
+
+
+  return `
+
+<section class="card">
+
+  <div class="section-title">
+
+    <h2>
+      👨‍⚖️ Sędzia:
+      ${esc(name)}
+    </h2>
+
+    <span class="badge">
+      ${r.length} meczów w danych
+    </span>
+
+  </div>
+
+
+  <div class="scroll">
+
+    <table>
+
+      <tr>
+        <th>Statystyka</th>
+        <th>Średnia na mecz</th>
+      </tr>
+
+
+      <tr>
+        <td>
+          Faule gospodarzy
+        </td>
+        <td>
+          ${f(av('HF'))}
+        </td>
+      </tr>
+
+
+      <tr>
+        <td>
+          Faule gości
+        </td>
+        <td>
+          ${f(av('AF'))}
+        </td>
+      </tr>
+
+
+      <tr>
+        <td>
+          Faule łącznie
+        </td>
+        <td>
+          ${
+            f(
+              avg(
+                r.map(
+                  m => {
+
+                    const a =
+                      num(m.HF);
+
+                    const b =
+                      num(m.AF);
+
+                    return
+                      a != null &&
+                      b != null
+                        ? a+b
+                        : null;
+
+                  }
+                )
+              )
+            )
+          }
+        </td>
+      </tr>
+
+
+      <tr>
+        <td>
+          Żółte gospodarzy
+        </td>
+        <td>
+          ${f(av('HY'))}
+        </td>
+      </tr>
+
+
+      <tr>
+        <td>
+          Żółte gości
+        </td>
+        <td>
+          ${f(av('AY'))}
+        </td>
+      </tr>
+
+
+      <tr>
+        <td>
+          Żółte łącznie
+        </td>
+        <td>
+          ${
+            f(
+              avg(
+                r.map(
+                  m => {
+
+                    const a =
+                      num(m.HY);
+
+                    const b =
+                      num(m.AY);
+
+                    return
+                      a != null &&
+                      b != null
+                        ? a+b
+                        : null;
+
+                  }
+                )
+              )
+            )
+          }
+        </td>
+      </tr>
+
+
+      <tr>
+        <td>
+          Czerwone łącznie
+        </td>
+        <td>
+          ${
+            f(
+              avg(
+                r.map(
+                  m => {
+
+                    const a =
+                      num(m.HR);
+
+                    const b =
+                      num(m.AR);
+
+                    return
+                      a != null &&
+                      b != null
+                        ? a+b
+                        : null;
+
+                  }
+                )
+              )
+            )
+          }
+        </td>
+      </tr>
+
+    </table>
+
+  </div>
+
+
+  <div class="small">
+
+    Profil liczony z meczów przypisanych
+    do wybranego sędziego w załadowanych sezonach.
+
+  </div>
+
+</section>
+
+`;
+
+}
+
+
+/* ==================================================
+   H2H
+   ================================================== */
+
+function h2h(
+  h,
+  a
+){
+
+  return DATA
+
+    .filter(
+      m =>
+        (
+          m.HomeTeam === h &&
+          m.AwayTeam === a
+        ) ||
+        (
+          m.HomeTeam === a &&
+          m.AwayTeam === h
+        )
+    )
+
+    .sort(
+      (x,y) =>
+        dateVal(y.Date) -
+        dateVal(x.Date)
+    )
+
+    .slice(
+      0,
+      10
+    );
+
+}
+
+
+function h2hCard(
+  h,
+  a
+){
+
+  const r =
+    h2h(
+      h,
+      a
+    );
+
+
+  return `
+
+<section class="card">
+
+  <h2>
+    H2H — ostatnie ${r.length}
+  </h2>
+
+
+  ${
+    r.length
+
+      ? `
+
+      <div class="scroll">
+
+        <table>
+
+          <tr>
+            <th>Data</th>
+            <th>Mecz</th>
+            <th>Wynik</th>
+            <th>Strzały</th>
+            <th>Celne</th>
+            <th>Rożne</th>
+            <th>Faule</th>
+            <th>ŻK</th>
+            <th>CK</th>
+          </tr>
+
+
+          ${
+            r.map(
+              m => `
+
+              <tr>
+
+                <td>
+                  ${esc(m.Date)}
+                </td>
+
+                <td>
+                  ${esc(m.HomeTeam)}
+                  –
+                  ${esc(m.AwayTeam)}
+                </td>
+
+                <td>
+                  ${m.FTHG ?? '—'}
+                  :
+                  ${m.FTAG ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HS ?? '—'}
+                  :
+                  ${m.AS ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HST ?? '—'}
+                  :
+                  ${m.AST ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HC ?? '—'}
+                  :
+                  ${m.AC ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HF ?? '—'}
+                  :
+                  ${m.AF ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HY ?? '—'}
+                  :
+                  ${m.AY ?? '—'}
+                </td>
+
+                <td>
+                  ${m.HR ?? '—'}
+                  :
+                  ${m.AR ?? '—'}
+                </td>
+
+              </tr>
+
+            `
+            ).join('')
+          }
+
+        </table>
+
+      </div>
+
+      `
+
+      : `
+        <div class="empty">
+          Brak H2H w danych.
+        </div>
+      `
+  }
+
+</section>
+
+`;
+
+}
+
+
+/* ==================================================
+   INFORMACJA O DANYCH
+   ================================================== */
+
+function allDataNote(){
+
+  return `
+
+<section class="card">
+
+  <h2>
+    📦 Dane wykorzystane przez analizator
+  </h2>
+
+
+  <div class="muted">
+
+    Dane są pobierane bezpośrednio z bazy D1.
+    Baza zawiera wszystkie zaimportowane dane
+    meczowe z obu sezonów, w tym statystyki,
+    sędziego, gole do przerwy oraz kursy bukmacherskie.
+
+  </div>
+
+
+  <div
+    class="small"
+    style="margin-top:8px">
+
+    Kolumn źródłowych:
+    ${SOURCE_COLUMNS.length}
+
+    • rekordów:
+    ${DATA.length}
+
+    • źródło:
+    D1
+
+  </div>
+
+</section>
+
+`;
+
+}
+
+
+/* ==================================================
+   ANALIZA
+   ================================================== */
+
+function analyze(){
+
+  const h =
+    home.value;
+
+  const a =
+    away.value;
+
+
+  if(h === a){
+
+    results.innerHTML = `
+
+      <section class="card">
+
+        Wybierz dwie różne drużyny.
+
+      </section>
+
+    `;
+
+    return;
+
+  }
+
+
+  const r =
+    referee.value;
+
+
+  results.innerHTML = `
+
+<section class="card">
+
+  <h2>
+    ${esc(h)}
+    –
+    ${esc(a)}
+  </h2>
+
+
+  <span class="badge">
+    Premier League • MVP danych
+  </span>
+
+
+  <div
+    class="muted"
+    style="margin-top:8px">
+
+    2025/26 + 2026/27.
+
+    Gospodarz:
+    mecze u siebie;
+
+    gość:
+    mecze wyjazdowe.
+
+  </div>
+
+</section>
+
+
+<div class="grid">
+
+  ${summaryCard(h,'home')}
+
+  ${summaryCard(a,'away')}
+
+</div>
+
+
+${recent(h,'home')}
+
+${recent(a,'away')}
+
+${h2hCard(h,a)}
+
+${refereeProfile(r)}
+
+${allDataNote()}
+
+`;
+
+}
+
+
+/* ==================================================
+   START
+   ================================================== */
+
+async function boot(){
+
+  const status =
+    document.getElementById(
+      'status'
+    );
+
+
+  status.textContent =
+    'Pobieranie danych z bazy D1…';
+
+
+  try{
+
+    const payload =
+      await loadLiveData();
+
+
+    fillSelect(
+      home,
+      TEAMS
+    );
+
+
+    fillSelect(
+      away,
+      TEAMS
+    );
+
+
+    fillSelect(
+      referee,
+      REFEREES
+    );
+
+
+    home.value =
+      TEAMS.includes('Arsenal')
+        ? 'Arsenal'
+        : TEAMS[0] || '';
+
+
+    away.value =
+      TEAMS.includes('Liverpool')
+        ? 'Liverpool'
+        : TEAMS.find(
+            t =>
+              t !== home.value
+          ) ||
+          TEAMS[1] ||
+          '';
+
+
+    document
+      .getElementById('analyze')
+      .onclick = analyze;
+
+
+    status.textContent =
+      `D1: ${DATA.length} meczów, ` +
+      `${TEAMS.length} drużyn i ` +
+      `${REFEREES.length} sędziów. ` +
+      `Baza: football-analyzer-db.`;
+
+
+    analyze();
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    status.textContent =
+      e.message ||
+      'Nie udało się pobrać danych z D1.';
+
+
+    results.innerHTML = `
+
+      <section class="card">
+
+        <h2>
+          Nie udało się załadować danych
+        </h2>
+
+        <div class="muted">
+
+          Aplikacja nie może obecnie
+          pobrać danych z bazy D1.
+          Spróbuj odświeżyć stronę.
+
+        </div>
+
+      </section>
+
+    `;
+
+  }
+
+}
+
+
 boot();
-</script></body></html>
+
+</script>
+
+</body>
+</html>
