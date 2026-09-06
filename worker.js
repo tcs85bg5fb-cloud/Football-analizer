@@ -15,146 +15,181 @@ function parseCSV(text) {
   const rows = [];
   let row = [];
   let field = '';
-  let insideQuotes = false;
+  let inQuotes = false;
 
   for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const next = text[i + 1];
+    const ch = text[i];
 
-    if (insideQuotes) {
-      if (char === '"' && next === '"') {
+    if (ch === '"') {
+      if (inQuotes && text[i + 1] === '"') {
         field += '"';
         i++;
-      } else if (char === '"') {
-        insideQuotes = false;
       } else {
-        field += char;
+        inQuotes = !inQuotes;
       }
       continue;
     }
 
-    if (char === '"') {
-      insideQuotes = true;
-    } else if (char === ',') {
+    if (ch === ',' && !inQuotes) {
       row.push(field);
       field = '';
-    } else if (char === '\n') {
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = '';
-    } else if (char !== '\r') {
-      field += char;
+      continue;
     }
+
+    if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && text[i + 1] === '\n') {
+        i++;
+      }
+
+      row.push(field);
+      field = '';
+
+      if (row.some(v => v !== '')) {
+        rows.push(row);
+      }
+
+      row = [];
+      continue;
+    }
+
+    field += ch;
   }
 
   if (field !== '' || row.length > 0) {
     row.push(field);
-    rows.push(row);
+
+    if (row.some(v => v !== '')) {
+      rows.push(row);
+    }
   }
 
   if (!rows.length) {
     return [];
   }
 
-  const headers = rows[0].map((h) => h.trim());
+  const headers = rows[0].map(h => String(h).trim());
 
-  return rows
-    .slice(1)
-    .filter((r) => r.some((v) => String(v || '').trim() !== ''))
-    .map((r) => {
-      const obj = {};
+  return rows.slice(1).map(values => {
+    const obj = {};
 
-      headers.forEach((header, index) => {
-        obj[header] = r[index] ?? '';
-      });
-
-      return obj;
+    headers.forEach((header, i) => {
+      obj[header] = values[i] ?? '';
     });
+
+    return obj;
+  });
 }
 
 function clean(value) {
   if (value === undefined || value === null) {
-    return null;
+    return '';
   }
 
-  const text = String(value).trim();
-
-  return text === '' ? null : text;
+  return String(value).trim();
 }
 
-function numberOrNull(value) {
-  const v = clean(value);
+function num(value) {
+  const s = clean(value);
 
-  if (v === null) {
+  if (!s) {
     return null;
   }
 
-  const n = Number(v);
+  const n = Number(s.replace(',', '.'));
 
   return Number.isFinite(n) ? n : null;
 }
 
-function integerOrNull(value) {
-  const n = numberOrNull(value);
+function int(value) {
+  const n = num(value);
 
   return n === null ? null : Math.round(n);
 }
 
 function dateToISO(value) {
-  const v = clean(value);
+  const s = clean(value);
 
-  if (!v) {
+  if (!s) {
     return null;
   }
 
-  const parts = v.split('/');
+  const parts = s.split('/');
 
   if (parts.length === 3) {
-    const [day, month, year] = parts;
+    let [day, month, year] = parts;
 
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    if (year.length === 2) {
+      year = Number(year) >= 90
+        ? `19${year}`
+        : `20${year}`;
+    }
+
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 
-  return v;
+  return s;
 }
 
-function buildRawData(row) {
-  return JSON.stringify(row);
+function getResult(row) {
+  const result = clean(row.FTR);
+
+  if (result === 'H' || result === 'D' || result === 'A') {
+    return result;
+  }
+
+  const hg = int(row.FTHG);
+  const ag = int(row.FTAG);
+
+  if (hg === null || ag === null) {
+    return null;
+  }
+
+  if (hg > ag) return 'H';
+  if (hg < ag) return 'A';
+
+  return 'D';
 }
 
-function buildOdds(row) {
+function getHTResult(row) {
+  const result = clean(row.HTR);
+
+  if (result === 'H' || result === 'D' || result === 'A') {
+    return result;
+  }
+
+  const hg = int(row.HTHG);
+  const ag = int(row.HTAG);
+
+  if (hg === null || ag === null) {
+    return null;
+  }
+
+  if (hg > ag) return 'H';
+  if (hg < ag) return 'A';
+
+  return 'D';
+}
+
+function getOdds(row) {
   const odds = {};
 
   for (const [key, value] of Object.entries(row)) {
-    if (
-      key.startsWith('B365') ||
-      key.startsWith('BFD') ||
-      key.startsWith('BMGM') ||
-      key.startsWith('BV') ||
-      key.startsWith('BW') ||
-      key.startsWith('CL') ||
-      key.startsWith('LB') ||
-      key.startsWith('PS') ||
-      key.startsWith('Max') ||
-      key.startsWith('Avg') ||
-      key.startsWith('BFE') ||
-      key.startsWith('P') ||
-      key.startsWith('SKB')
-    ) {
-      const cleaned = clean(value);
+    if (!value) {
+      continue;
+    }
 
-      if (cleaned !== null) {
-        odds[key] = numberOrNull(cleaned);
-      }
+    if (
+      /^(B365|BW|IW|PS|WH|VC|Max|Avg|Pinnacle|Betway|Marathon|Interwetten|WilliamHill)/i.test(key)
+    ) {
+      odds[key] = value;
     }
   }
 
-  return JSON.stringify(odds);
+  return odds;
 }
 
-async function importSource(env, source) {
-  const assetUrl = new URL(source.file, 'https://football-analyzer.local');
+async function getLocalCSV(env, request, file, season) {
+  const assetUrl = new URL(file, request.url);
 
   const assetRequest = new Request(assetUrl.toString(), {
     method: 'GET'
@@ -164,56 +199,77 @@ async function importSource(env, source) {
 
   if (!response.ok) {
     throw new Error(
-      `Nie można odczytać ${source.file}: HTTP ${response.status}`
+      `Local asset HTTP ${response.status} for ${season}`
     );
   }
 
-  const csv = await response.text();
+  return await response.text();
+}
+
+async function getCounts(env) {
+  return await env.DB.prepare(`
+    SELECT
+      (SELECT COUNT(*) FROM leagues) AS leagues,
+      (SELECT COUNT(*) FROM seasons) AS seasons,
+      (SELECT COUNT(*) FROM teams) AS teams,
+      (SELECT COUNT(*) FROM referees) AS referees,
+      (SELECT COUNT(*) FROM matches) AS matches,
+      (SELECT COUNT(*) FROM fixtures) AS fixtures
+  `).first();
+}
+
+async function importSeason(env, request, source) {
+  const csv = await getLocalCSV(
+    env,
+    request,
+    source.file,
+    source.season
+  );
+
   const rows = parseCSV(csv);
 
   if (!rows.length) {
-    throw new Error(`Brak danych w ${source.file}`);
+    return {
+      season: source.season,
+      rows: 0,
+      imported: 0
+    };
   }
-
-  const leagueName = 'Premier League';
-  const leagueCountry = 'England';
-  const leagueCode = 'E0';
-  const sourceName = 'football-data';
-
-  // ---------------------------------------------------------
-  // LEAGUE
-  // ---------------------------------------------------------
-
-  await env.DB
-    .prepare(`
-      INSERT OR IGNORE INTO leagues
-      (name, country, code, source)
-      VALUES (?, ?, ?, ?)
-    `)
-    .bind(
-      leagueName,
-      leagueCountry,
-      leagueCode,
-      sourceName
-    )
-    .run();
 
   const league = await env.DB
     .prepare(`
+      INSERT OR IGNORE INTO leagues
+        (name, country, code, source)
+      VALUES
+        (?, ?, ?, ?)
+    `)
+    .bind(
+      'Premier League',
+      'England',
+      'E0',
+      'football-data'
+    )
+    .run();
+
+  const leagueRow = await env.DB
+    .prepare(`
       SELECT id
       FROM leagues
-      WHERE source = ? AND code = ?
+      WHERE source = ?
+        AND code = ?
+      LIMIT 1
     `)
-    .bind(sourceName, leagueCode)
+    .bind(
+      'football-data',
+      'E0'
+    )
     .first();
 
-  if (!league) {
-    throw new Error('Nie udało się znaleźć ligi po utworzeniu.');
+  if (!leagueRow) {
+    throw new Error('Could not find Premier League after insert');
   }
 
-  // ---------------------------------------------------------
-  // SEASON
-  // ---------------------------------------------------------
+  const leagueId = leagueRow.id;
 
   const [startYear, endYear] = source.season
     .split('/')
@@ -222,154 +278,143 @@ async function importSource(env, source) {
   await env.DB
     .prepare(`
       INSERT OR IGNORE INTO seasons
-      (league_id, name, start_year, end_year, source)
-      VALUES (?, ?, ?, ?, ?)
+        (
+          league_id,
+          name,
+          start_year,
+          end_year,
+          source
+        )
+      VALUES
+        (?, ?, ?, ?, ?)
     `)
     .bind(
-      league.id,
+      leagueId,
       source.season,
       startYear,
-      2000 + endYear,
-      sourceName
+      endYear,
+      'football-data'
     )
     .run();
 
-  const season = await env.DB
+  const seasonRow = await env.DB
     .prepare(`
       SELECT id
       FROM seasons
-      WHERE league_id = ? AND name = ?
+      WHERE league_id = ?
+        AND name = ?
+      LIMIT 1
     `)
     .bind(
-      league.id,
+      leagueId,
       source.season
     )
     .first();
 
-  if (!season) {
+  if (!seasonRow) {
     throw new Error(
-      `Nie udało się znaleźć sezonu ${source.season}.`
+      `Could not find season ${source.season} after insert`
     );
   }
 
-  // ---------------------------------------------------------
-  // UNIQUE TEAMS
-  // ---------------------------------------------------------
+  const seasonId = seasonRow.id;
 
-  const teamNames = [
-    ...new Set(
-      rows
-        .flatMap((r) => [
-          clean(r.HomeTeam),
-          clean(r.AwayTeam)
-        ])
-        .filter(Boolean)
-    )
-  ];
+  const teams = new Set();
+  const referees = new Set();
 
-  const teamStatements = teamNames.map((team) =>
-    env.DB
+  for (const row of rows) {
+    const home = clean(row.HomeTeam);
+    const away = clean(row.AwayTeam);
+    const referee = clean(row.Referee);
+
+    if (home) teams.add(home);
+    if (away) teams.add(away);
+    if (referee) referees.add(referee);
+  }
+
+  for (const team of teams) {
+    await env.DB
       .prepare(`
         INSERT OR IGNORE INTO teams
-        (name, country, source, source_name)
-        VALUES (?, ?, ?, ?)
+          (
+            name,
+            country,
+            source,
+            source_name
+          )
+        VALUES
+          (?, ?, ?, ?)
       `)
       .bind(
         team,
         'England',
-        sourceName,
+        'football-data',
         team
       )
-  );
-
-  for (let i = 0; i < teamStatements.length; i += 100) {
-    await env.DB.batch(
-      teamStatements.slice(i, i + 100)
-    );
+      .run();
   }
 
-  // ---------------------------------------------------------
-  // UNIQUE REFEREES
-  // ---------------------------------------------------------
-
-  const refereeNames = [
-    ...new Set(
-      rows
-        .map((r) => clean(r.Referee))
-        .filter(Boolean)
-    )
-  ];
-
-  const refereeStatements = refereeNames.map((referee) =>
-    env.DB
+  for (const referee of referees) {
+    await env.DB
       .prepare(`
         INSERT OR IGNORE INTO referees
-        (name, country, source, source_name)
-        VALUES (?, ?, ?, ?)
+          (
+            name,
+            country,
+            source,
+            source_name
+          )
+        VALUES
+          (?, ?, ?, ?)
       `)
       .bind(
         referee,
         'England',
-        sourceName,
+        'football-data',
         referee
       )
-  );
-
-  for (let i = 0; i < refereeStatements.length; i += 100) {
-    await env.DB.batch(
-      refereeStatements.slice(i, i + 100)
-    );
+      .run();
   }
 
-  // ---------------------------------------------------------
-  // ID MAPS
-  // ---------------------------------------------------------
-
-  const teamResult = await env.DB
+  const teamRows = await env.DB
     .prepare(`
       SELECT id, source_name
       FROM teams
       WHERE source = ?
     `)
-    .bind(sourceName)
+    .bind('football-data')
     .all();
 
-  const teamMap = new Map();
-
-  for (const team of teamResult.results || []) {
-    teamMap.set(team.source_name, team.id);
-  }
-
-  const refereeResult = await env.DB
+  const refereeRows = await env.DB
     .prepare(`
       SELECT id, source_name
       FROM referees
       WHERE source = ?
     `)
-    .bind(sourceName)
+    .bind('football-data')
     .all();
+
+  const teamMap = new Map();
+
+  for (const team of teamRows.results || []) {
+    teamMap.set(team.source_name, team.id);
+  }
 
   const refereeMap = new Map();
 
-  for (const referee of refereeResult.results || []) {
-    refereeMap.set(
-      referee.source_name,
-      referee.id
-    );
+  for (const referee of refereeRows.results || []) {
+    refereeMap.set(referee.source_name, referee.id);
   }
 
-  // ---------------------------------------------------------
-  // MATCHES
-  // ---------------------------------------------------------
-
-  const matchStatements = [];
+  const statements = [];
+  let imported = 0;
 
   for (const row of rows) {
     const homeTeam = clean(row.HomeTeam);
     const awayTeam = clean(row.AwayTeam);
-    const matchDate = dateToISO(row.Date);
+    const date = dateToISO(row.Date);
 
-    if (!homeTeam || !awayTeam || !matchDate) {
+    if (!homeTeam || !awayTeam || !date) {
       continue;
     }
 
@@ -377,92 +422,175 @@ async function importSource(env, source) {
     const awayTeamId = teamMap.get(awayTeam);
 
     if (!homeTeamId || !awayTeamId) {
-      throw new Error(
-        `Brak ID drużyny dla meczu ${homeTeam} - ${awayTeam}.`
-      );
+      continue;
     }
 
-    const referee = clean(row.Referee);
-    const refereeId = referee
-      ? (refereeMap.get(referee) || null)
+    const refereeName = clean(row.Referee);
+    const refereeId = refereeName
+      ? (refereeMap.get(refereeName) ?? null)
       : null;
 
-    const homeGoals = integerOrNull(row.FTHG);
-    const awayGoals = integerOrNull(row.FTAG);
+    const homeGoals = int(row.FTHG);
+    const awayGoals = int(row.FTAG);
 
-    const sourceMatchId =
-      `${matchDate}|${homeTeam}|${awayTeam}`;
+    const homeHTGoals = int(row.HTHG);
+    const awayHTGoals = int(row.HTAG);
 
-    matchStatements.push(
+    const homeXG = num(row.HxG);
+    const awayXG = num(row.AxG);
+
+    const rawData = JSON.stringify(row);
+    const odds = JSON.stringify(getOdds(row));
+
+    /*
+      IMPORTANT:
+      The columns below are exactly 33 columns,
+      and the bind() below contains exactly 33 values.
+    */
+
+    const sql = `
+      INSERT INTO matches
+      (
+        league_id,
+        season_id,
+        match_date,
+        status,
+
+        home_team_id,
+        away_team_id,
+        referee_id,
+
+        home_goals,
+        away_goals,
+        result,
+
+        home_ht_goals,
+        away_ht_goals,
+        ht_result,
+
+        home_shots,
+        away_shots,
+
+        home_shots_on_target,
+        away_shots_on_target,
+
+        home_xg,
+        away_xg,
+
+        home_corners,
+        away_corners,
+
+        home_fouls,
+        away_fouls,
+
+        home_yellow_cards,
+        away_yellow_cards,
+
+        home_red_cards,
+        away_red_cards,
+
+        home_possession,
+        away_possession,
+
+        odds_json,
+        raw_data_json,
+
+        source,
+        source_match_id
+      )
+      VALUES
+      (
+        ?, ?, ?, ?,
+        ?, ?, ?,
+        ?, ?, ?,
+        ?, ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?,
+        ?, ?
+      )
+      ON CONFLICT
+      (
+        source,
+        league_id,
+        season_id,
+        match_date,
+        home_team_id,
+        away_team_id
+      )
+      DO UPDATE SET
+        status = excluded.status,
+        referee_id = excluded.referee_id,
+
+        home_goals = excluded.home_goals,
+        away_goals = excluded.away_goals,
+        result = excluded.result,
+
+        home_ht_goals = excluded.home_ht_goals,
+        away_ht_goals = excluded.away_ht_goals,
+        ht_result = excluded.ht_result,
+
+        home_shots = excluded.home_shots,
+        away_shots = excluded.away_shots,
+
+        home_shots_on_target =
+          excluded.home_shots_on_target,
+        away_shots_on_target =
+          excluded.away_shots_on_target,
+
+        home_xg = excluded.home_xg,
+        away_xg = excluded.away_xg,
+
+        home_corners = excluded.home_corners,
+        away_corners = excluded.away_corners,
+
+        home_fouls = excluded.home_fouls,
+        away_fouls = excluded.away_fouls,
+
+        home_yellow_cards =
+          excluded.home_yellow_cards,
+        away_yellow_cards =
+          excluded.away_yellow_cards,
+
+        home_red_cards =
+          excluded.home_red_cards,
+        away_red_cards =
+          excluded.away_red_cards,
+
+        home_possession =
+          excluded.home_possession,
+        away_possession =
+          excluded.away_possession,
+
+        odds_json = excluded.odds_json,
+        raw_data_json = excluded.raw_data_json,
+
+        updated_at = CURRENT_TIMESTAMP
+    `;
+
+    const sourceMatchId = [
+      source.season,
+      date,
+      homeTeam,
+      awayTeam
+    ].join('|');
+
+    statements.push(
       env.DB
-        .prepare(`
-          INSERT OR IGNORE INTO matches (
-            league_id,
-            season_id,
-            match_date,
-            status,
-
-            home_team_id,
-            away_team_id,
-            referee_id,
-
-            home_goals,
-            away_goals,
-            result,
-
-            home_ht_goals,
-            away_ht_goals,
-            ht_result,
-
-            home_shots,
-            away_shots,
-
-            home_shots_on_target,
-            away_shots_on_target,
-
-            home_xg,
-            away_xg,
-
-            home_corners,
-            away_corners,
-
-            home_fouls,
-            away_fouls,
-
-            home_yellow_cards,
-            away_yellow_cards,
-
-            home_red_cards,
-            away_red_cards,
-
-            odds_json,
-            raw_data_json,
-
-            source,
-            source_match_id
-          )
-          VALUES (
-            ?, ?, ?, ?,
-            ?, ?, ?,
-            ?, ?, ?,
-            ?, ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?,
-            ?, ?
-          )
-        `)
+        .prepare(sql)
         .bind(
-          league.id,
-          season.id,
-          matchDate,
+          leagueId,
+          seasonId,
+          date,
           'finished',
 
           homeTeamId,
@@ -471,57 +599,59 @@ async function importSource(env, source) {
 
           homeGoals,
           awayGoals,
-          clean(row.FTR),
+          getResult(row),
 
-          integerOrNull(row.HTHG),
-          integerOrNull(row.HTAG),
-          clean(row.HTR),
+          homeHTGoals,
+          awayHTGoals,
+          getHTResult(row),
 
-          integerOrNull(row.HS),
-          integerOrNull(row.AS),
+          int(row.HS),
+          int(row.AS),
 
-          integerOrNull(row.HST),
-          integerOrNull(row.AST),
+          int(row.HST),
+          int(row.AST),
 
-          numberOrNull(row.HxG),
-          numberOrNull(row.AxG),
+          homeXG,
+          awayXG,
 
-          integerOrNull(row.HC),
-          integerOrNull(row.AC),
+          int(row.HC),
+          int(row.AC),
 
-          integerOrNull(row.HF),
-          integerOrNull(row.AF),
+          int(row.HF),
+          int(row.AF),
 
-          integerOrNull(row.HY),
-          integerOrNull(row.AY),
+          int(row.HY),
+          int(row.AY),
 
-          integerOrNull(row.HR),
-          integerOrNull(row.AR),
+          int(row.HR),
+          int(row.AR),
 
-          buildOdds(row),
-          buildRawData(row),
+          num(row.HP),
+          num(row.AP),
 
-          sourceName,
+          odds,
+          rawData,
+
+          'football-data',
           sourceMatchId
         )
     );
+
+    imported++;
+
+    if (statements.length >= 50) {
+      await env.DB.batch(statements.splice(0));
+    }
   }
 
-  let inserted = 0;
-
-  for (let i = 0; i < matchStatements.length; i += 100) {
-    const batch = matchStatements.slice(i, i + 100);
-
-    await env.DB.batch(batch);
-
-    inserted += batch.length;
+  if (statements.length) {
+    await env.DB.batch(statements);
   }
 
   return {
     season: source.season,
-    rowsInCSV: rows.length,
-    matchStatements: matchStatements.length,
-    processed: inserted
+    rows: rows.length,
+    imported
   };
 }
 
@@ -529,10 +659,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // =========================================================
-    // TEST WORKERA
-    // =========================================================
-
+    /*
+      Simple Worker test
+    */
     if (url.pathname === '/api/test') {
       return new Response('WORKER OK', {
         status: 200,
@@ -542,39 +671,26 @@ export default {
       });
     }
 
-    // =========================================================
-    // TEST D1
-    // =========================================================
-
+    /*
+      D1 connection test
+    */
     if (url.pathname === '/api/db-test') {
       try {
-        const result = await env.DB
-          .prepare(`
-            SELECT
-              (SELECT COUNT(*) FROM leagues) AS leagues,
-              (SELECT COUNT(*) FROM seasons) AS seasons,
-              (SELECT COUNT(*) FROM teams) AS teams,
-              (SELECT COUNT(*) FROM referees) AS referees,
-              (SELECT COUNT(*) FROM matches) AS matches,
-              (SELECT COUNT(*) FROM fixtures) AS fixtures
-          `)
-          .first();
+        const counts = await getCounts(env);
 
         return new Response(
           JSON.stringify({
             ok: true,
             database: 'football-analyzer-db',
-            counts: result
+            counts
           }),
           {
             status: 200,
             headers: {
-              'content-type':
-                'application/json; charset=utf-8'
+              'content-type': 'application/json; charset=utf-8'
             }
           }
         );
-
       } catch (e) {
         return new Response(
           JSON.stringify({
@@ -584,18 +700,93 @@ export default {
           {
             status: 500,
             headers: {
-              'content-type':
-                'application/json; charset=utf-8'
+              'content-type': 'application/json; charset=utf-8'
             }
           }
         );
       }
     }
 
-    // =========================================================
-    // JEDNORAZOWY IMPORT CSV → D1
-    // =========================================================
+    /*
+      Existing CSV API.
+      Reads the two local CSV assets.
+    */
+    if (url.pathname === '/api/data') {
+      const cache = caches.default;
+      const cacheKey = new Request(
+        url.toString(),
+        request
+      );
 
+      const cached = await cache.match(cacheKey);
+
+      if (cached) {
+        return cached;
+      }
+
+      try {
+        const results = await Promise.all(
+          SOURCES.map(async (source) => {
+            const csv = await getLocalCSV(
+              env,
+              request,
+              source.file,
+              source.season
+            );
+
+            return {
+              season: source.season,
+              csv
+            };
+          })
+        );
+
+        const body = JSON.stringify({
+          fetchedAt: new Date().toISOString(),
+          source: 'local-static-assets',
+          sources: results
+        });
+
+        const response = new Response(body, {
+          status: 200,
+          headers: {
+            'content-type':
+              'application/json; charset=utf-8',
+
+            'cache-control':
+              'public, max-age=86400, s-maxage=86400',
+
+            'access-control-allow-origin': '*'
+          }
+        });
+
+        await cache.put(
+          cacheKey,
+          response.clone()
+        );
+
+        return response;
+      } catch (e) {
+        return new Response(
+          JSON.stringify({
+            error: String(e.message || e)
+          }),
+          {
+            status: 502,
+            headers: {
+              'content-type':
+                'application/json; charset=utf-8',
+
+              'access-control-allow-origin': '*'
+            }
+          }
+        );
+      }
+    }
+
+    /*
+      One-time D1 import.
+    */
     if (url.pathname === '/api/import') {
       const token = url.searchParams.get('token');
 
@@ -620,26 +811,19 @@ export default {
 
         for (const source of SOURCES) {
           results.push(
-            await importSource(env, source)
+            await importSeason(
+              env,
+              request,
+              source
+            )
           );
         }
 
-        const counts = await env.DB
-          .prepare(`
-            SELECT
-              (SELECT COUNT(*) FROM leagues) AS leagues,
-              (SELECT COUNT(*) FROM seasons) AS seasons,
-              (SELECT COUNT(*) FROM teams) AS teams,
-              (SELECT COUNT(*) FROM referees) AS referees,
-              (SELECT COUNT(*) FROM matches) AS matches,
-              (SELECT COUNT(*) FROM fixtures) AS fixtures
-          `)
-          .first();
+        const counts = await getCounts(env);
 
         return new Response(
           JSON.stringify({
             ok: true,
-            message: 'Import zakończony',
             results,
             counts
           }),
@@ -651,7 +835,6 @@ export default {
             }
           }
         );
-
       } catch (e) {
         return new Response(
           JSON.stringify({
@@ -663,89 +846,6 @@ export default {
             headers: {
               'content-type':
                 'application/json; charset=utf-8'
-            }
-          }
-        );
-      }
-    }
-
-    // =========================================================
-    // OBECNE API DATA
-    // =========================================================
-
-    if (url.pathname === '/api/data') {
-      const cache = caches.default;
-      const cacheKey =
-        new Request(url.toString(), request);
-
-      const cached = await cache.match(cacheKey);
-
-      if (cached) {
-        return cached;
-      }
-
-      try {
-        const results = await Promise.all(
-          SOURCES.map(async (s) => {
-            const assetUrl =
-              new URL(s.file, request.url);
-
-            const assetRequest =
-              new Request(assetUrl.toString(), {
-                method: 'GET'
-              });
-
-            const r =
-              await env.ASSETS.fetch(assetRequest);
-
-            if (!r.ok) {
-              throw new Error(
-                `Local asset HTTP ${r.status} for ${s.season}`
-              );
-            }
-
-            return {
-              season: s.season,
-              csv: await r.text()
-            };
-          })
-        );
-
-        const body = JSON.stringify({
-          fetchedAt: new Date().toISOString(),
-          source: 'local-static-assets',
-          sources: results
-        });
-
-        const response = new Response(body, {
-          status: 200,
-          headers: {
-            'content-type':
-              'application/json; charset=utf-8',
-            'cache-control':
-              'public, max-age=86400, s-maxage=86400',
-            'access-control-allow-origin': '*'
-          }
-        });
-
-        await cache.put(
-          cacheKey,
-          response.clone()
-        );
-
-        return response;
-
-      } catch (e) {
-        return new Response(
-          JSON.stringify({
-            error: String(e.message || e)
-          }),
-          {
-            status: 502,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8',
-              'access-control-allow-origin': '*'
             }
           }
         );
