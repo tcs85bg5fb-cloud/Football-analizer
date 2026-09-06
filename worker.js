@@ -6,7 +6,9 @@ const SOURCES = [
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-
+  if (url.pathname === '/api/test') {
+    return new Response('WORKER OK');
+  }
     if (url.pathname === '/api/data') {
       const cache = caches.default;
       const cacheKey = new Request(url.toString(), request);
