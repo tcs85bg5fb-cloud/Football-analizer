@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1220">
+
   <title>Football Stats Analyzer</title>
 
   <style>
@@ -108,10 +109,6 @@
       border-color: #3b82f6;
     }
 
-    .search {
-      margin-bottom: 7px;
-    }
-
     button {
       padding: 10px 14px;
       background: #111827;
@@ -124,12 +121,6 @@
     button:disabled {
       opacity: .55;
       cursor: default;
-    }
-
-    .secondary {
-      background: #fff;
-      color: #111827;
-      border-color: #cbd5e1;
     }
 
     .status {
@@ -150,6 +141,119 @@
       background: #f0fdf4;
       color: #166534;
     }
+
+    /* =========================================
+       AUTOCOMPLETE
+       ========================================= */
+
+    .autocomplete {
+      position: relative;
+    }
+
+    .autocomplete input {
+      padding-right: 42px;
+    }
+
+    .autocomplete-icon {
+      position: absolute;
+      right: 13px;
+      top: 13px;
+      color: #94a3b8;
+      pointer-events: none;
+      font-size: 18px;
+    }
+
+    .suggestions {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 5px);
+      z-index: 1000;
+
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+
+      box-shadow:
+        0 10px 30px rgba(15, 23, 42, .15);
+
+      max-height: 280px;
+      overflow-y: auto;
+
+      display: none;
+    }
+
+    .suggestions.open {
+      display: block;
+    }
+
+    .suggestion {
+      padding: 12px 13px;
+      border-bottom: 1px solid #eef2f7;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .suggestion:last-child {
+      border-bottom: 0;
+    }
+
+    .suggestion:active {
+      background: #f1f5f9;
+    }
+
+    .suggestion-main {
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .suggestion-meta {
+      margin-top: 3px;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .suggestion-empty {
+      padding: 13px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .selected-box {
+      margin-top: 6px;
+      min-height: 0;
+    }
+
+    .selected-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+
+      padding: 7px 10px;
+      border-radius: 999px;
+
+      background: #eef2ff;
+      color: #3730a3;
+
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .selected-pill button {
+      width: auto;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    /* =========================================
+       RESULTS
+       ========================================= */
 
     .match-head {
       display: grid;
@@ -228,9 +332,11 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
+
       display: inline-flex;
       align-items: center;
       justify-content: center;
+
       color: #fff;
       font-size: 12px;
       font-weight: 900;
@@ -258,9 +364,12 @@
       grid-template-columns: 74px 1fr auto;
       gap: 8px;
       align-items: center;
+
       padding: 10px;
+
       border: 1px solid #e5e7eb;
       border-radius: 11px;
+
       font-size: 12px;
     }
 
@@ -323,13 +432,17 @@
     .pill {
       display: inline-flex;
       align-items: center;
+
       min-height: 28px;
       padding: 4px 9px;
       border-radius: 999px;
+
       background: #f1f5f9;
       color: #475569;
+
       font-size: 11px;
       font-weight: 800;
+
       margin: 3px 3px 0 0;
     }
 
@@ -337,6 +450,12 @@
       height: 1px;
       background: #eef2f7;
       margin: 14px 0;
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: #94a3b8;
+      font-size: 11px;
     }
 
     @media (min-width: 700px) {
@@ -365,9 +484,10 @@
 
   <header>
     <h1>⚽ Football Stats Analyzer</h1>
+
     <div class="subtitle">
       Porównanie drużyn na podstawie dostępnych meczów.
-      Liga jest opcjonalnym filtrem — domyślnie analizujemy wszystkie zaimportowane ligi.
+      Możesz analizować drużyny z różnych lig.
     </div>
   </header>
 
@@ -375,87 +495,129 @@
     Ładowanie danych…
   </div>
 
+  <!-- =========================================
+       WYBÓR
+       ========================================= -->
+
   <section class="card">
 
-    <h2 class="section-title">1. Wybór meczu</h2>
+    <h2 class="section-title">
+      Wybierz mecz
+    </h2>
 
     <div class="grid grid-2">
 
+      <!-- LIGA -->
+
       <div>
-        <label for="leagueSearch">
+        <label for="leagueInput">
           Liga
         </label>
 
-        <input
-          id="leagueSearch"
-          class="search"
-          type="search"
-          placeholder="🔍 Wyszukaj ligę…"
-          autocomplete="off"
-        >
+        <div class="autocomplete">
 
-        <select id="leagueSelect">
-          <option value="">Wszystkie ligi</option>
-        </select>
+          <input
+            id="leagueInput"
+            type="search"
+            placeholder="🌍 Wszystkie ligi"
+            autocomplete="off"
+            spellcheck="false"
+          >
+
+          <div class="autocomplete-icon">
+            🔍
+          </div>
+
+          <div
+            id="leagueSuggestions"
+            class="suggestions"
+          ></div>
+
+        </div>
+
+        <div
+          id="leagueSelected"
+          class="selected-box"
+        ></div>
+
+        <div class="hint">
+          Zostaw puste, aby analizować wszystkie ligi.
+        </div>
       </div>
 
-      <div>
-        <label for="seasonSelect">
-          Sezon
-        </label>
-
-        <select id="seasonSelect">
-          <option value="">Wszystkie sezony</option>
-          <option value="2026/27">2026/27</option>
-          <option value="2025/26">2025/26</option>
-        </select>
-      </div>
+      <!-- GOSPODARZ -->
 
       <div>
-        <label for="homeSearch">
+        <label for="homeInput">
           Gospodarz
         </label>
 
-        <input
-          id="homeSearch"
-          class="search"
-          type="search"
-          placeholder="🔍 Wyszukaj drużynę…"
-          autocomplete="off"
-        >
+        <div class="autocomplete">
 
-        <select id="homeSelect">
-          <option value="">Wybierz gospodarza</option>
-        </select>
+          <input
+            id="homeInput"
+            type="search"
+            placeholder="🔍 Wpisz nazwę drużyny…"
+            autocomplete="off"
+            spellcheck="false"
+          >
+
+          <div class="autocomplete-icon">
+            🔍
+          </div>
+
+          <div
+            id="homeSuggestions"
+            class="suggestions"
+          ></div>
+
+        </div>
+
+        <div
+          id="homeSelected"
+          class="selected-box"
+        ></div>
       </div>
 
+      <!-- GOŚĆ -->
+
       <div>
-        <label for="awaySearch">
+        <label for="awayInput">
           Gość
         </label>
 
-        <input
-          id="awaySearch"
-          class="search"
-          type="search"
-          placeholder="🔍 Wyszukaj drużynę…"
-          autocomplete="off"
-        >
+        <div class="autocomplete">
 
-        <select id="awaySelect">
-          <option value="">Wybierz gościa</option>
-        </select>
+          <input
+            id="awayInput"
+            type="search"
+            placeholder="🔍 Wpisz nazwę drużyny…"
+            autocomplete="off"
+            spellcheck="false"
+          >
+
+          <div class="autocomplete-icon">
+            🔍
+          </div>
+
+          <div
+            id="awaySuggestions"
+            class="suggestions"
+          ></div>
+
+        </div>
+
+        <div
+          id="awaySelected"
+          class="selected-box"
+        ></div>
       </div>
 
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="grid grid-2">
+      <!-- LICZBA MECZÓW -->
 
       <div>
         <label for="sampleSelect">
-          Mecze do analizy
+          Liczba meczów
         </label>
 
         <select id="sampleSelect">
@@ -465,94 +627,178 @@
           <option value="20" selected>20</option>
           <option value="30">30</option>
           <option value="50">50</option>
-          <option value="all">Wszystkie dostępne</option>
+          <option value="all">
+            Wszystkie dostępne
+          </option>
         </select>
       </div>
+
+      <!-- HOME/AWAY -->
 
       <div>
         <label for="venueSelect">
-          Sposób analizy
+          Miejsce meczów
         </label>
 
         <select id="venueSelect">
+
           <option value="split" selected>
             Home / Away
           </option>
+
           <option value="all">
             Wszystkie mecze
           </option>
+
         </select>
       </div>
 
+      <!-- SĘDZIA -->
+
       <div>
-        <label for="refSearch">
+        <label for="refInput">
           Sędzia — opcjonalnie
         </label>
 
-        <input
-          id="refSearch"
-          class="search"
-          type="search"
-          placeholder="🔍 Nazwisko sędziego…"
-          autocomplete="off"
-        >
+        <div class="autocomplete">
 
-        <select id="refSelect">
-          <option value="">Wszyscy sędziowie</option>
-        </select>
-      </div>
+          <input
+            id="refInput"
+            type="search"
+            placeholder="🔍 Wpisz nazwisko…"
+            autocomplete="off"
+            spellcheck="false"
+          >
 
-      <div style="display:flex;align-items:end;">
-        <button id="analyzeBtn">
-          Analizuj mecz
-        </button>
+          <div class="autocomplete-icon">
+            🔍
+          </div>
+
+          <div
+            id="refSuggestions"
+            class="suggestions"
+          ></div>
+
+        </div>
+
+        <div
+          id="refSelected"
+          class="selected-box"
+        ></div>
+
       </div>
 
     </div>
 
+    <div class="divider"></div>
+
+    <button id="analyzeBtn">
+      Analizuj mecz
+    </button>
+
   </section>
 
-  <section id="result" class="hidden">
+
+  <!-- =========================================
+       WYNIKI
+       ========================================= -->
+
+  <section
+    id="result"
+    class="hidden"
+  >
+
+    <!-- PORÓWNANIE -->
 
     <div class="card">
 
       <div class="match-head">
-        <div>
-          <div id="resultHome" class="team-name">—</div>
-          <div id="resultHomeMeta" class="meta"></div>
-        </div>
-
-        <div class="vs">VS</div>
 
         <div>
-          <div id="resultAway" class="team-name">—</div>
-          <div id="resultAwayMeta" class="meta"></div>
+
+          <div
+            id="resultHome"
+            class="team-name"
+          >
+            —
+          </div>
+
+          <div
+            id="resultHomeMeta"
+            class="meta"
+          ></div>
+
         </div>
+
+        <div class="vs">
+          VS
+        </div>
+
+        <div>
+
+          <div
+            id="resultAway"
+            class="team-name"
+          >
+            —
+          </div>
+
+          <div
+            id="resultAwayMeta"
+            class="meta"
+          ></div>
+
+        </div>
+
       </div>
 
       <div id="comparisonTable"></div>
 
     </div>
 
+
+    <!-- FORMA -->
+
     <div class="card">
 
-      <h2 class="section-title">Forma</h2>
+      <h2 class="section-title">
+        Forma
+      </h2>
 
       <div class="grid grid-2">
 
         <div>
-          <strong id="formHomeTitle">Gospodarz</strong>
-          <div id="formHome" class="form-row"></div>
+
+          <strong id="formHomeTitle">
+            Gospodarz
+          </strong>
+
+          <div
+            id="formHome"
+            class="form-row"
+          ></div>
+
         </div>
 
         <div>
-          <strong id="formAwayTitle">Gość</strong>
-          <div id="formAway" class="form-row"></div>
+
+          <strong id="formAwayTitle">
+            Gość
+          </strong>
+
+          <div
+            id="formAway"
+            class="form-row"
+          ></div>
+
         </div>
 
       </div>
 
     </div>
+
+
+    <!-- H2H -->
 
     <div class="card">
 
@@ -560,13 +806,22 @@
         Bezpośrednie mecze — H2H
       </h2>
 
-      <div class="small" style="margin-bottom:10px;">
+      <div
+        class="small"
+        style="margin-bottom:10px;"
+      >
         Maksymalnie 10 najnowszych dostępnych spotkań.
       </div>
 
-      <div id="h2hList" class="match-list"></div>
+      <div
+        id="h2hList"
+        class="match-list"
+      ></div>
 
     </div>
+
+
+    <!-- SZCZEGÓŁY -->
 
     <div class="card">
 
@@ -578,7 +833,13 @@
 
     </div>
 
-    <div id="refereeSection" class="card hidden">
+
+    <!-- SĘDZIA -->
+
+    <div
+      id="refereeSection"
+      class="card hidden"
+    >
 
       <h2 class="section-title">
         Profil sędziego
@@ -592,579 +853,871 @@
 
 </div>
 
+
 <script>
+
   const API = '';
 
   const state = {
+
     matches: [],
+
     leagues: [],
-    referees: [],
-    teams: []
+
+    teams: [],
+
+    referees: []
+
   };
+
+  const selected = {
+
+    league: '',
+
+    home: '',
+
+    away: '',
+
+    referee: ''
+
+  };
+
 
   const els = {
-    status: document.getElementById('status'),
 
-    leagueSearch: document.getElementById('leagueSearch'),
-    leagueSelect: document.getElementById('leagueSelect'),
+    status:
+      document.getElementById('status'),
 
-    seasonSelect: document.getElementById('seasonSelect'),
+    leagueInput:
+      document.getElementById('leagueInput'),
 
-    homeSearch: document.getElementById('homeSearch'),
-    homeSelect: document.getElementById('homeSelect'),
+    leagueSuggestions:
+      document.getElementById('leagueSuggestions'),
 
-    awaySearch: document.getElementById('awaySearch'),
-    awaySelect: document.getElementById('awaySelect'),
+    leagueSelected:
+      document.getElementById('leagueSelected'),
 
-    sampleSelect: document.getElementById('sampleSelect'),
-    venueSelect: document.getElementById('venueSelect'),
+    homeInput:
+      document.getElementById('homeInput'),
 
-    refSearch: document.getElementById('refSearch'),
-    refSelect: document.getElementById('refSelect'),
+    homeSuggestions:
+      document.getElementById('homeSuggestions'),
 
-    analyzeBtn: document.getElementById('analyzeBtn'),
+    homeSelected:
+      document.getElementById('homeSelected'),
 
-    result: document.getElementById('result'),
+    awayInput:
+      document.getElementById('awayInput'),
 
-    resultHome: document.getElementById('resultHome'),
-    resultAway: document.getElementById('resultAway'),
-    resultHomeMeta: document.getElementById('resultHomeMeta'),
-    resultAwayMeta: document.getElementById('resultAwayMeta'),
+    awaySuggestions:
+      document.getElementById('awaySuggestions'),
 
-    comparisonTable: document.getElementById('comparisonTable'),
+    awaySelected:
+      document.getElementById('awaySelected'),
 
-    formHomeTitle: document.getElementById('formHomeTitle'),
-    formAwayTitle: document.getElementById('formAwayTitle'),
-    formHome: document.getElementById('formHome'),
-    formAway: document.getElementById('formAway'),
+    refInput:
+      document.getElementById('refInput'),
 
-    h2hList: document.getElementById('h2hList'),
+    refSuggestions:
+      document.getElementById('refSuggestions'),
 
-    details: document.getElementById('details'),
+    refSelected:
+      document.getElementById('refSelected'),
 
-    refereeSection: document.getElementById('refereeSection'),
-    refereeProfile: document.getElementById('refereeProfile')
+    sampleSelect:
+      document.getElementById('sampleSelect'),
+
+    venueSelect:
+      document.getElementById('venueSelect'),
+
+    analyzeBtn:
+      document.getElementById('analyzeBtn'),
+
+    result:
+      document.getElementById('result'),
+
+    resultHome:
+      document.getElementById('resultHome'),
+
+    resultAway:
+      document.getElementById('resultAway'),
+
+    resultHomeMeta:
+      document.getElementById('resultHomeMeta'),
+
+    resultAwayMeta:
+      document.getElementById('resultAwayMeta'),
+
+    comparisonTable:
+      document.getElementById('comparisonTable'),
+
+    formHomeTitle:
+      document.getElementById('formHomeTitle'),
+
+    formAwayTitle:
+      document.getElementById('formAwayTitle'),
+
+    formHome:
+      document.getElementById('formHome'),
+
+    formAway:
+      document.getElementById('formAway'),
+
+    h2hList:
+      document.getElementById('h2hList'),
+
+    details:
+      document.getElementById('details'),
+
+    refereeSection:
+      document.getElementById('refereeSection'),
+
+    refereeProfile:
+      document.getElementById('refereeProfile')
+
   };
 
-  function setStatus(text, type = '') {
+
+  /* =========================================
+     PODSTAWOWE
+     ========================================= */
+
+  function setStatus(
+    text,
+    type = ''
+  ) {
+
     els.status.textContent = text;
-    els.status.className = 'status' + (type ? ' ' + type : '');
+
+    els.status.className =
+      'status' +
+      (
+        type
+          ? ' ' + type
+          : ''
+      );
+
   }
 
+
   function escapeHtml(value) {
+
     return String(value ?? '')
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#039;');
+
   }
 
+
   function normalize(value) {
+
     return String(value ?? '')
       .toLocaleLowerCase('pl')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
+
   }
 
-  function formatNumber(value, decimals = 1) {
-    if (value === null || value === undefined || Number.isNaN(Number(value))) {
-      return '—';
+
+  /*
+   * WAŻNE:
+   *
+   * Number(null) = 0
+   *
+   * Dlatego nie możemy po prostu robić
+   * Number(value) dla pustych danych.
+   */
+
+  function numeric(value) {
+
+    if (
+      value === null ||
+      value === undefined ||
+      value === ''
+    ) {
+      return null;
     }
 
     const n = Number(value);
 
-    if (!Number.isFinite(n)) {
+    return Number.isFinite(n)
+      ? n
+      : null;
+
+  }
+
+
+  function formatNumber(
+    value,
+    decimals = 1
+  ) {
+
+    const n = numeric(value);
+
+    if (n === null) {
       return '—';
     }
 
-    return n.toLocaleString('pl-PL', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    });
-  }
+    return n.toLocaleString(
+      'pl-PL',
+      {
+        minimumFractionDigits:
+          decimals,
 
-  function average(rows, field) {
-    const values = rows
-      .map(row => Number(row[field]))
-      .filter(Number.isFinite);
-
-    if (!values.length) {
-      return null;
-    }
-
-    return values.reduce((a, b) => a + b, 0) / values.length;
-  }
-
-  function sum(rows, field) {
-    const values = rows
-      .map(row => Number(row[field]))
-      .filter(Number.isFinite);
-
-    if (!values.length) {
-      return null;
-    }
-
-    return values.reduce((a, b) => a + b, 0);
-  }
-
-  function getTeamSide(row, team, venueMode) {
-    const isHome = row.home_team === team;
-    const isAway = row.away_team === team;
-
-    if (!isHome && !isAway) {
-      return null;
-    }
-
-    if (venueMode === 'split') {
-      if (team === els.homeSelect.value) {
-        return isHome ? 'home' : null;
+        maximumFractionDigits:
+          decimals
       }
+    );
 
-      if (team === els.awaySelect.value) {
-        return isAway ? 'away' : null;
-      }
-    }
-
-    return isHome ? 'home' : 'away';
   }
 
-  function teamRows(team, venueMode) {
-    return state.matches
-      .filter(row => {
-        return getTeamSide(row, team, venueMode) !== null;
-      })
-      .sort((a, b) => {
-        return String(b.match_date)
-          .localeCompare(String(a.match_date));
-      });
-  }
 
-  function selectedSample(rows) {
-    const value = els.sampleSelect.value;
-
-    if (value === 'all') {
-      return rows;
-    }
-
-    return rows.slice(0, Number(value));
-  }
-
-  function resultForTeam(row, team) {
-    if (row.home_team === team) {
-      return row.result === 'H'
-        ? 'W'
-        : row.result === 'D'
-          ? 'D'
-          : 'L';
-    }
-
-    if (row.away_team === team) {
-      return row.result === 'A'
-        ? 'W'
-        : row.result === 'D'
-          ? 'D'
-          : 'L';
-    }
-
-    return null;
-  }
-
-  function teamStats(team, rows) {
-    const isHomeTeam =
-      team === els.homeSelect.value;
-
-    const goalsFor = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_goals)
-        : Number(row.away_goals);
-    });
-
-    const goalsAgainst = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.away_goals)
-        : Number(row.home_goals);
-    });
-
-    const shots = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_shots)
-        : Number(row.away_shots);
-    });
-
-    const shotsTarget = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_shots_on_target)
-        : Number(row.away_shots_on_target);
-    });
-
-    const xg = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_xg)
-        : Number(row.away_xg);
-    });
-
-    const corners = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_corners)
-        : Number(row.away_corners);
-    });
-
-    const fouls = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_fouls)
-        : Number(row.away_fouls);
-    });
-
-    const yellow = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_yellow_cards)
-        : Number(row.away_yellow_cards);
-    });
-
-    const red = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_red_cards)
-        : Number(row.away_red_cards);
-    });
-
-    const possession = rows.map(row => {
-      return row.home_team === team
-        ? Number(row.home_possession)
-        : Number(row.away_possession);
-    });
-
-    const cleanAverage = values => {
-      const valid = values.filter(Number.isFinite);
-
-      if (!valid.length) {
-        return null;
-      }
-
-      return valid.reduce((a, b) => a + b, 0) / valid.length;
-    };
-
-    const wins = rows.filter(
-      row => resultForTeam(row, team) === 'W'
-    ).length;
-
-    const draws = rows.filter(
-      row => resultForTeam(row, team) === 'D'
-    ).length;
-
-    const losses = rows.filter(
-      row => resultForTeam(row, team) === 'L'
-    ).length;
-
-    return {
-      matches: rows.length,
-      wins,
-      draws,
-      losses,
-
-      goalsFor: cleanAverage(goalsFor),
-      goalsAgainst: cleanAverage(goalsAgainst),
-
-      shots: cleanAverage(shots),
-      shotsTarget: cleanAverage(shotsTarget),
-
-      xg: cleanAverage(xg),
-
-      corners: cleanAverage(corners),
-
-      fouls: cleanAverage(fouls),
-
-      yellow: cleanAverage(yellow),
-      red: cleanAverage(red),
-
-      possession: cleanAverage(possession)
-    };
-  }
-
-  const STAT_DEFINITIONS = [
-    {
-      label: 'Średnia goli',
-      key: 'goalsFor',
-      higherBetter: true
-    },
-    {
-      label: 'Średnia strzałów',
-      key: 'shots',
-      higherBetter: true
-    },
-    {
-      label: 'Strzały celne',
-      key: 'shotsTarget',
-      higherBetter: true
-    },
-    {
-      label: 'xG',
-      key: 'xg',
-      higherBetter: true
-    },
-    {
-      label: 'Rzuty rożne',
-      key: 'corners',
-      higherBetter: true
-    },
-    {
-      label: 'Faule',
-      key: 'fouls',
-      higherBetter: false
-    },
-    {
-      label: 'Żółte kartki',
-      key: 'yellow',
-      higherBetter: false
-    },
-    {
-      label: 'Czerwone kartki',
-      key: 'red',
-      higherBetter: false
-    },
-    {
-      label: 'Posiadanie piłki %',
-      key: 'possession',
-      higherBetter: true
-    }
-  ];
-
-  function valueHtml(value) {
-    if (value === null || value === undefined || !Number.isFinite(Number(value))) {
-      return '<span class="muted">—</span>';
-    }
-
-    return formatNumber(value);
-  }
-
-  function compareClass(a, b, higherBetter) {
-    if (
-      a === null ||
-      b === null ||
-      !Number.isFinite(Number(a)) ||
-      !Number.isFinite(Number(b))
-    ) {
-      return ['', ''];
-    }
-
-    if (Number(a) === Number(b)) {
-      return ['', ''];
-    }
-
-    if (higherBetter) {
-      return Number(a) > Number(b)
-        ? ['better', '']
-        : ['', 'better'];
-    }
-
-    return Number(a) < Number(b)
-      ? ['better', '']
-      : ['', 'better'];
-  }
-
-  function renderComparison(
-    homeStats,
-    awayStats
+  function average(
+    rows,
+    field
   ) {
-    let html = `
-      <table class="stats">
-        <thead>
-          <tr>
-            <th>Statystyka</th>
-            <th>${escapeHtml(els.homeSelect.value)}</th>
-            <th>${escapeHtml(els.awaySelect.value)}</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
 
-    for (const stat of STAT_DEFINITIONS) {
-      const [homeClass, awayClass] =
-        compareClass(
-          homeStats[stat.key],
-          awayStats[stat.key],
-          stat.higherBetter
+    const values =
+      rows
+        .map(row =>
+          numeric(row[field])
+        )
+        .filter(
+          value => value !== null
         );
 
-      html += `
-        <tr>
-          <td>${escapeHtml(stat.label)}</td>
-          <td class="${homeClass}">
-            ${valueHtml(homeStats[stat.key])}
-          </td>
-          <td class="${awayClass}">
-            ${valueHtml(awayStats[stat.key])}
-          </td>
-        </tr>
-      `;
+    if (!values.length) {
+      return null;
     }
 
-    html += `
-        </tbody>
-      </table>
+    return (
+      values.reduce(
+        (a, b) => a + b,
+        0
+      ) /
+      values.length
+    );
+
+  }
+
+
+  /* =========================================
+     AUTOCOMPLETE — WSPÓLNE FUNKCJE
+     ========================================= */
+
+  function closeSuggestions(
+    element
+  ) {
+
+    element.classList.remove(
+      'open'
+    );
+
+  }
+
+
+  function openSuggestions(
+    element
+  ) {
+
+    element.classList.add(
+      'open'
+    );
+
+  }
+
+
+  function renderSelected(
+    container,
+    value,
+    onClear
+  ) {
+
+    if (!value) {
+
+      container.innerHTML = '';
+
+      return;
+
+    }
+
+    container.innerHTML = `
+      <span class="selected-pill">
+        ${escapeHtml(value)}
+
+        <button
+          type="button"
+          aria-label="Usuń wybór"
+        >
+          ×
+        </button>
+      </span>
     `;
 
-    els.comparisonTable.innerHTML = html;
+    container
+      .querySelector('button')
+      .addEventListener(
+        'click',
+        onClear
+      );
+
   }
 
-  function renderForm(container, rows, team) {
-    const formRows = rows.slice(0, 10);
 
-    if (!formRows.length) {
-      container.innerHTML =
-        '<span class="muted">Brak danych</span>';
-      return;
+  /* =========================================
+     LIGA
+     ========================================= */
+
+  function leagueMatchesSearch(
+    league,
+    search
+  ) {
+
+    if (!search) {
+      return true;
     }
 
-    container.innerHTML =
-      formRows
-        .map(row => {
-          const result =
-            resultForTeam(row, team);
+    const text =
+      [
+        league.name,
+        league.country,
+        league.code
+      ].join(' ');
 
-          const cls =
-            result === 'W'
-              ? 'win'
-              : result === 'D'
-                ? 'draw'
-                : 'loss';
+    return normalize(text)
+      .includes(
+        normalize(search)
+      );
 
-          return `
-            <span
-              class="form-dot ${cls}"
-              title="${escapeHtml(
-                row.home_team +
-                ' ' +
-                row.home_goals +
-                ':' +
-                row.away_goals +
-                ' ' +
-                row.away_team
-              )}"
-            >
-              ${result}
-            </span>
-          `;
-        })
-        .join('');
   }
 
-  function renderMiniMatch(row) {
-    return `
-      <div class="mini-match">
-        <div class="mini-date">
-          ${escapeHtml(row.match_date || '—')}
-        </div>
 
-        <div class="mini-teams">
-          ${escapeHtml(row.home_team)}
-          —
-          ${escapeHtml(row.away_team)}
+  function renderLeagueSuggestions() {
 
-          <div class="small">
-            ${escapeHtml(row.league || '')}
-            ${row.season
-              ? ' • ' + escapeHtml(row.season)
-              : ''}
+    const search =
+      els.leagueInput.value;
+
+    const leagues =
+      state.leagues
+        .filter(
+          league =>
+            leagueMatchesSearch(
+              league,
+              search
+            )
+        )
+        .sort(
+          (a, b) => {
+
+            const country =
+              a.country.localeCompare(
+                b.country,
+                'pl'
+              );
+
+            if (country !== 0) {
+              return country;
+            }
+
+            return a.name.localeCompare(
+              b.name,
+              'pl'
+            );
+
+          }
+        );
+
+    let html = '';
+
+    /*
+     * Pusta wartość = wszystkie ligi.
+     */
+
+    if (!search) {
+
+      html += `
+        <div
+          class="suggestion"
+          data-league=""
+        >
+          <div class="suggestion-main">
+            🌍 Wszystkie ligi
+          </div>
+
+          <div class="suggestion-meta">
+            Brak filtra ligi
           </div>
         </div>
+      `;
 
-        <div class="mini-score">
-          ${
-            row.home_goals ?? '—'
-          }:${
-            row.away_goals ?? '—'
-          }
-        </div>
-      </div>
-    `;
-  }
-
-  function renderH2H(home, away) {
-    const h2h =
-      state.matches
-        .filter(row => {
-          return (
-            (
-              row.home_team === home &&
-              row.away_team === away
-            ) ||
-            (
-              row.home_team === away &&
-              row.away_team === home
-            )
-          );
-        })
-        .sort((a, b) => {
-          return String(b.match_date)
-            .localeCompare(
-              String(a.match_date)
-            );
-        })
-        .slice(0, 10);
-
-    if (!h2h.length) {
-      els.h2hList.innerHTML =
-        '<div class="small">Brak bezpośrednich meczów w dostępnych danych.</div>';
-      return;
     }
 
-    els.h2hList.innerHTML =
-      h2h.map(renderMiniMatch).join('');
+    for (
+      const league of leagues
+    ) {
+
+      html += `
+        <div
+          class="suggestion"
+          data-league="${escapeHtml(
+            league.code
+          )}"
+        >
+
+          <div class="suggestion-main">
+            ${escapeHtml(
+              league.country
+            )}
+            — 
+            ${escapeHtml(
+              league.name
+            )}
+          </div>
+
+          <div class="suggestion-meta">
+            ${escapeHtml(
+              league.code
+            )}
+            ${
+              league.matches !== undefined
+                ? ' • ' +
+                  league.matches +
+                  ' meczów'
+                : ''
+            }
+          </div>
+
+        </div>
+      `;
+
+    }
+
+    if (
+      !html
+    ) {
+
+      html = `
+        <div class="suggestion-empty">
+          Nie znaleziono ligi.
+        </div>
+      `;
+
+    }
+
+    els.leagueSuggestions.innerHTML =
+      html;
+
+    openSuggestions(
+      els.leagueSuggestions
+    );
+
+
+    els.leagueSuggestions
+      .querySelectorAll(
+        '[data-league]'
+      )
+      .forEach(
+        element => {
+
+          element.addEventListener(
+            'mousedown',
+            event => {
+
+              event.preventDefault();
+
+              const code =
+                element.dataset.league;
+
+              selectLeague(code);
+
+            }
+          );
+
+        }
+      );
+
   }
 
-  function renderDetails(
-    homeRows,
-    awayRows,
-    home,
-    away
+
+  function selectLeague(
+    code
   ) {
-    const homeLeagues =
-      [...new Set(
-        homeRows.map(
-          row => row.league
-        )
-      )];
 
-    const awayLeagues =
-      [...new Set(
-        awayRows.map(
-          row => row.league
-        )
-      )];
+    selected.league =
+      code || '';
 
-    els.details.innerHTML = `
-      <div>
-        <strong>${escapeHtml(home)}</strong>
-        <div>
-          ${homeLeagues.map(
-            league =>
-              `<span class="pill">${escapeHtml(league)}</span>`
-          ).join('')}
-        </div>
-        <div class="small">
-          Próba: ${homeRows.length} meczów
-        </div>
-      </div>
+    const league =
+      state.leagues.find(
+        item =>
+          item.code ===
+          selected.league
+      );
 
-      <div class="divider"></div>
+    if (league) {
 
-      <div>
-        <strong>${escapeHtml(away)}</strong>
-        <div>
-          ${awayLeagues.map(
-            league =>
-              `<span class="pill">${escapeHtml(league)}</span>`
-          ).join('')}
-        </div>
-        <div class="small">
-          Próba: ${awayRows.length} meczów
-        </div>
-      </div>
-    `;
+      els.leagueInput.value =
+        `${league.country} — ${league.name}`;
+
+      renderSelected(
+        els.leagueSelected,
+        `${league.country} — ${league.name}`,
+        clearLeague
+      );
+
+    } else {
+
+      els.leagueInput.value = '';
+
+      renderSelected(
+        els.leagueSelected,
+        '',
+        clearLeague
+      );
+
+    }
+
+    closeSuggestions(
+      els.leagueSuggestions
+    );
+
+    /*
+     * Po zmianie ligi czyścimy drużyny,
+     * żeby nie zostać np. z Bayernem
+     * po przełączeniu na Premier League.
+     */
+
+    clearTeam(
+      'home'
+    );
+
+    clearTeam(
+      'away'
+    );
+
   }
 
-  function surnameOf(name) {
+
+  function clearLeague() {
+
+    selected.league = '';
+
+    els.leagueInput.value = '';
+
+    renderSelected(
+      els.leagueSelected,
+      '',
+      clearLeague
+    );
+
+    closeSuggestions(
+      els.leagueSuggestions
+    );
+
+    clearTeam('home');
+    clearTeam('away');
+
+  }
+
+
+  /* =========================================
+     DRUŻYNY
+     ========================================= */
+
+  function availableTeams() {
+
+    const map =
+      new Map();
+
+    for (
+      const row of state.matches
+    ) {
+
+      if (
+        selected.league &&
+        row.league_code !==
+          selected.league
+      ) {
+        continue;
+      }
+
+      for (
+        const teamName of [
+          row.home_team,
+          row.away_team
+        ]
+      ) {
+
+        if (!teamName) {
+          continue;
+        }
+
+        if (
+          !map.has(teamName)
+        ) {
+
+          map.set(
+            teamName,
+            {
+              name: teamName,
+              leagues:
+                new Set()
+            }
+          );
+
+        }
+
+        map
+          .get(teamName)
+          .leagues
+          .add(
+            row.league
+          );
+
+      }
+
+    }
+
+    return [...map.values()]
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(
+            b.name,
+            'pl'
+          )
+      );
+
+  }
+
+
+  function renderTeamSuggestions(
+    side
+  ) {
+
+    const input =
+      side === 'home'
+        ? els.homeInput
+        : els.awayInput;
+
+    const suggestions =
+      side === 'home'
+        ? els.homeSuggestions
+        : els.awaySuggestions;
+
+    const search =
+      normalize(
+        input.value
+      );
+
+    const teams =
+      availableTeams()
+        .filter(team => {
+
+          if (!search) {
+            return true;
+          }
+
+          return normalize(
+            team.name
+          ).includes(search);
+
+        })
+        .filter(team => {
+
+          /*
+           * Nie pokazujemy drugiej,
+           * aktualnie wybranej drużyny.
+           */
+
+          const other =
+            side === 'home'
+              ? selected.away
+              : selected.home;
+
+          return team.name !==
+            other;
+
+        })
+        .slice(0, 30);
+
+    let html = '';
+
+    for (
+      const team of teams
+    ) {
+
+      const leagues =
+        [...team.leagues]
+          .filter(Boolean)
+          .sort(
+            (a, b) =>
+              a.localeCompare(
+                b,
+                'pl'
+              )
+          );
+
+      html += `
+        <div
+          class="suggestion"
+          data-team="${escapeHtml(
+            team.name
+          )}"
+        >
+
+          <div class="suggestion-main">
+            ${escapeHtml(
+              team.name
+            )}
+          </div>
+
+          <div class="suggestion-meta">
+            ${escapeHtml(
+              leagues.join(' • ')
+            )}
+          </div>
+
+        </div>
+      `;
+
+    }
+
+    if (!html) {
+
+      html = `
+        <div class="suggestion-empty">
+          ${
+            search
+              ? 'Nie znaleziono drużyny.'
+              : 'Brak dostępnych drużyn.'
+          }
+        </div>
+      `;
+
+    }
+
+    suggestions.innerHTML =
+      html;
+
+    openSuggestions(
+      suggestions
+    );
+
+
+    suggestions
+      .querySelectorAll(
+        '[data-team]'
+      )
+      .forEach(
+        element => {
+
+          element.addEventListener(
+            'mousedown',
+            event => {
+
+              event.preventDefault();
+
+              selectTeam(
+                side,
+                element.dataset.team
+              );
+
+            }
+          );
+
+        }
+      );
+
+  }
+
+
+  function selectTeam(
+    side,
+    team
+  ) {
+
+    selected[side] =
+      team;
+
+    const input =
+      side === 'home'
+        ? els.homeInput
+        : els.awayInput;
+
+    const suggestions =
+      side === 'home'
+        ? els.homeSuggestions
+        : els.awaySuggestions;
+
+    const selectedBox =
+      side === 'home'
+        ? els.homeSelected
+        : els.awaySelected;
+
+    input.value =
+      team;
+
+    renderSelected(
+      selectedBox,
+      team,
+      () =>
+        clearTeam(side)
+    );
+
+    closeSuggestions(
+      suggestions
+    );
+
+  }
+
+
+  function clearTeam(
+    side
+  ) {
+
+    selected[side] = '';
+
+    const input =
+      side === 'home'
+        ? els.homeInput
+        : els.awayInput;
+
+    const selectedBox =
+      side === 'home'
+        ? els.homeSelected
+        : els.awaySelected;
+
+    const suggestions =
+      side === 'home'
+        ? els.homeSuggestions
+        : els.awaySuggestions;
+
+    input.value = '';
+
+    renderSelected(
+      selectedBox,
+      '',
+      () =>
+        clearTeam(side)
+    );
+
+    closeSuggestions(
+      suggestions
+    );
+
+  }
+
+
+  /* =========================================
+     SĘDZIA
+     ========================================= */
+
+  function surnameOf(
+    name
+  ) {
+
     const parts =
       String(name || '')
         .trim()
@@ -1174,523 +1727,1455 @@
     return parts.length
       ? parts[parts.length - 1]
       : '';
+
   }
 
-  function refereeRowsFor(
+
+  function renderRefSuggestions() {
+
+    const search =
+      normalize(
+        els.refInput.value
+      );
+
+    const refs =
+      [...new Set(
+        state.matches
+          .map(
+            row => row.referee
+          )
+          .filter(Boolean)
+      )]
+      .sort(
+        (a, b) =>
+          surnameOf(a)
+            .localeCompare(
+              surnameOf(b),
+              'pl'
+            )
+      )
+      .filter(
+        referee =>
+          !search ||
+          normalize(referee)
+            .includes(search)
+      )
+      .slice(0, 40);
+
+    let html = '';
+
+    for (
+      const referee of refs
+    ) {
+
+      html += `
+        <div
+          class="suggestion"
+          data-referee="${escapeHtml(
+            referee
+          )}"
+        >
+
+          <div class="suggestion-main">
+            ${escapeHtml(
+              referee
+            )}
+          </div>
+
+          <div class="suggestion-meta">
+            Nazwisko:
+            ${escapeHtml(
+              surnameOf(referee)
+            )}
+          </div>
+
+        </div>
+      `;
+
+    }
+
+    if (!html) {
+
+      html = `
+        <div class="suggestion-empty">
+          ${
+            search
+              ? 'Nie znaleziono sędziego.'
+              : 'Brak sędziów.'
+          }
+        </div>
+      `;
+
+    }
+
+    els.refSuggestions.innerHTML =
+      html;
+
+    openSuggestions(
+      els.refSuggestions
+    );
+
+
+    els.refSuggestions
+      .querySelectorAll(
+        '[data-referee]'
+      )
+      .forEach(
+        element => {
+
+          element.addEventListener(
+            'mousedown',
+            event => {
+
+              event.preventDefault();
+
+              selectReferee(
+                element.dataset.referee
+              );
+
+            }
+          );
+
+        }
+      );
+
+  }
+
+
+  function selectReferee(
     referee
   ) {
-    return state.matches
-      .filter(row => {
-        return row.referee === referee;
-      })
-      .sort((a, b) => {
-        return String(b.match_date)
-          .localeCompare(
-            String(a.match_date)
-          );
-      });
+
+    selected.referee =
+      referee;
+
+    els.refInput.value =
+      referee;
+
+    renderSelected(
+      els.refSelected,
+      referee,
+      clearReferee
+    );
+
+    closeSuggestions(
+      els.refSuggestions
+    );
+
   }
 
-  function renderRefereeProfile(referee) {
-    if (!referee) {
-      els.refereeSection.classList.add(
-        'hidden'
-      );
 
-      return;
+  function clearReferee() {
+
+    selected.referee = '';
+
+    els.refInput.value = '';
+
+    renderSelected(
+      els.refSelected,
+      '',
+      clearReferee
+    );
+
+    closeSuggestions(
+      els.refSuggestions
+    );
+
+  }
+
+
+  /* =========================================
+     DANE MECZOWE
+     ========================================= */
+
+  function getTeamSide(
+    row,
+    team,
+    venueMode
+  ) {
+
+    const isHome =
+      row.home_team === team;
+
+    const isAway =
+      row.away_team === team;
+
+    if (
+      !isHome &&
+      !isAway
+    ) {
+      return null;
     }
 
-    const rows =
-      refereeRowsFor(referee);
+    if (
+      venueMode === 'split'
+    ) {
 
-    if (!rows.length) {
-      els.refereeSection.classList.add(
-        'hidden'
-      );
+      /*
+       * Gospodarz analizowany tylko
+       * w swoich meczach domowych.
+       */
 
-      return;
+      if (
+        team === selected.home
+      ) {
+
+        return isHome
+          ? 'home'
+          : null;
+
+      }
+
+      /*
+       * Gość analizowany tylko
+       * w swoich meczach wyjazdowych.
+       */
+
+      if (
+        team === selected.away
+      ) {
+
+        return isAway
+          ? 'away'
+          : null;
+
+      }
+
     }
 
-    const yellow = average(
-      rows,
-      'home_yellow_cards'
+    return isHome
+      ? 'home'
+      : 'away';
+
+  }
+
+
+  function teamRows(
+    team,
+    venueMode
+  ) {
+
+    return state.matches
+      .filter(row =>
+        getTeamSide(
+          row,
+          team,
+          venueMode
+        ) !== null
+      )
+      .sort(
+        (a, b) =>
+          String(b.match_date)
+            .localeCompare(
+              String(a.match_date)
+            )
+      );
+
+  }
+
+
+  function selectedSample(
+    rows
+  ) {
+
+    const value =
+      els.sampleSelect.value;
+
+    if (
+      value === 'all'
+    ) {
+      return rows;
+    }
+
+    return rows.slice(
+      0,
+      Number(value)
     );
 
-    const yellowAway = average(
-      rows,
-      'away_yellow_cards'
-    );
+  }
 
-    const red = average(
-      rows,
-      'home_red_cards'
-    );
 
-    const redAway = average(
-      rows,
-      'away_red_cards'
-    );
+  function resultForTeam(
+    row,
+    team
+  ) {
 
-    const fouls = average(
-      rows,
-      'home_fouls'
-    );
+    if (
+      row.home_team === team
+    ) {
 
-    const foulsAway = average(
-      rows,
-      'away_fouls'
-    );
+      return row.result === 'H'
+        ? 'W'
+        : row.result === 'D'
+          ? 'D'
+          : 'L';
 
-    const avgYellow =
-      yellow !== null &&
-      yellowAway !== null
-        ? (yellow + yellowAway) / 2
-        : yellow ?? yellowAway;
+    }
 
-    const avgRed =
-      red !== null &&
-      redAway !== null
-        ? (red + redAway) / 2
-        : red ?? redAway;
+    if (
+      row.away_team === team
+    ) {
 
-    const avgFouls =
-      fouls !== null &&
-      foulsAway !== null
-        ? (fouls + foulsAway) / 2
-        : fouls ?? foulsAway;
+      return row.result === 'A'
+        ? 'W'
+        : row.result === 'D'
+          ? 'D'
+          : 'L';
 
-    const leagueNames =
-      [...new Set(
-        rows.map(
-          row => row.league
+    }
+
+    return null;
+
+  }
+
+
+  function teamStats(
+    team,
+    rows
+  ) {
+
+    const valueFor =
+      (
+        row,
+        homeField,
+        awayField
+      ) => {
+
+        if (
+          row.home_team === team
+        ) {
+          return numeric(
+            row[homeField]
+          );
+        }
+
+        if (
+          row.away_team === team
+        ) {
+          return numeric(
+            row[awayField]
+          );
+        }
+
+        return null;
+
+      };
+
+
+    const avgField =
+      (
+        homeField,
+        awayField
+      ) => {
+
+        const values =
+          rows
+            .map(row =>
+              valueFor(
+                row,
+                homeField,
+                awayField
+              )
+            )
+            .filter(
+              value =>
+                value !== null
+            );
+
+        if (!values.length) {
+          return null;
+        }
+
+        return (
+          values.reduce(
+            (a, b) => a + b,
+            0
+          ) /
+          values.length
+        );
+
+      };
+
+
+    const wins =
+      rows.filter(
+        row =>
+          resultForTeam(
+            row,
+            team
+          ) === 'W'
+      ).length;
+
+    const draws =
+      rows.filter(
+        row =>
+          resultForTeam(
+            row,
+            team
+          ) === 'D'
+      ).length;
+
+    const losses =
+      rows.filter(
+        row =>
+          resultForTeam(
+            row,
+            team
+          ) === 'L'
+      ).length;
+
+
+    return {
+
+      matches:
+        rows.length,
+
+      wins,
+      draws,
+      losses,
+
+      goalsFor:
+        avgField(
+          'home_goals',
+          'away_goals'
+        ),
+
+      goalsAgainst:
+        avgField(
+          'away_goals',
+          'home_goals'
+        ),
+
+      shots:
+        avgField(
+          'home_shots',
+          'away_shots'
+        ),
+
+      shotsTarget:
+        avgField(
+          'home_shots_on_target',
+          'away_shots_on_target'
+        ),
+
+      xg:
+        avgField(
+          'home_xg',
+          'away_xg'
+        ),
+
+      corners:
+        avgField(
+          'home_corners',
+          'away_corners'
+        ),
+
+      fouls:
+        avgField(
+          'home_fouls',
+          'away_fouls'
+        ),
+
+      yellow:
+        avgField(
+          'home_yellow_cards',
+          'away_yellow_cards'
+        ),
+
+      red:
+        avgField(
+          'home_red_cards',
+          'away_red_cards'
+        ),
+
+      possession:
+        avgField(
+          'home_possession',
+          'away_possession'
         )
-      )];
 
-    els.refereeSection.classList.remove(
-      'hidden'
-    );
+    };
 
-    els.refereeProfile.innerHTML = `
-      <div class="ref-card">
+  }
 
-        <div class="ref-name">
-          ${escapeHtml(referee)}
+
+  /* =========================================
+     STATYSTYKI
+     ========================================= */
+
+  const STAT_DEFINITIONS = [
+
+    {
+      label: 'Średnia goli',
+      key: 'goalsFor',
+      higherBetter: true
+    },
+
+    {
+      label: 'Średnia strzałów',
+      key: 'shots',
+      higherBetter: true
+    },
+
+    {
+      label: 'Strzały celne',
+      key: 'shotsTarget',
+      higherBetter: true
+    },
+
+    {
+      label: 'xG',
+      key: 'xg',
+      higherBetter: true
+    },
+
+    {
+      label: 'Rzuty rożne',
+      key: 'corners',
+      higherBetter: true
+    },
+
+    {
+      label: 'Faule',
+      key: 'fouls',
+      higherBetter: false
+    },
+
+    {
+      label: 'Żółte kartki',
+      key: 'yellow',
+      higherBetter: false
+    },
+
+    {
+      label: 'Czerwone kartki',
+      key: 'red',
+      higherBetter: false
+    },
+
+    {
+      label: 'Posiadanie piłki %',
+      key: 'possession',
+      higherBetter: true
+    }
+
+  ];
+
+
+  function compareClass(
+    a,
+    b,
+    higherBetter
+  ) {
+
+    if (
+      a === null ||
+      b === null
+    ) {
+      return [
+        '',
+        ''
+      ];
+    }
+
+    if (
+      a === b
+    ) {
+      return [
+        '',
+        ''
+      ];
+    }
+
+    if (
+      higherBetter
+    ) {
+
+      return a > b
+        ? [
+            'better',
+            ''
+          ]
+        : [
+            '',
+            'better'
+          ];
+
+    }
+
+    return a < b
+      ? [
+          'better',
+          ''
+        ]
+      : [
+          '',
+          'better'
+        ];
+
+  }
+
+
+  function renderComparison(
+    homeStats,
+    awayStats
+  ) {
+
+    let html = `
+
+      <table class="stats">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Statystyka
+            </th>
+
+            <th>
+              ${escapeHtml(
+                selected.home
+              )}
+            </th>
+
+            <th>
+              ${escapeHtml(
+                selected.away
+              )}
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+    `;
+
+
+    for (
+      const stat of
+        STAT_DEFINITIONS
+    ) {
+
+      const [
+        homeClass,
+        awayClass
+      ] =
+        compareClass(
+          homeStats[
+            stat.key
+          ],
+          awayStats[
+            stat.key
+          ],
+          stat.higherBetter
+        );
+
+
+      html += `
+
+        <tr>
+
+          <td>
+            ${escapeHtml(
+              stat.label
+            )}
+          </td>
+
+          <td
+            class="${homeClass}"
+          >
+            ${formatNumber(
+              homeStats[
+                stat.key
+              ]
+            )}
+          </td>
+
+          <td
+            class="${awayClass}"
+          >
+            ${formatNumber(
+              awayStats[
+                stat.key
+              ]
+            )}
+          </td>
+
+        </tr>
+
+      `;
+
+    }
+
+
+    html += `
+
+        </tbody>
+
+      </table>
+
+    `;
+
+    els.comparisonTable.innerHTML =
+      html;
+
+  }
+
+
+  /* =========================================
+     FORMA
+     ========================================= */
+
+  function renderForm(
+    container,
+    rows,
+    team
+  ) {
+
+    const formRows =
+      rows.slice(
+        0,
+        10
+      );
+
+    if (
+      !formRows.length
+    ) {
+
+      container.innerHTML =
+        '<span class="muted">Brak danych</span>';
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      formRows
+        .map(row => {
+
+          const result =
+            resultForTeam(
+              row,
+              team
+            );
+
+          const cls =
+            result === 'W'
+              ? 'win'
+              : result === 'D'
+                ? 'draw'
+                : 'loss';
+
+
+          return `
+
+            <span
+              class="form-dot ${cls}"
+              title="${escapeHtml(
+                row.home_team +
+                ' ' +
+                (
+                  row.home_goals ??
+                  '—'
+                ) +
+                ':' +
+                (
+                  row.away_goals ??
+                  '—'
+                ) +
+                ' ' +
+                row.away_team
+              )}"
+            >
+              ${result}
+            </span>
+
+          `;
+
+        })
+        .join('');
+
+  }
+
+
+  /* =========================================
+     H2H
+     ========================================= */
+
+  function renderMiniMatch(
+    row
+  ) {
+
+    return `
+
+      <div class="mini-match">
+
+        <div class="mini-date">
+          ${escapeHtml(
+            row.match_date ||
+            '—'
+          )}
+        </div>
+
+        <div class="mini-teams">
+
+          ${escapeHtml(
+            row.home_team
+          )}
+
+          —
+
+          ${escapeHtml(
+            row.away_team
+          )}
+
+          <div class="small">
+
+            ${escapeHtml(
+              row.league ||
+              ''
+            )}
+
+            ${
+              row.season
+                ? ' • ' +
+                  escapeHtml(
+                    row.season
+                  )
+                : ''
+            }
+
+          </div>
+
+        </div>
+
+        <div class="mini-score">
+
+          ${
+            row.home_goals ??
+            '—'
+          }
+          :
+          ${
+            row.away_goals ??
+            '—'
+          }
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  function renderH2H(
+    home,
+    away
+  ) {
+
+    const h2h =
+      state.matches
+        .filter(
+          row => {
+
+            return (
+
+              (
+                row.home_team ===
+                  home &&
+                row.away_team ===
+                  away
+              )
+
+              ||
+
+              (
+                row.home_team ===
+                  away &&
+                row.away_team ===
+                  home
+              )
+
+            );
+
+          }
+        )
+        .sort(
+          (a, b) =>
+            String(b.match_date)
+              .localeCompare(
+                String(
+                  a.match_date
+                )
+              )
+        )
+        .slice(
+          0,
+          10
+        );
+
+
+    if (
+      !h2h.length
+    ) {
+
+      els.h2hList.innerHTML =
+        `
+          <div class="small">
+            Brak bezpośrednich meczów
+            w dostępnych danych.
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    els.h2hList.innerHTML =
+      h2h
+        .map(
+          renderMiniMatch
+        )
+        .join('');
+
+  }
+
+
+  /* =========================================
+     SZCZEGÓŁY
+     ========================================= */
+
+  function renderDetails(
+    homeRows,
+    awayRows
+  ) {
+
+    const homeLeagues =
+      [
+        ...new Set(
+          homeRows.map(
+            row =>
+              row.league
+          )
+        )
+      ]
+      .filter(Boolean);
+
+
+    const awayLeagues =
+      [
+        ...new Set(
+          awayRows.map(
+            row =>
+              row.league
+          )
+        )
+      ]
+      .filter(Boolean);
+
+
+    els.details.innerHTML = `
+
+      <div>
+
+        <strong>
+          ${escapeHtml(
+            selected.home
+          )}
+        </strong>
+
+        <div>
+
+          ${homeLeagues
+            .map(
+              league =>
+                `
+                  <span class="pill">
+                    ${escapeHtml(
+                      league
+                    )}
+                  </span>
+                `
+            )
+            .join('')}
+
         </div>
 
         <div class="small">
+          Próba:
+          ${homeRows.length}
+          meczów
+        </div>
+
+      </div>
+
+      <div class="divider"></div>
+
+      <div>
+
+        <strong>
+          ${escapeHtml(
+            selected.away
+          )}
+        </strong>
+
+        <div>
+
+          ${awayLeagues
+            .map(
+              league =>
+                `
+                  <span class="pill">
+                    ${escapeHtml(
+                      league
+                    )}
+                  </span>
+                `
+            )
+            .join('')}
+
+        </div>
+
+        <div class="small">
+          Próba:
+          ${awayRows.length}
+          meczów
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  /* =========================================
+     PROFIL SĘDZIEGO
+     ========================================= */
+
+  function renderRefereeProfile(
+    referee
+  ) {
+
+    if (!referee) {
+
+      els.refereeSection
+        .classList
+        .add('hidden');
+
+      return;
+
+    }
+
+
+    const rows =
+      state.matches
+        .filter(
+          row =>
+            row.referee ===
+            referee
+        );
+
+
+    if (!rows.length) {
+
+      els.refereeSection
+        .classList
+        .add('hidden');
+
+      return;
+
+    }
+
+
+    const yellow =
+      rows
+        .map(row => {
+
+          return row.home_team
+            ? numeric(
+                row.home_yellow_cards
+              )
+            : null;
+
+        })
+        .filter(
+          value =>
+            value !== null
+        );
+
+
+    const yellowAway =
+      rows
+        .map(row =>
+          numeric(
+            row.away_yellow_cards
+          )
+        )
+        .filter(
+          value =>
+            value !== null
+        );
+
+
+    const allYellow =
+      [
+        ...yellow,
+        ...yellowAway
+      ];
+
+
+    const red =
+      rows
+        .map(row =>
+          numeric(
+            row.home_red_cards
+          )
+        )
+        .filter(
+          value =>
+            value !== null
+        );
+
+
+    const redAway =
+      rows
+        .map(row =>
+          numeric(
+            row.away_red_cards
+          )
+        )
+        .filter(
+          value =>
+            value !== null
+        );
+
+
+    const allRed =
+      [
+        ...red,
+        ...redAway
+      ];
+
+
+    const fouls =
+      rows
+        .map(row =>
+          numeric(
+            row.home_fouls
+          )
+        )
+        .filter(
+          value =>
+            value !== null
+        );
+
+
+    const foulsAway =
+      rows
+        .map(row =>
+          numeric(
+            row.away_fouls
+          )
+        )
+        .filter(
+          value =>
+            value !== null
+        );
+
+
+    const allFouls =
+      [
+        ...fouls,
+        ...foulsAway
+      ];
+
+
+    const avg =
+      values => {
+
+        if (!values.length) {
+          return null;
+        }
+
+        return (
+          values.reduce(
+            (a, b) =>
+              a + b,
+            0
+          ) /
+          values.length
+        );
+
+      };
+
+
+    const avgYellow =
+      avg(allYellow);
+
+    const avgRed =
+      avg(allRed);
+
+    const avgFouls =
+      avg(allFouls);
+
+
+    const leagues =
+      [
+        ...new Set(
+          rows.map(
+            row =>
+              row.league
+          )
+        )
+      ]
+      .filter(Boolean);
+
+
+    els.refereeSection
+      .classList
+      .remove('hidden');
+
+
+    els.refereeProfile.innerHTML = `
+
+      <div class="ref-card">
+
+        <div class="ref-name">
+          ${escapeHtml(
+            referee
+          )}
+        </div>
+
+        <div class="small">
+
           Nazwisko:
           ${escapeHtml(
-            surnameOf(referee)
+            surnameOf(
+              referee
+            )
           )}
+
         </div>
 
         <div class="ref-grid">
 
           <div class="ref-stat">
+
             <div class="ref-label">
               Mecze
             </div>
+
             <div class="ref-value">
               ${rows.length}
             </div>
+
           </div>
 
+
           <div class="ref-stat">
+
             <div class="ref-label">
               Śr. żółtych
             </div>
+
             <div class="ref-value">
-              ${valueHtml(avgYellow)}
+              ${formatNumber(
+                avgYellow
+              )}
             </div>
+
           </div>
 
+
           <div class="ref-stat">
+
             <div class="ref-label">
               Śr. czerwonych
             </div>
+
             <div class="ref-value">
-              ${valueHtml(avgRed)}
+              ${formatNumber(
+                avgRed
+              )}
             </div>
+
           </div>
 
+
           <div class="ref-stat">
+
             <div class="ref-label">
               Śr. fauli
             </div>
+
             <div class="ref-value">
-              ${valueHtml(avgFouls)}
+              ${formatNumber(
+                avgFouls
+              )}
             </div>
+
           </div>
 
         </div>
 
+
         <div>
-          ${leagueNames.map(
-            league =>
-              `<span class="pill">${escapeHtml(league)}</span>`
-          ).join('')}
+
+          ${leagues
+            .map(
+              league =>
+                `
+                  <span class="pill">
+                    ${escapeHtml(
+                      league
+                    )}
+                  </span>
+                `
+            )
+            .join('')}
+
         </div>
 
       </div>
+
     `;
+
   }
 
-  function updateTeamOptions() {
-    const league =
-      els.leagueSelect.value;
 
-    const searchHome =
-      normalize(
-        els.homeSearch.value
-      );
-
-    const searchAway =
-      normalize(
-        els.awaySearch.value
-      );
-
-    const teamsMap =
-      new Map();
-
-    for (const row of state.matches) {
-      if (
-        league &&
-        row.league_code !== league
-      ) {
-        continue;
-      }
-
-      if (
-        els.seasonSelect.value &&
-        row.season !==
-          els.seasonSelect.value
-      ) {
-        continue;
-      }
-
-      for (
-        const team of [
-          row.home_team,
-          row.away_team
-        ]
-      ) {
-        if (!team) continue;
-
-        if (!teamsMap.has(team)) {
-          teamsMap.set(
-            team,
-            {
-              name: team,
-              leagues: new Set()
-            }
-          );
-        }
-
-        teamsMap
-          .get(team)
-          .leagues.add(
-            row.league
-          );
-      }
-    }
-
-    const teams =
-      [...teamsMap.values()]
-        .sort((a, b) =>
-          a.name.localeCompare(
-            b.name,
-            'pl'
-          )
-        );
-
-    const buildOptions = (
-      search,
-      selected
-    ) => {
-      let html =
-        '<option value="">Wybierz drużynę</option>';
-
-      for (const team of teams) {
-        if (
-          search &&
-          !normalize(
-            team.name
-          ).includes(search)
-        ) {
-          continue;
-        }
-
-        const selectedAttr =
-          selected === team.name
-            ? ' selected'
-            : '';
-
-        html += `
-          <option
-            value="${escapeHtml(team.name)}"
-            ${selectedAttr}
-          >
-            ${escapeHtml(team.name)}
-          </option>
-        `;
-      }
-
-      return html;
-    };
-
-    const currentHome =
-      els.homeSelect.value;
-
-    const currentAway =
-      els.awaySelect.value;
-
-    els.homeSelect.innerHTML =
-      buildOptions(
-        searchHome,
-        currentHome
-      );
-
-    els.awaySelect.innerHTML =
-      buildOptions(
-        searchAway,
-        currentAway
-      );
-
-    if (
-      currentHome &&
-      [...els.homeSelect.options]
-        .some(
-          option =>
-            option.value ===
-            currentHome
-        )
-    ) {
-      els.homeSelect.value =
-        currentHome;
-    }
-
-    if (
-      currentAway &&
-      [...els.awaySelect.options]
-        .some(
-          option =>
-            option.value ===
-            currentAway
-        )
-    ) {
-      els.awaySelect.value =
-        currentAway;
-    }
-  }
-
-  function updateLeagueOptions() {
-    const search =
-      normalize(
-        els.leagueSearch.value
-      );
-
-    const current =
-      els.leagueSelect.value;
-
-    let html =
-      '<option value="">Wszystkie ligi</option>';
-
-    for (
-      const league of state.leagues
-    ) {
-      const text =
-        `${league.country} ${league.name} ${league.code}`;
-
-      if (
-        search &&
-        !normalize(text)
-          .includes(search)
-      ) {
-        continue;
-      }
-
-      html += `
-        <option
-          value="${escapeHtml(league.code)}"
-          ${
-            current === league.code
-              ? 'selected'
-              : ''
-          }
-        >
-          ${escapeHtml(
-            league.country
-          )} — ${escapeHtml(
-            league.name
-          )}
-        </option>
-      `;
-    }
-
-    els.leagueSelect.innerHTML =
-      html;
-
-    if (
-      current &&
-      [...els.leagueSelect.options]
-        .some(
-          option =>
-            option.value === current
-        )
-    ) {
-      els.leagueSelect.value =
-        current;
-    }
-  }
-
-  function updateRefereeOptions() {
-    const search =
-      normalize(
-        els.refSearch.value
-      );
-
-    const current =
-      els.refSelect.value;
-
-    const refs =
-      [...new Set(
-        state.matches
-          .map(row => row.referee)
-          .filter(Boolean)
-      )]
-        .sort((a, b) => {
-          return surnameOf(a)
-            .localeCompare(
-              surnameOf(b),
-              'pl'
-            );
-        });
-
-    let html =
-      '<option value="">Wszyscy sędziowie</option>';
-
-    for (const referee of refs) {
-      if (
-        search &&
-        !normalize(referee)
-          .includes(search)
-      ) {
-        continue;
-      }
-
-      html += `
-        <option
-          value="${escapeHtml(referee)}"
-          ${
-            current === referee
-              ? 'selected'
-              : ''
-          }
-        >
-          ${escapeHtml(referee)}
-        </option>
-      `;
-    }
-
-    els.refSelect.innerHTML =
-      html;
-
-    if (
-      current &&
-      [...els.refSelect.options]
-        .some(
-          option =>
-            option.value ===
-            current
-        )
-    ) {
-      els.refSelect.value =
-        current;
-    }
-  }
+  /* =========================================
+     API
+     ========================================= */
 
   async function loadMatches() {
+
     const all = [];
+
     let offset = 0;
+
     const limit = 2000;
 
+
     while (true) {
+
       const response =
         await fetch(
           `${API}/api/matches?limit=${limit}&offset=${offset}`
         );
 
+
       if (!response.ok) {
+
         throw new Error(
           `API matches HTTP ${response.status}`
         );
+
       }
+
 
       const data =
         await response.json();
 
+
       if (!data.ok) {
+
         throw new Error(
           data.error ||
           'Nie udało się pobrać meczów'
         );
+
       }
+
 
       const batch =
         data.matches || [];
 
-      all.push(...batch);
+
+      all.push(
+        ...batch
+      );
+
 
       if (
-        batch.length < limit
+        batch.length <
+        limit
       ) {
         break;
       }
 
+
       offset += limit;
+
     }
 
+
     return all;
+
   }
 
+
   async function loadLeagues() {
+
     const response =
       await fetch(
         `${API}/api/leagues`
       );
 
+
     if (!response.ok) {
+
       throw new Error(
         `API leagues HTTP ${response.status}`
       );
+
     }
+
 
     const data =
       await response.json();
 
+
     if (!data.ok) {
+
       throw new Error(
         data.error ||
         'Nie udało się pobrać lig'
       );
+
     }
 
+
     return data.imported || [];
+
   }
 
+
   async function initialize() {
+
     try {
+
       setStatus(
         'Pobieranie danych…'
       );
 
+
       const [
         leagues,
         matches
-      ] = await Promise.all([
-        loadLeagues(),
-        loadMatches()
-      ]);
+      ] =
+        await Promise.all([
+          loadLeagues(),
+          loadMatches()
+        ]);
+
 
       state.leagues =
         leagues;
@@ -1698,52 +3183,81 @@
       state.matches =
         matches;
 
-      updateLeagueOptions();
-      updateTeamOptions();
-      updateRefereeOptions();
+
+      /*
+       * Domyślnie:
+       *
+       * liga = wszystkie
+       * sezon = automatycznie
+       */
 
       setStatus(
         `Gotowe: ${matches.length} meczów z ${leagues.length} zaimportowanych lig.`,
         'ok'
       );
 
+
     } catch (error) {
-      console.error(error);
+
+      console.error(
+        error
+      );
 
       setStatus(
         `Błąd: ${error.message}`,
         'error'
       );
+
     }
+
   }
 
+
+  /* =========================================
+     ANALIZA
+     ========================================= */
+
   function analyze() {
+
     const home =
-      els.homeSelect.value;
+      selected.home;
 
     const away =
-      els.awaySelect.value;
+      selected.away;
 
-    if (!home || !away) {
+
+    if (
+      !home ||
+      !away
+    ) {
+
       setStatus(
-        'Wybierz obie drużyny.',
+        'Wybierz gospodarza i gościa.',
         'error'
       );
 
       return;
+
     }
 
-    if (home === away) {
+
+    if (
+      home === away
+    ) {
+
       setStatus(
         'Wybierz dwie różne drużyny.',
         'error'
       );
 
       return;
+
     }
+
 
     const venueMode =
       els.venueSelect.value;
+
 
     let homeRows =
       teamRows(
@@ -1751,28 +3265,38 @@
         venueMode
       );
 
+
     let awayRows =
       teamRows(
         away,
         venueMode
       );
 
-    const referee =
-      els.refSelect.value;
 
-    if (referee) {
+    /*
+     * Opcjonalny filtr sędziego.
+     */
+
+    if (
+      selected.referee
+    ) {
+
       homeRows =
         homeRows.filter(
           row =>
-            row.referee === referee
+            row.referee ===
+            selected.referee
         );
 
       awayRows =
         awayRows.filter(
           row =>
-            row.referee === referee
+            row.referee ===
+            selected.referee
         );
+
     }
+
 
     homeRows =
       selectedSample(
@@ -1784,11 +3308,13 @@
         awayRows
       );
 
+
     const homeStats =
       teamStats(
         home,
         homeRows
       );
+
 
     const awayStats =
       teamStats(
@@ -1796,11 +3322,13 @@
         awayRows
       );
 
+
     els.resultHome.textContent =
       home;
 
     els.resultAway.textContent =
       away;
+
 
     els.formHomeTitle.textContent =
       home;
@@ -1808,16 +3336,19 @@
     els.formAwayTitle.textContent =
       away;
 
+
     els.resultHomeMeta.textContent =
       `${homeRows.length} meczów`;
 
     els.resultAwayMeta.textContent =
       `${awayRows.length} meczów`;
 
+
     renderComparison(
       homeStats,
       awayStats
     );
+
 
     renderForm(
       els.formHome,
@@ -1825,85 +3356,275 @@
       home
     );
 
+
     renderForm(
       els.formAway,
       awayRows,
       away
     );
 
+
     renderH2H(
       home,
       away
     );
 
+
     renderDetails(
       homeRows,
-      awayRows,
-      home,
-      away
+      awayRows
     );
+
 
     renderRefereeProfile(
-      referee
+      selected.referee
     );
 
-    els.result.classList.remove(
-      'hidden'
-    );
+
+    els.result
+      .classList
+      .remove('hidden');
+
 
     setStatus(
       `Analiza: ${home} vs ${away}`,
       'ok'
     );
 
+
     window.scrollTo({
+
       top:
         els.result.offsetTop -
         10,
-      behavior: 'smooth'
+
+      behavior:
+        'smooth'
+
     });
+
   }
 
-  els.leagueSearch.addEventListener(
-    'input',
-    updateLeagueOptions
+
+  /* =========================================
+     EVENTY — LIGA
+     ========================================= */
+
+  els.leagueInput
+    .addEventListener(
+      'focus',
+      () => {
+
+        renderLeagueSuggestions();
+
+      }
+    );
+
+
+  els.leagueInput
+    .addEventListener(
+      'input',
+      () => {
+
+        /*
+         * Jeśli użytkownik zaczyna
+         * ponownie pisać, kasujemy
+         * poprzedni wybór.
+         */
+
+        selected.league = '';
+
+        renderSelected(
+          els.leagueSelected,
+          '',
+          clearLeague
+        );
+
+        clearTeam('home');
+        clearTeam('away');
+
+        renderLeagueSuggestions();
+
+      }
+    );
+
+
+  els.leagueInput
+    .addEventListener(
+      'blur',
+      () => {
+
+        setTimeout(
+          () =>
+            closeSuggestions(
+              els.leagueSuggestions
+            ),
+          150
+        );
+
+      }
+    );
+
+
+  /* =========================================
+     EVENTY — DRUŻYNY
+     ========================================= */
+
+  function setupTeamInput(
+    side
+  ) {
+
+    const input =
+      side === 'home'
+        ? els.homeInput
+        : els.awayInput;
+
+    const suggestions =
+      side === 'home'
+        ? els.homeSuggestions
+        : els.awaySuggestions;
+
+
+    input.addEventListener(
+      'focus',
+      () => {
+
+        renderTeamSuggestions(
+          side
+        );
+
+      }
+    );
+
+
+    input.addEventListener(
+      'input',
+      () => {
+
+        /*
+         * Pisanie po wyborze =
+         * nowy wybór.
+         */
+
+        selected[side] =
+          '';
+
+        const selectedBox =
+          side === 'home'
+            ? els.homeSelected
+            : els.awaySelected;
+
+        renderSelected(
+          selectedBox,
+          '',
+          () =>
+            clearTeam(side)
+        );
+
+        renderTeamSuggestions(
+          side
+        );
+
+      }
+    );
+
+
+    input.addEventListener(
+      'blur',
+      () => {
+
+        setTimeout(
+          () =>
+            closeSuggestions(
+              suggestions
+            ),
+          150
+        );
+
+      }
+    );
+
+  }
+
+
+  setupTeamInput(
+    'home'
   );
 
-  els.leagueSelect.addEventListener(
-    'change',
-    () => {
-      updateTeamOptions();
-    }
+  setupTeamInput(
+    'away'
   );
 
-  els.seasonSelect.addEventListener(
-    'change',
-    () => {
-      updateTeamOptions();
-    }
-  );
 
-  els.homeSearch.addEventListener(
-    'input',
-    updateTeamOptions
-  );
+  /* =========================================
+     EVENTY — SĘDZIA
+     ========================================= */
 
-  els.awaySearch.addEventListener(
-    'input',
-    updateTeamOptions
-  );
+  els.refInput
+    .addEventListener(
+      'focus',
+      () => {
 
-  els.refSearch.addEventListener(
-    'input',
-    updateRefereeOptions
-  );
+        renderRefSuggestions();
 
-  els.analyzeBtn.addEventListener(
-    'click',
-    analyze
-  );
+      }
+    );
+
+
+  els.refInput
+    .addEventListener(
+      'input',
+      () => {
+
+        selected.referee =
+          '';
+
+        renderSelected(
+          els.refSelected,
+          '',
+          clearReferee
+        );
+
+        renderRefSuggestions();
+
+      }
+    );
+
+
+  els.refInput
+    .addEventListener(
+      'blur',
+      () => {
+
+        setTimeout(
+          () =>
+            closeSuggestions(
+              els.refSuggestions
+            ),
+          150
+        );
+
+      }
+    );
+
+
+  /* =========================================
+     ANALIZA
+     ========================================= */
+
+  els.analyzeBtn
+    .addEventListener(
+      'click',
+      analyze
+    );
+
+
+  /* =========================================
+     START
+     ========================================= */
 
   initialize();
+
 </script>
 
 </body>
