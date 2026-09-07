@@ -1,2341 +1,1876 @@
-<!doctype html>
-<html lang="pl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111111">
-<title>Football Stats Analyzer</title>
-
-<style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: #f2f2f7;
-  color: #171717;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-main {
-  max-width: 900px;
-  margin: auto;
-  padding: 10px;
-}
-
-.card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 16px;
-  margin: 10px 0;
-  box-shadow: 0 1px 5px #0001;
-}
-
-h1 {
-  margin: 0 0 4px;
-  font-size: 25px;
-}
-
-h2 {
-  margin: 0 0 10px;
-  font-size: 19px;
-}
-
-.muted,
-.small {
-  color: #6e6e73;
-  font-size: 13px;
-}
-
-.small {
-  font-size: 12px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-label {
-  display: block;
-  font-weight: 650;
-  font-size: 13px;
-  margin-bottom: 6px;
-}
-
-select,
-input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #c7c7cc;
-  border-radius: 11px;
-  background: #fff;
-  font-size: 16px;
-}
-
-button {
-  width: 100%;
-  padding: 13px;
-  border: 0;
-  border-radius: 11px;
-  background: #111;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-button.secondary {
-  background: #eee;
-  color: #111;
-}
-
-.controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.note {
-  background: #f2f2f7;
-  border-radius: 12px;
-  padding: 10px;
-  margin-top: 10px;
-}
-
-.section-title {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-}
-
-.badge {
-  display: inline-block;
-  padding: 5px 8px;
-  border-radius: 8px;
-  background: #eee;
-  font-size: 12px;
-  font-weight: 650;
-  white-space: nowrap;
-}
-
-.searchbox {
-  margin-bottom: 6px;
-}
-
-.compare-head,
-.stat-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 70px 70px;
-  gap: 8px;
-  align-items: center;
-}
-
-.compare-head {
-  font-size: 12px;
-  color: #6e6e73;
-  font-weight: 650;
-  margin-bottom: 2px;
-}
-
-.stat-row {
-  padding: 9px 0;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-}
-
-.stat-row:last-child {
-  border-bottom: 0;
-}
-
-.stat-name {
-  font-weight: 600;
-}
-
-.val {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.better {
-  font-weight: 800;
-}
-
-.formline {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  margin: 7px 0;
-}
-
-.formteam {
-  font-weight: 700;
-  min-width: 90px;
-}
-
-.formdot {
-  display: inline-flex;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-  background: #eee;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.formdot.w {
-  background: #dff5e3;
-}
-
-.formdot.d {
-  background: #fff1c7;
-}
-
-.formdot.l {
-  background: #ffdede;
-}
-
-.match-card {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.match-card:last-child {
-  border-bottom: 0;
-}
-
-.match-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
-  color: #6e6e73;
-}
-
-.match-main {
-  font-weight: 650;
-  margin: 3px 0;
-}
-
-.match-stats {
-  font-size: 12px;
-  color: #6e6e73;
-}
-
-details summary {
-  cursor: pointer;
-  font-weight: 750;
-  list-style: none;
-}
-
-.summary-arrow {
-  float: right;
-  color: #6e6e73;
-}
-
-.tablelike {
-  width: 100%;
-  font-size: 14px;
-}
-
-.table-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 90px;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.table-row:last-child {
-  border-bottom: 0;
-}
-
-.empty {
-  padding: 12px 0;
-  color: #6e6e73;
-}
-
-@media (max-width: 600px) {
-  .grid,
-  .controls {
-    grid-template-columns: 1fr;
-  }
-
-  .compare-head,
-  .stat-row {
-    grid-template-columns: minmax(0, 1fr) 62px 62px;
-  }
-
-  .card {
-    padding: 14px;
-  }
-}
-</style>
-</head>
-
-<body>
-
-<main>
-
-<section class="card">
-
-  <h1>⚽ Football Stats Analyzer</h1>
-
-  <div class="muted">
-    Premier League • 2025/26 + 2026/27
-  </div>
-
-  <div class="note small">
-    Domyślnie porównujemy HOME gospodarza z AWAY gościa.
-    Możesz przełączyć analizę na wszystkie mecze.
-  </div>
-
-</section>
-
-
-<section class="card">
-
-  <div class="grid">
-
-    <div>
-
-      <label for="homeSearch">
-        Gospodarz
-      </label>
-
-      <input
-        id="homeSearch"
-        class="searchbox"
-        placeholder="🔍 Wyszukaj drużynę…"
-      >
-
-      <select id="home"></select>
-
-    </div>
-
-
-    <div>
-
-      <label for="awaySearch">
-        Gość
-      </label>
-
-      <input
-        id="awaySearch"
-        class="searchbox"
-        placeholder="🔍 Wyszukaj drużynę…"
-      >
-
-      <select id="away"></select>
-
-    </div>
-
-  </div>
-
-
-  <div style="margin-top:12px">
-
-    <label for="refSearch">
-      Sędzia (opcjonalnie)
-    </label>
-
-    <input
-      id="refSearch"
-      class="searchbox"
-      placeholder="🔍 Wyszukaj sędziego…"
-    >
-
-    <select id="referee">
-      <option value="">
-        Dowolny / nie wybieraj
-      </option>
-    </select>
-
-  </div>
-
-
-  <div class="controls" style="margin-top:12px">
-
-    <div>
-
-      <label for="sample">
-        Mecze do analizy
-      </label>
-
-      <select id="sample">
-
-        <option value="5">
-          5
-        </option>
-
-        <option value="10" selected>
-          10
-        </option>
-
-        <option value="15">
-          15
-        </option>
-
-        <option value="20">
-          20
-        </option>
-
-        <option value="30">
-          30
-        </option>
-
-        <option value="50">
-          50
-        </option>
-
-        <option value="all">
-          Wszystkie
-        </option>
-
-      </select>
-
-    </div>
-
-
-    <div>
-
-      <label for="venueMode">
-        Sposób analizy
-      </label>
-
-      <select id="venueMode">
-
-        <option value="split" selected>
-          Home / Away
-        </option>
-
-        <option value="all">
-          Wszystkie mecze
-        </option>
-
-      </select>
-
-    </div>
-
-  </div>
-
-
-  <button
-    id="analyze"
-    style="margin-top:12px"
-  >
-    Analizuj mecz
-  </button>
-
-
-  <div
-    id="status"
-    class="muted"
-    style="margin-top:10px"
-  ></div>
-
-</section>
-
-
-<div id="results"></div>
-
-</main>
-
-
-<script>
-
-let DATA = [];
-let TEAMS = [];
-let REFEREES = [];
-let SOURCE_COLUMNS = [];
-
-
-/* ================================
-   DANE Z D1
-================================ */
-
-async function loadLiveData() {
-
-  const res = await fetch(
-    '/api/matches?limit=1000',
-    {
-      cache: 'no-store'
-    }
-  );
-
-  if (!res.ok) {
-    throw new Error(
-      'Nie udało się pobrać danych z bazy D1.'
-    );
-  }
-
-  const payload = await res.json();
-
-  if (!payload.ok) {
-    throw new Error(
-      payload.error ||
-      'API D1 zwróciło błąd.'
-    );
-  }
-
-  const rows = [];
-  const cols = new Set();
-
-
-  (payload.matches || []).forEach(match => {
-
-    const raw =
-      match.raw_data &&
-      typeof match.raw_data === 'object'
-        ? match.raw_data
-        : {};
-
-
-    const m = {
-
-      ...raw,
-
-      Season:
-        match.season,
-
-      Date:
-        raw.Date ||
-        formatISODate(match.match_date),
-
-      HomeTeam:
-        match.home_team,
-
-      AwayTeam:
-        match.away_team,
-
-      Referee:
-        match.referee,
-
-      FTHG:
-        match.home_goals,
-
-      FTAG:
-        match.away_goals,
-
-      FTR:
-        match.result,
-
-      HTHG:
-        match.home_ht_goals,
-
-      HTAG:
-        match.away_ht_goals,
-
-      HTR:
-        match.ht_result,
-
-      HS:
-        match.home_shots,
-
-      AS:
-        match.away_shots,
-
-      HST:
-        match.home_shots_on_target,
-
-      AST:
-        match.away_shots_on_target,
-
-      HxG:
-        match.home_xg,
-
-      AxG:
-        match.away_xg,
-
-      HC:
-        match.home_corners,
-
-      AC:
-        match.away_corners,
-
-      HF:
-        match.home_fouls,
-
-      AF:
-        match.away_fouls,
-
-      HY:
-        match.home_yellow_cards,
-
-      AY:
-        match.away_yellow_cards,
-
-      HR:
-        match.home_red_cards,
-
-      AR:
-        match.away_red_cards
-
-    };
-
-
-    rows.push(m);
-
-    Object.keys(raw).forEach(k => {
-      cols.add(k);
-    });
-
-  });
-
-
-  DATA = rows;
-
-  SOURCE_COLUMNS = [...cols];
-
-
-  TEAMS = [
-    ...new Set(
-      DATA.flatMap(m => [
-        m.HomeTeam,
-        m.AwayTeam
-      ]).filter(Boolean)
-    )
-  ].sort(
-    (a, b) =>
-      a.localeCompare(
-        b,
-        'pl'
-      )
-  );
-
-
-  REFEREES = [
-    ...new Set(
-      DATA
-        .map(m => m.Referee)
-        .filter(Boolean)
-    )
-  ].sort(sortBySurname);
-
-
-  return payload;
-}
-
-
-/* ================================
-   POMOCNICZE
-================================ */
-
-function formatISODate(v) {
-
-  if (!v) {
-    return '';
-  }
-
-  const m =
-    String(v).match(
-      /^(\d{4})-(\d{2})-(\d{2})/
-    );
-
-  return m
-    ? `${m[3]}/${m[2]}/${m[1]}`
-    : String(v);
-}
-
-
-function dateVal(s) {
-
-  if (!s) {
-    return 0;
-  }
-
-  const v = String(s);
-
-  const p = v.split('/');
-
-  if (p.length === 3) {
-
-    return new Date(
-      +p[2],
-      +p[1] - 1,
-      +p[0]
-    ).getTime();
-
-  }
-
-
-  const m =
-    v.match(
-      /^(\d{4})-(\d{2})-(\d{2})/
-    );
-
-  return m
-    ? new Date(
-        +m[1],
-        +m[2] - 1,
-        +m[3]
-      ).getTime()
-    : 0;
-}
-
-
-const num = v => {
-
-  const x = Number(v);
-
-  return Number.isFinite(x)
-    ? x
-    : null;
-
-};
-
-
-const avg = a => {
-
-  const x =
-    a.filter(
-      v => v != null
-    );
-
-  return x.length
-    ? x.reduce(
-        (s, v) => s + v,
-        0
-      ) / x.length
-    : null;
-
-};
-
-
-const f = x =>
-  x == null
-    ? '—'
-    : x.toFixed(1);
-
-
-const esc = s =>
-  String(s ?? '')
-    .replace(
-      /[&<>"]/g,
-      m =>
-        ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;'
-        }[m])
-    );
-
-
-/* ================================
-   SORTOWANIE SĘDZIÓW
-================================ */
-
-function sortBySurname(a, b) {
-
-  const sa =
-    String(a)
-      .trim()
-      .split(/\s+/)
-      .pop();
-
-  const sb =
-    String(b)
-      .trim()
-      .split(/\s+/)
-      .pop();
-
-
-  return (
-    sa.localeCompare(
-      sb,
-      'pl'
-    ) ||
-    String(a).localeCompare(
-      String(b),
-      'pl'
-    )
-  );
-
-}
-
-
-/* ================================
-   SELECTY
-================================ */
-
-function fillSelect(
-  sel,
-  items
-) {
-
-  sel.innerHTML = '';
-
-  items.forEach(t => {
-
-    const o =
-      document.createElement(
-        'option'
-      );
-
-    o.value = t;
-    o.textContent = t;
-
-    sel.appendChild(o);
-
-  });
-
-}
-
-
-function filterSelect(
-  searchId,
-  selectId,
-  items
-) {
-
-  const q =
-    document
-      .getElementById(searchId)
-      .value
-      .trim()
-      .toLocaleLowerCase('pl');
-
-
-  const filtered =
-    q
-      ? items.filter(
-          x =>
-            x
-              .toLocaleLowerCase('pl')
-              .includes(q)
-        )
-      : items;
-
-
-  const current =
-    document
-      .getElementById(selectId)
-      .value;
-
-
-  fillSelect(
-    document.getElementById(
-      selectId
-    ),
-    filtered
-  );
-
-
-  if (
-    filtered.includes(
-      current
-    )
-  ) {
-
-    document.getElementById(
-      selectId
-    ).value = current;
-
-  }
-
-}
-
-
-/* ================================
-   MECZE DRUŻYNY
-================================ */
-
-function teamMatches(
-  team,
-  venue
-) {
-
-  return DATA
-
-    .filter(m => {
-
-      if (venue === 'home') {
-        return m.HomeTeam === team;
-      }
-
-      if (venue === 'away') {
-        return m.AwayTeam === team;
-      }
-
-      return (
-        m.HomeTeam === team ||
-        m.AwayTeam === team
-      );
-
-    })
-
-    .sort(
-      (a, b) =>
-        dateVal(b.Date) -
-        dateVal(a.Date)
-    );
-
-}
-
-
-/* ================================
-   DEFINICJE STATYSTYK
-================================ */
-
-const statDefs = [
-
-  [
-    'Gole',
-    'FTHG',
-    'FTAG',
-    'higher'
-  ],
-
-  [
-    'Strzały',
-    'HS',
-    'AS',
-    'higher'
-  ],
-
-  [
-    'Strzały celne',
-    'HST',
-    'AST',
-    'higher'
-  ],
-
-  [
-    'xG',
-    'HxG',
-    'AxG',
-    'higher'
-  ],
-
-  [
-    'Faule',
-    'HF',
-    'AF',
-    'lower'
-  ],
-
-  [
-    'Rożne',
-    'HC',
-    'AC',
-    'higher'
-  ],
-
-  [
-    'Żółte kartki',
-    'HY',
-    'AY',
-    'lower'
-  ],
-
-  [
-    'Czerwone kartki',
-    'HR',
-    'AR',
-    'lower'
-  ]
-
+const FOOTBALL_DATA_SOURCE = 'football-data';
+const IMPORT_TOKEN = 'FA-IMPORT-2026-09';
+
+const LEAGUES = [
+  { code: 'E0', name: 'Premier League', country: 'England' },
+  { code: 'E1', name: 'Championship', country: 'England' },
+  { code: 'E2', name: 'League One', country: 'England' },
+  { code: 'E3', name: 'League Two', country: 'England' },
+  { code: 'EC', name: 'National League', country: 'England' },
+
+  { code: 'SC0', name: 'Premiership', country: 'Scotland' },
+  { code: 'SC1', name: 'Championship', country: 'Scotland' },
+  { code: 'SC2', name: 'League One', country: 'Scotland' },
+  { code: 'SC3', name: 'League Two', country: 'Scotland' },
+
+  { code: 'D1', name: 'Bundesliga', country: 'Germany' },
+  { code: 'D2', name: '2. Bundesliga', country: 'Germany' },
+
+  { code: 'I1', name: 'Serie A', country: 'Italy' },
+  { code: 'I2', name: 'Serie B', country: 'Italy' },
+
+  { code: 'SP1', name: 'La Liga', country: 'Spain' },
+  { code: 'SP2', name: 'Segunda División', country: 'Spain' },
+
+  { code: 'F1', name: 'Ligue 1', country: 'France' },
+  { code: 'F2', name: 'Ligue 2', country: 'France' },
+
+  { code: 'N1', name: 'Eredivisie', country: 'Netherlands' },
+  { code: 'B1', name: 'Jupiler League', country: 'Belgium' },
+  { code: 'P1', name: 'Liga Portugal', country: 'Portugal' },
+  { code: 'T1', name: 'Süper Lig', country: 'Turkey' },
+  { code: 'G1', name: 'Super League', country: 'Greece' }
 ];
 
+const SEASONS = [
+  '2025/26',
+  '2026/27'
+];
 
-/* ================================
-   STATYSTYKI
-================================ */
+function clean(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
 
-function sideVal(
-  m,
-  venue,
-  pair
-) {
+  const v = String(value).trim();
 
-  return num(
-    m[
-      venue === 'home'
-        ? pair[0]
-        : pair[1]
-    ]
-  );
+  if (
+    !v ||
+    v === '-' ||
+    v === 'NA' ||
+    v === 'N/A'
+  ) {
+    return null;
+  }
 
+  return v;
 }
 
+function num(value) {
+  const v = clean(value);
 
-function stats(
-  team,
-  venue,
-  limit
-) {
+  if (v === null) {
+    return null;
+  }
 
-  let r =
-    teamMatches(
-      team,
-      venue
+  const n = Number(
+    String(v).replace(',', '.')
+  );
+
+  return Number.isFinite(n)
+    ? n
+    : null;
+}
+
+function int(value) {
+  const n = num(value);
+
+  return n === null
+    ? null
+    : Math.trunc(n);
+}
+
+function dateToISO(value) {
+  const v = clean(value);
+
+  if (!v) {
+    return null;
+  }
+
+  const m = v.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+  );
+
+  if (m) {
+    const [, day, month, year] = m;
+
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(v)
+  ) {
+    return v;
+  }
+
+  const d = new Date(v);
+
+  if (!Number.isNaN(d.getTime())) {
+    return d.toISOString().slice(0, 10);
+  }
+
+  return null;
+}
+
+function getResult(row) {
+  const direct = clean(row.FTR);
+
+  if (
+    direct === 'H' ||
+    direct === 'D' ||
+    direct === 'A'
+  ) {
+    return direct;
+  }
+
+  const home = int(row.FTHG);
+  const away = int(row.FTAG);
+
+  if (
+    home === null ||
+    away === null
+  ) {
+    return null;
+  }
+
+  if (home > away) return 'H';
+  if (home < away) return 'A';
+
+  return 'D';
+}
+
+function getHTResult(row) {
+  const direct = clean(row.HTR);
+
+  if (
+    direct === 'H' ||
+    direct === 'D' ||
+    direct === 'A'
+  ) {
+    return direct;
+  }
+
+  const home = int(row.HTHG);
+  const away = int(row.HTAG);
+
+  if (
+    home === null ||
+    away === null
+  ) {
+    return null;
+  }
+
+  if (home > away) return 'H';
+  if (home < away) return 'A';
+
+  return 'D';
+}
+
+function getOdds(row) {
+  const odds = {};
+
+  for (
+    const [key, value]
+    of Object.entries(row)
+  ) {
+    if (
+      key.startsWith('B365') ||
+      key.startsWith('BW') ||
+      key.startsWith('IW') ||
+      key.startsWith('PS') ||
+      key.startsWith('WH') ||
+      key.startsWith('VC') ||
+      key.startsWith('Max') ||
+      key.startsWith('Avg') ||
+      key.startsWith('Pinnacle') ||
+      key.startsWith('1XB') ||
+      key.startsWith('BFD')
+    ) {
+      const n = num(value);
+
+      if (n !== null) {
+        odds[key] = n;
+      }
+    }
+  }
+
+  return odds;
+}
+
+function parseCSV(text) {
+  const rows = [];
+
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+
+  for (
+    let i = 0;
+    i < text.length;
+    i++
+  ) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"') {
+      if (
+        inQuotes &&
+        next === '"'
+      ) {
+        cell += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+
+      continue;
+    }
+
+    if (
+      char === ',' &&
+      !inQuotes
+    ) {
+      row.push(cell);
+      cell = '';
+      continue;
+    }
+
+    if (
+      (
+        char === '\n' ||
+        char === '\r'
+      ) &&
+      !inQuotes
+    ) {
+      if (
+        char === '\r' &&
+        next === '\n'
+      ) {
+        i++;
+      }
+
+      row.push(cell);
+      cell = '';
+
+      if (
+        row.some(
+          v =>
+            String(v).trim() !== ''
+        )
+      ) {
+        rows.push(row);
+      }
+
+      row = [];
+      continue;
+    }
+
+    cell += char;
+  }
+
+  if (
+    cell.length > 0 ||
+    row.length > 0
+  ) {
+    row.push(cell);
+
+    if (
+      row.some(
+        v =>
+          String(v).trim() !== ''
+      )
+    ) {
+      rows.push(row);
+    }
+  }
+
+  if (!rows.length) {
+    return [];
+  }
+
+  const headers =
+    rows[0].map(
+      h => String(h).trim()
     );
 
+  return rows
+    .slice(1)
+    .map(values => {
+      const obj = {};
 
-  if (
-    limit !== 'all'
-  ) {
+      for (
+        let i = 0;
+        i < headers.length;
+        i++
+      ) {
+        obj[headers[i]] =
+          values[i] ?? '';
+      }
 
-    r =
-      r.slice(
-        0,
-        +limit
-      );
-
-  }
-
-
-  const out = {
-    n: r.length
-  };
-
-
-  statDefs.forEach(
-    ([name, h, a, rule]) => {
-
-      const vals =
-        r.map(
-          m =>
-            sideVal(
-              m,
-              venue,
-              [h, a]
-            )
-        );
-
-
-      const opp =
-        r.map(
-          m =>
-            sideVal(
-              m,
-              venue,
-              [a, h]
-            )
-        );
-
-
-      out[name] = {
-
-        for:
-          avg(vals),
-
-        against:
-          avg(opp),
-
-        rule
-
-      };
-
-    }
-  );
-
-
-  return out;
-
+      return obj;
+    });
 }
 
+function getLeague(code) {
+  return LEAGUES.find(
+    league =>
+      league.code === code
+  );
+}
 
-/* ================================
-   LEPSZA WARTOŚĆ
-================================ */
-
-function betterClass(
-  a,
-  b,
-  rule
+function getSourceUrl(
+  season,
+  code
 ) {
-
-  if (
-    a == null ||
-    b == null ||
-    a === b
-  ) {
-
-    return '';
-
-  }
-
+  const years =
+    season.replace('/', '');
 
   return (
-    rule === 'higher'
-      ? a > b
-      : a < b
-  )
-    ? 'better'
-    : '';
-
+    'https://' +
+    'football-data.co.uk/mmz4281/' +
+    years +
+    '/' +
+    code +
+    '.csv'
+  );
 }
 
+async function getRemoteCSV(url) {
+  const response =
+    await fetch(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          'User-Agent':
+            'Football-Analizer/1.0'
+        },
+        cf: {
+          cacheTtl: 0,
+          cacheEverything: false
+        }
+      }
+    );
 
-/* ================================
-   WYNIK
-================================ */
+  if (!response.ok) {
+    throw new Error(
+      `Remote CSV HTTP ${response.status} for ${url}`
+    );
+  }
 
-function outcomeFor(
-  m,
-  team
-) {
+  const text =
+    await response.text();
 
   if (
-    m.FTHG == null ||
-    m.FTAG == null
+    !text ||
+    text.trim().length < 100
   ) {
-
-    return '—';
-
+    throw new Error(
+      'Remote CSV is empty or suspiciously small'
+    );
   }
 
-
-  const d =
-    +m.FTHG -
-    +m.FTAG;
-
-
-  const teamHome =
-    m.HomeTeam === team;
-
-
-  const v =
-    teamHome
-      ? d
-      : -d;
-
-
-  return v > 0
-    ? 'W'
-    : v < 0
-      ? 'L'
-      : 'D';
-
+  return text;
 }
 
+async function getCounts(env) {
+  return await env.DB
+    .prepare(`
+      SELECT
+        (SELECT COUNT(*) FROM leagues) AS leagues,
+        (SELECT COUNT(*) FROM seasons) AS seasons,
+        (SELECT COUNT(*) FROM teams) AS teams,
+        (SELECT COUNT(*) FROM referees) AS referees,
+        (SELECT COUNT(*) FROM matches) AS matches,
+        (SELECT COUNT(*) FROM fixtures) AS fixtures
+    `)
+    .first();
+}
 
-/* ================================
-   PORÓWNANIE
-================================ */
-
-function summaryCompare(
-  h,
-  a,
-  mode,
-  limit
+async function ensureLeague(
+  env,
+  leagueConfig
 ) {
+  await env.DB
+    .prepare(`
+      INSERT INTO leagues
+        (
+          name,
+          country,
+          code,
+          source
+        )
+      VALUES
+        (?, ?, ?, ?)
 
-  const hv =
-    mode === 'split'
-      ? 'home'
-      : 'all';
+      ON CONFLICT(source, code)
+      DO UPDATE SET
+        name =
+          excluded.name,
+        country =
+          excluded.country
+    `)
+    .bind(
+      leagueConfig.name,
+      leagueConfig.country,
+      leagueConfig.code,
+      FOOTBALL_DATA_SOURCE
+    )
+    .run();
 
-  const av =
-    mode === 'split'
-      ? 'away'
-      : 'all';
+  return await env.DB
+    .prepare(`
+      SELECT id
+      FROM leagues
+      WHERE source = ?
+        AND code = ?
+      LIMIT 1
+    `)
+    .bind(
+      FOOTBALL_DATA_SOURCE,
+      leagueConfig.code
+    )
+    .first();
+}
 
+async function ensureSeason(
+  env,
+  leagueId,
+  seasonName
+) {
+  const years =
+    seasonName.split('/');
 
-  const hs =
-    stats(
-      h,
-      hv,
-      limit
+  const startYear =
+    Number(
+      `20${years[0]}`
     );
 
-
-  const as =
-    stats(
-      a,
-      av,
-      limit
+  const endYear =
+    Number(
+      `20${years[1]}`
     );
 
+  await env.DB
+    .prepare(`
+      INSERT INTO seasons
+        (
+          league_id,
+          name,
+          start_year,
+          end_year,
+          source
+        )
+      VALUES
+        (?, ?, ?, ?, ?)
 
-  const labels =
-    statDefs.map(
-      x => x[0]
+      ON CONFLICT(league_id, name)
+      DO UPDATE SET
+        start_year =
+          excluded.start_year,
+        end_year =
+          excluded.end_year,
+        source =
+          excluded.source
+    `)
+    .bind(
+      leagueId,
+      seasonName,
+      startYear,
+      endYear,
+      FOOTBALL_DATA_SOURCE
+    )
+    .run();
+
+  return await env.DB
+    .prepare(`
+      SELECT id
+      FROM seasons
+      WHERE league_id = ?
+        AND name = ?
+      LIMIT 1
+    `)
+    .bind(
+      leagueId,
+      seasonName
+    )
+    .first();
+}
+
+async function importCSV(
+  env,
+  leagueConfig,
+  seasonName,
+  csv
+) {
+  const rows =
+    parseCSV(csv);
+
+  if (!rows.length) {
+    throw new Error(
+      `No rows found for ${leagueConfig.code} ${seasonName}`
+    );
+  }
+
+  const league =
+    await ensureLeague(
+      env,
+      leagueConfig
     );
 
+  if (!league) {
+    throw new Error(
+      `League ${leagueConfig.code} was not created`
+    );
+  }
 
-  return `
+  const season =
+    await ensureSeason(
+      env,
+      league.id,
+      seasonName
+    );
 
-<section class="card">
+  if (!season) {
+    throw new Error(
+      `Season ${seasonName} was not created`
+    );
+  }
 
-  <div class="section-title">
+  const teamNames =
+    new Set();
 
-    <h2>
-      📊 Porównanie
-    </h2>
+  const refereeNames =
+    new Set();
 
-    <span class="badge">
-      ${
-        limit === 'all'
-          ? 'Wszystkie'
-          : limit
+  for (
+    const row of rows
+  ) {
+    const home =
+      clean(row.HomeTeam);
+
+    const away =
+      clean(row.AwayTeam);
+
+    const referee =
+      clean(row.Referee);
+
+    if (home) {
+      teamNames.add(home);
+    }
+
+    if (away) {
+      teamNames.add(away);
+    }
+
+    if (referee) {
+      refereeNames.add(
+        referee
+      );
+    }
+  }
+
+  for (
+    const teamName
+    of teamNames
+  ) {
+    await env.DB
+      .prepare(`
+        INSERT INTO teams
+          (
+            name,
+            country,
+            source,
+            source_name
+          )
+        VALUES
+          (?, ?, ?, ?)
+
+        ON CONFLICT(source, source_name)
+        DO UPDATE SET
+          name =
+            excluded.name
+      `)
+      .bind(
+        teamName,
+        leagueConfig.country,
+        FOOTBALL_DATA_SOURCE,
+        teamName
+      )
+      .run();
+  }
+
+  for (
+    const refereeName
+    of refereeNames
+  ) {
+    await env.DB
+      .prepare(`
+        INSERT INTO referees
+          (
+            name,
+            country,
+            source,
+            source_name
+          )
+        VALUES
+          (?, ?, ?, ?)
+
+        ON CONFLICT(source, source_name)
+        DO UPDATE SET
+          name =
+            excluded.name
+      `)
+      .bind(
+        refereeName,
+        leagueConfig.country,
+        FOOTBALL_DATA_SOURCE,
+        refereeName
+      )
+      .run();
+  }
+
+  const teamRows =
+    await env.DB
+      .prepare(`
+        SELECT
+          id,
+          source_name
+        FROM teams
+        WHERE source = ?
+      `)
+      .bind(
+        FOOTBALL_DATA_SOURCE
+      )
+      .all();
+
+  const teamMap =
+    new Map();
+
+  for (
+    const team
+    of teamRows.results || []
+  ) {
+    teamMap.set(
+      team.source_name,
+      team.id
+    );
+  }
+
+  const refereeRows =
+    await env.DB
+      .prepare(`
+        SELECT
+          id,
+          source_name
+        FROM referees
+        WHERE source = ?
+      `)
+      .bind(
+        FOOTBALL_DATA_SOURCE
+      )
+      .all();
+
+  const refereeMap =
+    new Map();
+
+  for (
+    const referee
+    of refereeRows.results || []
+  ) {
+    refereeMap.set(
+      referee.source_name,
+      referee.id
+    );
+  }
+
+  let imported = 0;
+
+  const batchSize = 50;
+
+  for (
+    let i = 0;
+    i < rows.length;
+    i += batchSize
+  ) {
+    const batch =
+      rows.slice(
+        i,
+        i + batchSize
+      );
+
+    const statements = [];
+
+    for (
+      const row of batch
+    ) {
+      const date =
+        dateToISO(row.Date);
+
+      const homeTeam =
+        clean(row.HomeTeam);
+
+      const awayTeam =
+        clean(row.AwayTeam);
+
+      if (
+        !date ||
+        !homeTeam ||
+        !awayTeam
+      ) {
+        continue;
       }
-      meczów
-    </span>
 
-  </div>
-
-
-  <div class="compare-head">
-
-    <div></div>
-
-    <div style="text-align:right">
-      ${esc(h)}
-    </div>
-
-    <div style="text-align:right">
-      ${esc(a)}
-    </div>
-
-  </div>
-
-
-  ${labels.map(k => `
-
-    <div class="stat-row">
-
-      <div class="stat-name">
-        ${k}
-      </div>
-
-
-      <div class="val ${
-        betterClass(
-          hs[k].for,
-          as[k].for,
-          hs[k].rule
-        )
-      }">
-
-        ${f(hs[k].for)}
-
-      </div>
-
-
-      <div class="val ${
-        betterClass(
-          as[k].for,
-          hs[k].for,
-          hs[k].rule
-        )
-      }">
-
-        ${f(as[k].for)}
-
-      </div>
-
-    </div>
-
-  `).join('')}
-
-
-  <div
-    class="small"
-    style="margin-top:8px"
-  >
-
-    Pogrubienie oznacza przewagę
-    w danej metryce.
-    Dla fauli i kartek niższa
-    średnia jest traktowana
-    jako lepsza.
-
-  </div>
-
-</section>
-
-`;
-
-}
-
-
-/* ================================
-   FORMA
-================================ */
-
-function formCard(
-  h,
-  a,
-  mode,
-  limit
-) {
-
-  const hv =
-    mode === 'split'
-      ? 'home'
-      : 'all';
-
-
-  const av =
-    mode === 'split'
-      ? 'away'
-      : 'all';
-
-
-  const n =
-    limit === 'all'
-      ? 5
-      : Math.min(
-          5,
-          +limit
+      const homeTeamId =
+        teamMap.get(
+          homeTeam
         );
 
+      const awayTeamId =
+        teamMap.get(
+          awayTeam
+        );
 
-  const hm =
-    teamMatches(
-      h,
-      hv
-    ).slice(
-      0,
-      n
-    );
-
-
-  const am =
-    teamMatches(
-      a,
-      av
-    ).slice(
-      0,
-      n
-    );
-
-
-  const line = (
-    team,
-    arr
-  ) => `
-
-    <div class="formline">
-
-      <div class="formteam">
-        ${esc(team)}
-      </div>
-
-      ${
-        arr.map(m => {
-
-          const x =
-            outcomeFor(
-              m,
-              team
-            );
-
-          return `
-
-            <span
-              class="formdot ${x.toLowerCase()}"
-            >
-              ${x}
-            </span>
-
-          `;
-
-        }).join('')
+      if (
+        !homeTeamId ||
+        !awayTeamId
+      ) {
+        continue;
       }
 
-    </div>
+      const refereeName =
+        clean(row.Referee);
 
-  `;
+      const refereeId =
+        refereeName
+          ? (
+              refereeMap.get(
+                refereeName
+              ) ?? null
+            )
+          : null;
 
+      const homeGoals =
+        int(row.FTHG);
 
-  return `
+      const awayGoals =
+        int(row.FTAG);
 
-<section class="card">
+      const homeHTGoals =
+        int(row.HTHG);
 
-  <h2>
-    📈 Forma
-  </h2>
+      const awayHTGoals =
+        int(row.HTAG);
 
-  ${line(h, hm)}
+      const homeXG =
+        num(row.HxG);
 
-  ${line(a, am)}
+      const awayXG =
+        num(row.AxG);
 
-  <div class="small">
+      const odds =
+        JSON.stringify(
+          getOdds(row)
+        );
 
-    Ostatnie ${n}
-    spotkań w wybranym trybie.
+      const rawData =
+        JSON.stringify(row);
 
-  </div>
+      const sourceMatchId =
+        `${seasonName}|${date}|${homeTeam}|${awayTeam}`;
 
-</section>
+      statements.push(
+        env.DB
+          .prepare(`
+            INSERT INTO matches
+            (
+              league_id,
+              season_id,
+              match_date,
+              status,
 
-`;
+              home_team_id,
+              away_team_id,
+              referee_id,
 
-}
+              home_goals,
+              away_goals,
+              result,
 
+              home_ht_goals,
+              away_ht_goals,
+              ht_result,
 
-/* ================================
-   OSTATNIE MECZE
-================================ */
+              home_shots,
+              away_shots,
 
-function recentCard(
-  team,
-  venue,
-  limit
-) {
+              home_shots_on_target,
+              away_shots_on_target,
 
-  const r =
-    teamMatches(
-      team,
-      venue
-    ).slice(
-      0,
-      limit === 'all'
-        ? 10
-        : +limit
-    );
+              home_xg,
+              away_xg,
 
+              home_corners,
+              away_corners,
 
-  const label =
-    venue === 'home'
-      ? 'HOME'
-      : venue === 'away'
-        ? 'AWAY'
-        : 'HOME + AWAY';
+              home_fouls,
+              away_fouls,
 
+              home_yellow_cards,
+              away_yellow_cards,
 
-  return `
+              home_red_cards,
+              away_red_cards,
 
-<section class="card">
+              home_possession,
+              away_possession,
 
-  <div class="section-title">
+              odds_json,
+              raw_data_json,
 
-    <h2>
-      📋 Ostatnie mecze —
-      ${esc(team)}
-    </h2>
+              source,
+              source_match_id
+            )
 
-    <span class="badge">
-      ${label}
-    </span>
+            VALUES
+            (
+              ?, ?, ?, ?,
+              ?, ?, ?,
+              ?, ?, ?,
+              ?, ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?
+            )
 
-  </div>
+            ON CONFLICT(
+              source,
+              league_id,
+              season_id,
+              match_date,
+              home_team_id,
+              away_team_id
+            )
 
+            DO UPDATE SET
 
-  ${
-    r.length
+              referee_id =
+                excluded.referee_id,
 
-      ? r.map(m => `
+              home_goals =
+                excluded.home_goals,
 
-        <div class="match-card">
+              away_goals =
+                excluded.away_goals,
 
-          <div class="match-top">
+              result =
+                excluded.result,
 
-            <span>
-              ${esc(m.Date)}
-            </span>
+              home_ht_goals =
+                excluded.home_ht_goals,
 
-            <span>
-              ${outcomeFor(m, team)}
-            </span>
+              away_ht_goals =
+                excluded.away_ht_goals,
 
-          </div>
+              ht_result =
+                excluded.ht_result,
 
+              home_shots =
+                excluded.home_shots,
 
-          <div class="match-main">
+              away_shots =
+                excluded.away_shots,
 
-            ${esc(m.HomeTeam)}
+              home_shots_on_target =
+                excluded.home_shots_on_target,
 
-            ${m.FTHG ?? '—'}:${m.FTAG ?? '—'}
+              away_shots_on_target =
+                excluded.away_shots_on_target,
 
-            ${esc(m.AwayTeam)}
+              home_xg =
+                excluded.home_xg,
 
-          </div>
+              away_xg =
+                excluded.away_xg,
 
+              home_corners =
+                excluded.home_corners,
 
-          <div class="match-stats">
+              away_corners =
+                excluded.away_corners,
 
-            Strzały
-            ${m.HS ?? '—'}:${m.AS ?? '—'}
+              home_fouls =
+                excluded.home_fouls,
 
-            ·
+              away_fouls =
+                excluded.away_fouls,
 
-            Celne
-            ${m.HST ?? '—'}:${m.AST ?? '—'}
+              home_yellow_cards =
+                excluded.home_yellow_cards,
 
-            ·
+              away_yellow_cards =
+                excluded.away_yellow_cards,
 
-            Rożne
-            ${m.HC ?? '—'}:${m.AC ?? '—'}
+              home_red_cards =
+                excluded.home_red_cards,
 
-            ·
+              away_red_cards =
+                excluded.away_red_cards,
 
-            Faule
-            ${m.HF ?? '—'}:${m.AF ?? '—'}
+              home_possession =
+                excluded.home_possession,
 
-            ·
+              away_possession =
+                excluded.away_possession,
 
-            ŻK
-            ${m.HY ?? '—'}:${m.AY ?? '—'}
+              odds_json =
+                excluded.odds_json,
 
-          </div>
+              raw_data_json =
+                excluded.raw_data_json,
 
-        </div>
+              updated_at =
+                CURRENT_TIMESTAMP
+          `)
+          .bind(
+            league.id,
+            season.id,
+            date,
+            'finished',
 
-      `).join('')
+            homeTeamId,
+            awayTeamId,
+            refereeId,
 
-      : `
+            homeGoals,
+            awayGoals,
+            getResult(row),
 
-        <div class="empty">
-          Brak danych.
-        </div>
+            homeHTGoals,
+            awayHTGoals,
+            getHTResult(row),
 
-      `
+            int(row.HS),
+            int(row.AS),
+
+            int(row.HST),
+            int(row.AST),
+
+            homeXG,
+            awayXG,
+
+            int(row.HC),
+            int(row.AC),
+
+            int(row.HF),
+            int(row.AF),
+
+            int(row.HY),
+            int(row.AY),
+
+            int(row.HR),
+            int(row.AR),
+
+            num(row.HP),
+            num(row.AP),
+
+            odds,
+            rawData,
+
+            FOOTBALL_DATA_SOURCE,
+            sourceMatchId
+          )
+      );
+
+      imported++;
+    }
+
+    if (
+      statements.length
+    ) {
+      await env.DB.batch(
+        statements
+      );
+    }
   }
 
-</section>
+  return {
+    league:
+      leagueConfig.name,
 
-`;
+    country:
+      leagueConfig.country,
 
+    code:
+      leagueConfig.code,
+
+    season:
+      seasonName,
+
+    rows:
+      rows.length,
+
+    imported
+  };
 }
 
-
-/* ================================
-   H2H
-================================ */
-
-function h2hCard(
-  h,
-  a
+async function importLeagueSeason(
+  env,
+  leagueCode,
+  seasonName
 ) {
+  const league =
+    getLeague(
+      leagueCode
+    );
 
-  const r =
-    DATA
+  if (!league) {
+    throw new Error(
+      `Unknown league code: ${leagueCode}`
+    );
+  }
 
-      .filter(
-        m =>
-          (
-            m.HomeTeam === h &&
-            m.AwayTeam === a
-          ) ||
-          (
-            m.HomeTeam === a &&
-            m.AwayTeam === h
-          )
-      )
+  if (
+    !SEASONS.includes(
+      seasonName
+    )
+  ) {
+    throw new Error(
+      `Unknown season: ${seasonName}`
+    );
+  }
 
-      .sort(
-        (x, y) =>
-          dateVal(y.Date) -
-          dateVal(x.Date)
-      )
+  const url =
+    getSourceUrl(
+      seasonName,
+      leagueCode
+    );
 
-      .slice(
-        0,
-        10
+  const csv =
+    await getRemoteCSV(
+      url
+    );
+
+  return await importCSV(
+    env,
+    league,
+    seasonName,
+    csv
+  );
+}
+
+async function getLeagueList(
+  env
+) {
+  const result =
+    await env.DB
+      .prepare(`
+        SELECT
+          l.id,
+          l.name,
+          l.country,
+          l.code,
+          COUNT(DISTINCT m.id)
+            AS matches
+        FROM leagues l
+        LEFT JOIN matches m
+          ON m.league_id = l.id
+        GROUP BY
+          l.id,
+          l.name,
+          l.country,
+          l.code
+        ORDER BY
+          l.country,
+          l.name
+      `)
+      .all();
+
+  return (
+    result.results || []
+  );
+}
+
+async function getSeasonList(
+  env
+) {
+  const result =
+    await env.DB
+      .prepare(`
+        SELECT
+          s.id,
+          s.name,
+          s.start_year,
+          s.end_year,
+          l.name AS league,
+          l.code AS league_code,
+          l.country
+        FROM seasons s
+        JOIN leagues l
+          ON l.id =
+            s.league_id
+        ORDER BY
+          s.start_year DESC,
+          l.country,
+          l.name
+      `)
+      .all();
+
+  return (
+    result.results || []
+  );
+}
+
+export default {
+
+  async fetch(
+    request,
+    env
+  ) {
+
+    const url =
+      new URL(
+        request.url
       );
 
 
-  return `
+    /* ================================
+       TEST
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/test'
+    ) {
+
+      return new Response(
+        'WORKER OK',
+        {
+          status: 200,
+          headers: {
+            'content-type':
+              'text/plain; charset=utf-8'
+          }
+        }
+      );
+
+    }
+
+
+    /* ================================
+       DB TEST
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/db-test'
+    ) {
+
+      try {
+
+        const counts =
+          await getCounts(
+            env
+          );
+
+        return json({
+          ok: true,
+          database:
+            'football-analyzer-db',
+          counts
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              )
+          },
+          500
+        );
 
-<section class="card">
-
-  <div class="section-title">
-
-    <h2>
-      🤝 H2H
-    </h2>
-
-    <span class="badge">
-      ${r.length} / max 10
-    </span>
-
-  </div>
-
-
-  ${
-    r.length
-
-      ? r.map(m => `
-
-        <div class="match-card">
-
-          <div class="match-top">
-
-            <span>
-              ${esc(m.Date)}
-            </span>
-
-            <span>
-              ${esc(m.Referee || '')}
-            </span>
-
-          </div>
-
-
-          <div class="match-main">
-
-            ${esc(m.HomeTeam)}
-
-            ${m.FTHG ?? '—'}:${m.FTAG ?? '—'}
-
-            ${esc(m.AwayTeam)}
-
-          </div>
-
-
-          <div class="match-stats">
-
-            Strzały
-            ${m.HS ?? '—'}:${m.AS ?? '—'}
-
-            ·
-
-            Celne
-            ${m.HST ?? '—'}:${m.AST ?? '—'}
-
-            ·
-
-            Rożne
-            ${m.HC ?? '—'}:${m.AC ?? '—'}
-
-          </div>
-
-        </div>
-
-      `).join('')
-
-      : `
-
-        <div class="empty">
-          Brak H2H w danych.
-        </div>
-
-      `
-  }
-
-</section>
-
-`;
-
-}
-
-
-/* ================================
-   PROFIL SĘDZIEGO
-================================ */
-
-function refereeProfile(
-  name
-) {
-
-  if (!name) {
-    return '';
-  }
-
-
-  const r =
-    DATA.filter(
-      m =>
-        m.Referee === name
-    );
-
-
-  const av = k =>
-    avg(
-      r.map(
-        m =>
-          num(m[k])
-      )
-    );
-
-
-  const total = pair =>
-    avg(
-      r.map(m => {
-
-        const a =
-          num(m[pair[0]]);
-
-        const b =
-          num(m[pair[1]]);
-
-
-        return (
-          a != null &&
-          b != null
-        )
-          ? a + b
-          : null;
-
-      })
-    );
-
-
-  return `
-
-<section class="card">
-
-  <div class="section-title">
-
-    <h2>
-      👨‍⚖️ ${esc(name)}
-    </h2>
-
-    <span class="badge">
-      ${r.length} meczów
-    </span>
-
-  </div>
-
-
-  <div class="tablelike">
-
-    <div class="table-row">
-      <div>Faule gospodarzy</div>
-      <div style="text-align:right">
-        ${f(av('HF'))}
-      </div>
-    </div>
-
-
-    <div class="table-row">
-      <div>Faule gości</div>
-      <div style="text-align:right">
-        ${f(av('AF'))}
-      </div>
-    </div>
-
-
-    <div class="table-row">
-      <div>Faule łącznie</div>
-      <div style="text-align:right">
-        ${f(total(['HF','AF']))}
-      </div>
-    </div>
-
-
-    <div class="table-row">
-      <div>Żółte gospodarzy</div>
-      <div style="text-align:right">
-        ${f(av('HY'))}
-      </div>
-    </div>
-
-
-    <div class="table-row">
-      <div>Żółte gości</div>
-      <div style="text-align:right">
-        ${f(av('AY'))}
-      </div>
-    </div>
-
-
-    <div class="table-row">
-      <div>Żółte łącznie</div>
-      <div style="text-align:right">
-        ${f(total(['HY','AY']))}
-      </div>
-    </div>
-
-
-    <div class="table-row">
-      <div>Czerwone łącznie</div>
-      <div style="text-align:right">
-        ${f(total(['HR','AR']))}
-      </div>
-    </div>
-
-  </div>
-
-</section>
-
-`;
-
-}
-
-
-/* ================================
-   SZCZEGÓŁOWE STATYSTYKI
-================================ */
-
-function detailsCard(
-  h,
-  a,
-  mode,
-  limit
-) {
-
-  const hv =
-    mode === 'split'
-      ? 'home'
-      : 'all';
-
-
-  const av =
-    mode === 'split'
-      ? 'away'
-      : 'all';
-
-
-  const hs =
-    stats(
-      h,
-      hv,
-      limit
-    );
-
-
-  const as =
-    stats(
-      a,
-      av,
-      limit
-    );
-
-
-  return `
-
-<section class="card">
-
-  <details>
-
-    <summary>
-
-      📊 Szczegółowe statystyki
-
-      <span class="summary-arrow">
-        ＋
-      </span>
-
-    </summary>
-
-
-    <div
-      style="margin-top:10px"
-    >
-
-      <div class="compare-head">
-
-        <div></div>
-
-        <div style="text-align:right">
-          ${esc(h)}
-        </div>
-
-        <div style="text-align:right">
-          ${esc(a)}
-        </div>
-
-      </div>
-
-
-      ${
-        statDefs.map(
-          ([k, , , rule]) => `
-
-            <div class="stat-row">
-
-              <div>
-                ${k} — przeciwko
-              </div>
-
-
-              <div class="val ${
-                betterClass(
-                  hs[k].against,
-                  as[k].against,
-                  rule
-                )
-              }">
-
-                ${f(
-                  hs[k].against
-                )}
-
-              </div>
-
-
-              <div class="val ${
-                betterClass(
-                  as[k].against,
-                  hs[k].against,
-                  rule
-                )
-              }">
-
-                ${f(
-                  as[k].against
-                )}
-
-              </div>
-
-            </div>
-
-          `
-        ).join('')
       }
 
-    </div>
-
-  </details>
-
-</section>
-
-`;
-
-}
-
-
-/* ================================
-   INFORMACJE O DANYCH
-================================ */
-
-function allDataNote() {
-
-  return `
-
-<section class="card">
-
-  <h2>
-    📦 Dane
-  </h2>
-
-  <div class="muted">
-
-    Dane są pobierane bezpośrednio
-    z D1.
-
-    ${DATA.length}
-    meczów,
-
-    ${TEAMS.length}
-    drużyn i
-
-    ${REFEREES.length}
-    sędziów.
-
-  </div>
-
-</section>
-
-`;
-
-}
-
-
-/* ================================
-   ANALIZA
-================================ */
-
-function analyze() {
-
-  const h =
-    document.getElementById(
-      'home'
-    ).value;
-
-
-  const a =
-    document.getElementById(
-      'away'
-    ).value;
-
-
-  if (
-    !h ||
-    !a ||
-    h === a
-  ) {
-
-    document.getElementById(
-      'results'
-    ).innerHTML = `
-
-      <section class="card">
-
-        Wybierz dwie różne
-        drużyny.
-
-      </section>
-
-    `;
-
-    return;
-
-  }
-
-
-  const r =
-    document.getElementById(
-      'referee'
-    ).value;
-
-
-  const limit =
-    document.getElementById(
-      'sample'
-    ).value;
-
-
-  const mode =
-    document.getElementById(
-      'venueMode'
-    ).value;
-
-
-  const hv =
-    mode === 'split'
-      ? 'home'
-      : 'all';
-
-
-  const av =
-    mode === 'split'
-      ? 'away'
-      : 'all';
-
-
-  document.getElementById(
-    'results'
-  ).innerHTML = `
-
-    <section class="card">
-
-      <h2>
-
-        ${esc(h)}
-        —
-        ${esc(a)}
-
-      </h2>
-
-
-      <span class="badge">
-
-        Premier League •
-        analiza danych
-
-      </span>
-
-
-      <div
-        class="muted"
-        style="margin-top:8px"
-      >
-
-        Zakres:
-
-        ${
-          limit === 'all'
-            ? 'wszystkie mecze'
-            : limit + ' meczów'
-        }
-
-        ·
-
-        Tryb:
-
-        ${
-          mode === 'split'
-            ? 'Home / Away'
-            : 'Wszystkie mecze'
-        }
-
-      </div>
-
-    </section>
-
-
-    ${summaryCompare(
-      h,
-      a,
-      mode,
-      limit
-    )}
-
-
-    ${formCard(
-      h,
-      a,
-      mode,
-      limit
-    )}
-
-
-    ${detailsCard(
-      h,
-      a,
-      mode,
-      limit
-    )}
-
-
-    ${recentCard(
-      h,
-      hv,
-      limit
-    )}
-
-
-    ${recentCard(
-      a,
-      av,
-      limit
-    )}
-
-
-    ${h2hCard(
-      h,
-      a
-    )}
-
-
-    ${refereeProfile(
-      r
-    )}
-
-
-    ${allDataNote()}
-
-  `;
-
-}
-
-
-/* ================================
-   START
-================================ */
-
-async function boot() {
-
-  const status =
-    document.getElementById(
-      'status'
-    );
-
-
-  status.textContent =
-    'Pobieranie danych z bazy D1…';
-
-
-  try {
-
-    await loadLiveData();
-
-
-    fillSelect(
-      document.getElementById(
-        'home'
-      ),
-      TEAMS
-    );
-
-
-    fillSelect(
-      document.getElementById(
-        'away'
-      ),
-      TEAMS
-    );
-
-
-    fillSelect(
-      document.getElementById(
-        'referee'
-      ),
-      [
-        '',
-        ...REFEREES
-      ]
-    );
-
-
-    document.getElementById(
-      'home'
-    ).value =
-      TEAMS.includes(
-        'Arsenal'
-      )
-        ? 'Arsenal'
-        : TEAMS[0] || '';
-
-
-    document.getElementById(
-      'away'
-    ).value =
-      TEAMS.includes(
-        'Liverpool'
-      )
-        ? 'Liverpool'
-        : TEAMS.find(
-            t =>
-              t !==
-              document.getElementById(
-                'home'
-              ).value
-          ) ||
-          TEAMS[1] ||
-          '';
-
-
-    document.getElementById(
-      'analyze'
-    ).onclick =
-      analyze;
-
-
-    document.getElementById(
-      'sample'
-    ).onchange =
-      analyze;
-
-
-    document.getElementById(
-      'venueMode'
-    ).onchange =
-      analyze;
-
-
-    document.getElementById(
-      'referee'
-    ).onchange =
-      analyze;
-
-
-    document.getElementById(
-      'homeSearch'
-    ).oninput =
-      () =>
-        filterSelect(
-          'homeSearch',
-          'home',
-          TEAMS
-        );
-
-
-    document.getElementById(
-      'awaySearch'
-    ).oninput =
-      () =>
-        filterSelect(
-          'awaySearch',
-          'away',
-          TEAMS
-        );
-
-
-    document.getElementById(
-      'refSearch'
-    ).oninput =
-      () => {
-
-        const q =
-          document
-            .getElementById(
-              'refSearch'
-            )
-            .value
-            .trim()
-            .toLocaleLowerCase(
-              'pl'
-            );
-
-
-        const items =
-          q
-            ? REFEREES.filter(
-                x =>
-                  x
-                    .toLocaleLowerCase(
-                      'pl'
-                    )
-                    .includes(q)
+    }
+
+
+    /* ================================
+       LEAGUES API
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/leagues'
+    ) {
+
+      try {
+
+        const leagues =
+          await getLeagueList(
+            env
+          );
+
+        return json({
+          ok: true,
+          available:
+            LEAGUES,
+          imported:
+            leagues
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
               )
-            : REFEREES;
-
-
-        const current =
-          document.getElementById(
-            'referee'
-          ).value;
-
-
-        fillSelect(
-          document.getElementById(
-            'referee'
-          ),
-          [
-            '',
-            ...items
-          ]
+          },
+          500
         );
+
+      }
+
+    }
+
+
+    /* ================================
+       SEASONS API
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/seasons'
+    ) {
+
+      try {
+
+        const seasons =
+          await getSeasonList(
+            env
+          );
+
+        return json({
+          ok: true,
+          seasons
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              )
+          },
+          500
+        );
+
+      }
+
+    }
+
+
+    /* ================================
+       MATCHES API
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/matches'
+    ) {
+
+      try {
+
+        const requestedLimit =
+          Number(
+            url.searchParams.get(
+              'limit'
+            ) || '1000'
+          );
+
+        const requestedOffset =
+          Number(
+            url.searchParams.get(
+              'offset'
+            ) || '0'
+          );
+
+        const leagueCode =
+          clean(
+            url.searchParams.get(
+              'league'
+            )
+          );
+
+        const seasonName =
+          clean(
+            url.searchParams.get(
+              'season'
+            )
+          );
+
+        const teamName =
+          clean(
+            url.searchParams.get(
+              'team'
+            )
+          );
+
+        const limit =
+          Math.min(
+            Math.max(
+              Number.isFinite(
+                requestedLimit
+              )
+                ? Math.trunc(
+                    requestedLimit
+                  )
+                : 1000,
+              1
+            ),
+            2000
+          );
+
+        const offset =
+          Math.max(
+            Number.isFinite(
+              requestedOffset
+            )
+              ? Math.trunc(
+                  requestedOffset
+                )
+              : 0,
+            0
+          );
+
+
+        const where = [];
+        const binds = [];
+
+
+        if (leagueCode) {
+
+          where.push(
+            'l.code = ?'
+          );
+
+          binds.push(
+            leagueCode
+          );
+
+        }
+
+
+        if (seasonName) {
+
+          where.push(
+            's.name = ?'
+          );
+
+          binds.push(
+            seasonName
+          );
+
+        }
+
+
+        if (teamName) {
+
+          where.push(
+            '(ht.name = ? OR at.name = ?)'
+          );
+
+          binds.push(
+            teamName,
+            teamName
+          );
+
+        }
+
+
+        const whereSQL =
+          where.length
+            ? 'WHERE ' +
+              where.join(
+                ' AND '
+              )
+            : '';
+
+
+        const query = `
+
+          SELECT
+
+            m.id,
+            m.match_date,
+            m.status,
+
+            s.name AS season,
+
+            l.name AS league,
+            l.country AS league_country,
+            l.code AS league_code,
+
+            ht.name AS home_team,
+            at.name AS away_team,
+
+            r.name AS referee,
+
+            m.home_goals,
+            m.away_goals,
+            m.result,
+
+            m.home_ht_goals,
+            m.away_ht_goals,
+            m.ht_result,
+
+            m.home_shots,
+            m.away_shots,
+
+            m.home_shots_on_target,
+            m.away_shots_on_target,
+
+            m.home_xg,
+            m.away_xg,
+
+            m.home_corners,
+            m.away_corners,
+
+            m.home_fouls,
+            m.away_fouls,
+
+            m.home_yellow_cards,
+            m.away_yellow_cards,
+
+            m.home_red_cards,
+            m.away_red_cards,
+
+            m.home_possession,
+            m.away_possession,
+
+            m.odds_json,
+            m.raw_data_json,
+
+            m.source,
+            m.source_match_id,
+
+            m.created_at,
+            m.updated_at
+
+          FROM matches m
+
+          JOIN leagues l
+            ON l.id =
+              m.league_id
+
+          JOIN seasons s
+            ON s.id =
+              m.season_id
+
+          JOIN teams ht
+            ON ht.id =
+              m.home_team_id
+
+          JOIN teams at
+            ON at.id =
+              m.away_team_id
+
+          LEFT JOIN referees r
+            ON r.id =
+              m.referee_id
+
+          ${whereSQL}
+
+          ORDER BY
+            m.match_date DESC,
+            m.id DESC
+
+          LIMIT ?
+          OFFSET ?
+
+        `;
+
+
+        binds.push(
+          limit,
+          offset
+        );
+
+
+        const result =
+          await env.DB
+            .prepare(query)
+            .bind(...binds)
+            .all();
+
+
+        const matches =
+          (
+            result.results ||
+            []
+          ).map(match => ({
+
+            ...match,
+
+            odds:
+              match.odds_json
+                ? JSON.parse(
+                    match.odds_json
+                  )
+                : {},
+
+            raw_data:
+              match.raw_data_json
+                ? JSON.parse(
+                    match.raw_data_json
+                  )
+                : {}
+
+          }));
+
+
+        return json({
+          ok: true,
+          count:
+            matches.length,
+          limit,
+          offset,
+          matches
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              )
+          },
+          500
+        );
+
+      }
+
+    }
+
+
+    /* ================================
+       IMPORT ONE LEAGUE / SEASON
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/import'
+    ) {
+
+      const token =
+        url.searchParams.get(
+          'token'
+        );
+
+      if (
+        token !==
+        IMPORT_TOKEN
+      ) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              'Unauthorized'
+          },
+          401
+        );
+
+      }
+
+
+      try {
+
+        const leagueCode =
+          clean(
+            url.searchParams.get(
+              'league'
+            )
+          );
+
+        const seasonName =
+          clean(
+            url.searchParams.get(
+              'season'
+            )
+          );
 
 
         if (
-          items.includes(
-            current
-          )
+          !leagueCode ||
+          !seasonName
         ) {
 
-          document.getElementById(
-            'referee'
-          ).value =
-            current;
+          return json(
+            {
+              ok: false,
+              error:
+                'Use league=E0&season=2025/26'
+            },
+            400
+          );
 
         }
 
-      };
+
+        const result =
+          await importLeagueSeason(
+            env,
+            leagueCode,
+            seasonName
+          );
 
 
-    status.textContent =
-
-      `D1: ${DATA.length} meczów, ` +
-      `${TEAMS.length} drużyn i ` +
-      `${REFEREES.length} sędziów. ` +
-      `Baza: football-analyzer-db.`;
+        const counts =
+          await getCounts(
+            env
+          );
 
 
-    analyze();
+        return json({
+          ok: true,
+          result,
+          counts
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              ),
+            note:
+              'Existing D1 data was not deleted or cleared.'
+          },
+          502
+        );
+
+      }
+
+    }
 
 
-  } catch (e) {
+    /* ================================
+       CURRENT SEASON REFRESH
+    ================================= */
 
-    console.error(e);
+    if (
+      url.pathname ===
+      '/api/refresh'
+    ) {
+
+      const token =
+        url.searchParams.get(
+          'token'
+        );
+
+      if (
+        token !==
+        IMPORT_TOKEN
+      ) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              'Unauthorized'
+          },
+          401
+        );
+
+      }
 
 
-    status.textContent =
-      e.message ||
-      'Nie udało się pobrać danych z D1.';
+      try {
+
+        const leagueCode =
+          clean(
+            url.searchParams.get(
+              'league'
+            )
+          );
 
 
-    document.getElementById(
-      'results'
-    ).innerHTML = `
+        if (!leagueCode) {
 
-      <section class="card">
+          return json(
+            {
+              ok: false,
+              error:
+                'Use league=E0'
+            },
+            400
+          );
 
-        <h2>
-          Nie udało się
-          załadować danych
-        </h2>
+        }
 
-        <div class="muted">
 
-          Spróbuj odświeżyć stronę.
+        const result =
+          await importLeagueSeason(
+            env,
+            leagueCode,
+            '2026/27'
+          );
 
-        </div>
 
-      </section>
+        const counts =
+          await getCounts(
+            env
+          );
 
-    `;
+
+        return json({
+          ok: true,
+          result,
+          counts
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              ),
+            note:
+              'Existing D1 data was not deleted or cleared.'
+          },
+          502
+        );
+
+      }
+
+    }
+
+
+    /* ================================
+       STATIC ASSETS
+    ================================= */
+
+    return env.ASSETS.fetch(
+      request
+    );
+
+  },
+
+
+  /* ================================
+     CRON
+  ================================= */
+
+  async scheduled(
+    controller,
+    env,
+    ctx
+  ) {
+
+    /*
+      Na tym etapie cron odświeża
+      Premier League, żeby zachować
+      działającą automatyzację.
+
+      Po przetestowaniu wieloligowego
+      importu rozszerzymy cron na
+      wszystkie aktywne ligi.
+    */
+
+    ctx.waitUntil(
+      (async () => {
+
+        try {
+
+          const result =
+            await importLeagueSeason(
+              env,
+              'E0',
+              '2026/27'
+            );
+
+
+          console.log(
+            'Football-Data refresh OK',
+            JSON.stringify(
+              result
+            )
+          );
+
+        } catch (e) {
+
+          console.error(
+            'Football-Data refresh failed:',
+            String(
+              e.message || e
+            )
+          );
+
+        }
+
+      })()
+    );
 
   }
 
+};
+
+
+/* ================================
+   JSON RESPONSE
+================================ */
+
+function json(
+  data,
+  status = 200
+) {
+
+  return new Response(
+    JSON.stringify(
+      data
+    ),
+    {
+      status,
+
+      headers: {
+        'content-type':
+          'application/json; charset=utf-8',
+
+        'cache-control':
+          'no-store',
+
+        'access-control-allow-origin':
+          '*'
+      }
+    }
+  );
+
 }
-
-
-boot();
-
-</script>
-
-</body>
-</html>
