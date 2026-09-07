@@ -707,7 +707,12 @@
 
         <select id="sampleSelect">
 
-          <option value="5">
+          <!-- DOMYŚLNIE 5 -->
+
+          <option
+            value="5"
+            selected
+          >
             5
           </option>
 
@@ -719,7 +724,7 @@
             15
           </option>
 
-          <option value="20" selected>
+          <option value="20">
             20
           </option>
 
@@ -801,7 +806,7 @@
         ></div>
 
         <div class="hint">
-          Sędzia nie zmienia liczby meczów w próbie drużyny.
+          Sędzia nie zmienia próby drużyny.
         </div>
 
       </div>
@@ -889,7 +894,6 @@
         Forma
       </h2>
 
-
       <div class="grid grid-2">
 
         <div>
@@ -961,7 +965,8 @@
       >
         Ostatnie mecze według wybranej liczby,
         ligi oraz ustawienia Home/Away.
-        Wybór sędziego nie zmienia tej próby.
+        W szczegółach pierwsza wartość oznacza
+        wybraną drużynę, druga jej przeciwnika.
       </div>
 
       <div id="details"></div>
@@ -1151,8 +1156,7 @@
 
 
   /*
-   * Puste wartości NIE mogą zostać
-   * zamienione na 0.
+   * Puste wartości NIE są zamieniane na 0.
    */
 
   function numeric(value) {
@@ -1167,8 +1171,10 @@
 
     }
 
+
     const n =
       Number(value);
+
 
     return Number.isFinite(n)
       ? n
@@ -1185,6 +1191,7 @@
     const n =
       numeric(value);
 
+
     if (
       n === null
     ) {
@@ -1192,6 +1199,7 @@
       return '—';
 
     }
+
 
     return n.toLocaleString(
       'pl-PL',
@@ -1202,46 +1210,6 @@
         maximumFractionDigits:
           decimals
       }
-    );
-
-  }
-
-
-  function average(
-    rows,
-    field
-  ) {
-
-    const values =
-      rows
-        .map(
-          row =>
-            numeric(
-              row[field]
-            )
-        )
-        .filter(
-          value =>
-            value !== null
-        );
-
-
-    if (
-      !values.length
-    ) {
-
-      return null;
-
-    }
-
-
-    return (
-      values.reduce(
-        (a, b) =>
-          a + b,
-        0
-      ) /
-      values.length
     );
 
   }
@@ -1275,7 +1243,9 @@
     onClear
   ) {
 
-    if (!value) {
+    if (
+      !value
+    ) {
 
       container.innerHTML =
         '';
@@ -1332,9 +1302,14 @@
         .filter(
           league => {
 
-            if (!search) {
+            if (
+              !search
+            ) {
+
               return true;
+
             }
+
 
             const text =
               [
@@ -1342,6 +1317,7 @@
                 league.country,
                 league.code
               ].join(' ');
+
 
             return normalize(
               text
@@ -1364,6 +1340,7 @@
                 'pl'
               );
 
+
             if (
               country !== 0
             ) {
@@ -1371,6 +1348,7 @@
               return country;
 
             }
+
 
             return String(
               a.name || ''
@@ -1388,7 +1366,9 @@
     let html = '';
 
 
-    if (!search) {
+    if (
+      !search
+    ) {
 
       html += `
 
@@ -1432,7 +1412,7 @@
             )}
 
             —
-            
+
             ${escapeHtml(
               league.name || ''
             )}
@@ -1527,8 +1507,10 @@
       const display =
         `${league.country} — ${league.name}`;
 
+
       els.leagueInput.value =
         display;
+
 
       renderSelected(
         els.leagueSelected,
@@ -1540,6 +1522,7 @@
 
       els.leagueInput.value =
         '';
+
 
       renderSelected(
         els.leagueSelected,
@@ -1571,14 +1554,17 @@
     selected.league =
       '';
 
+
     els.leagueInput.value =
       '';
+
 
     renderSelected(
       els.leagueSelected,
       '',
       clearLeague
     );
+
 
     closeSuggestions(
       els.leagueSuggestions
@@ -1609,14 +1595,6 @@
     for (
       const row of state.matches
     ) {
-
-      /*
-       * Jeżeli wybrano konkretną ligę,
-       * ograniczamy drużyny do tej ligi.
-       *
-       * Jeżeli selected.league === '',
-       * mamy wszystkie ligi.
-       */
 
       if (
         selected.league &&
@@ -2170,6 +2148,7 @@
     selected.referee =
       '';
 
+
     els.refInput.value =
       '';
 
@@ -2200,6 +2179,7 @@
 
     const isHome =
       row.home_team === team;
+
 
     const isAway =
       row.away_team === team;
@@ -2254,7 +2234,7 @@
 
 
     /*
-     * "Wszystkie mecze"
+     * Wszystkie mecze.
      */
 
     return isHome
@@ -2390,7 +2370,14 @@
     rows
   ) {
 
-    function avgField(
+    /*
+     * FOR = statystyka wybranej drużyny.
+     *
+     * AGAINST = odpowiednia statystyka
+     * przeciwnika w tych samych meczach.
+     */
+
+    function averageFor(
       homeField,
       awayField
     ) {
@@ -2421,6 +2408,89 @@
           value =
             numeric(
               row[awayField]
+            );
+
+        }
+
+
+        if (
+          value !== null
+        ) {
+
+          values.push(
+            value
+          );
+
+        }
+
+      }
+
+
+      if (
+        !values.length
+      ) {
+
+        return null;
+
+      }
+
+
+      return (
+        values.reduce(
+          (a, b) =>
+            a + b,
+          0
+        ) /
+        values.length
+      );
+
+    }
+
+
+    function averageAgainst(
+      homeField,
+      awayField
+    ) {
+
+      const values = [];
+
+
+      for (
+        const row of rows
+      ) {
+
+        let value = null;
+
+
+        /*
+         * Jeżeli wybrana drużyna jest gospodarzem,
+         * AGAINST pobieramy z pola AWAY.
+         */
+
+        if (
+          row.home_team === team
+        ) {
+
+          value =
+            numeric(
+              row[awayField]
+            );
+
+        }
+
+
+        /*
+         * Jeżeli wybrana drużyna jest gościem,
+         * AGAINST pobieramy z pola HOME.
+         */
+
+        else if (
+          row.away_team === team
+        ) {
+
+          value =
+            numeric(
+              row[homeField]
             );
 
         }
@@ -2499,62 +2569,137 @@
       draws,
       losses,
 
+
+      /* ===== GOLE ===== */
+
       goalsFor:
-        avgField(
+        averageFor(
           'home_goals',
           'away_goals'
         ),
 
       goalsAgainst:
-        avgField(
-          'away_goals',
-          'home_goals'
+        averageAgainst(
+          'home_goals',
+          'away_goals'
         ),
 
+
+      /* ===== STRZAŁY ===== */
+
       shots:
-        avgField(
+        averageFor(
           'home_shots',
           'away_shots'
         ),
 
+      shotsAgainst:
+        averageAgainst(
+          'home_shots',
+          'away_shots'
+        ),
+
+
+      /* ===== STRZAŁY CELNE ===== */
+
       shotsTarget:
-        avgField(
+        averageFor(
           'home_shots_on_target',
           'away_shots_on_target'
         ),
 
+      shotsTargetAgainst:
+        averageAgainst(
+          'home_shots_on_target',
+          'away_shots_on_target'
+        ),
+
+
+      /* ===== xG ===== */
+
       xg:
-        avgField(
+        averageFor(
           'home_xg',
           'away_xg'
         ),
 
+      xgAgainst:
+        averageAgainst(
+          'home_xg',
+          'away_xg'
+        ),
+
+
+      /* ===== ROŻNE ===== */
+
       corners:
-        avgField(
+        averageFor(
           'home_corners',
           'away_corners'
         ),
 
+      cornersAgainst:
+        averageAgainst(
+          'home_corners',
+          'away_corners'
+        ),
+
+
+      /* ===== FAULE ===== */
+
       fouls:
-        avgField(
+        averageFor(
           'home_fouls',
           'away_fouls'
         ),
 
+      foulsAgainst:
+        averageAgainst(
+          'home_fouls',
+          'away_fouls'
+        ),
+
+
+      /* ===== ŻÓŁTE ===== */
+
       yellow:
-        avgField(
+        averageFor(
           'home_yellow_cards',
           'away_yellow_cards'
         ),
 
+      yellowAgainst:
+        averageAgainst(
+          'home_yellow_cards',
+          'away_yellow_cards'
+        ),
+
+
+      /* ===== CZERWONE ===== */
+
       red:
-        avgField(
+        averageFor(
           'home_red_cards',
           'away_red_cards'
         ),
 
+      redAgainst:
+        averageAgainst(
+          'home_red_cards',
+          'away_red_cards'
+        ),
+
+
+      /* ===== POSIADANIE ===== */
+
       possession:
-        avgField(
+        averageFor(
+          'home_possession',
+          'away_possession'
+        ),
+
+      possessionAgainst:
+        averageAgainst(
           'home_possession',
           'away_possession'
         )
@@ -2583,6 +2728,18 @@
 
     {
       label:
+        'Średnia goli straconych',
+
+      key:
+        'goalsAgainst',
+
+      higherBetter:
+        false
+    },
+
+
+    {
+      label:
         'Średnia strzałów',
 
       key:
@@ -2591,6 +2748,18 @@
       higherBetter:
         true
     },
+
+    {
+      label:
+        'Średnia strzałów przeciwnika',
+
+      key:
+        'shotsAgainst',
+
+      higherBetter:
+        false
+    },
+
 
     {
       label:
@@ -2605,6 +2774,18 @@
 
     {
       label:
+        'Strzały celne przeciwnika',
+
+      key:
+        'shotsTargetAgainst',
+
+      higherBetter:
+        false
+    },
+
+
+    {
+      label:
         'xG',
 
       key:
@@ -2613,6 +2794,18 @@
       higherBetter:
         true
     },
+
+    {
+      label:
+        'xG przeciwnika',
+
+      key:
+        'xgAgainst',
+
+      higherBetter:
+        false
+    },
+
 
     {
       label:
@@ -2627,6 +2820,18 @@
 
     {
       label:
+        'Rzuty rożne przeciwnika',
+
+      key:
+        'cornersAgainst',
+
+      higherBetter:
+        false
+    },
+
+
+    {
+      label:
         'Faule',
 
       key:
@@ -2635,6 +2840,24 @@
       higherBetter:
         false
     },
+
+    {
+      label:
+        'Faule przeciwnika',
+
+      key:
+        'foulsAgainst',
+
+      /*
+       * Więcej fauli przeciwnika
+       * interpretujemy jako korzystniejsze
+       * dla analizowanej drużyny.
+       */
+
+      higherBetter:
+        true
+    },
+
 
     {
       label:
@@ -2649,6 +2872,18 @@
 
     {
       label:
+        'Żółte kartki przeciwnika',
+
+      key:
+        'yellowAgainst',
+
+      higherBetter:
+        true
+    },
+
+
+    {
+      label:
         'Czerwone kartki',
 
       key:
@@ -2660,6 +2895,18 @@
 
     {
       label:
+        'Czerwone kartki przeciwnika',
+
+      key:
+        'redAgainst',
+
+      higherBetter:
+        true
+    },
+
+
+    {
+      label:
         'Posiadanie piłki %',
 
       key:
@@ -2667,6 +2914,17 @@
 
       higherBetter:
         true
+    },
+
+    {
+      label:
+        'Posiadanie przeciwnika %',
+
+      key:
+        'possessionAgainst',
+
+      higherBetter:
+        false
     }
 
   ];
@@ -3019,9 +3277,8 @@
           row => {
 
             /*
-             * H2H może być z różnych lig.
-             * Dlatego nie ograniczamy go
-             * do selected.league.
+             * H2H pozostaje niezależne
+             * od wybranej ligi.
              */
 
             return (
@@ -3129,6 +3386,72 @@
   }
 
 
+  function opponentStat(
+    row,
+    team,
+    homeField,
+    awayField
+  ) {
+
+    if (
+      row.home_team === team
+    ) {
+
+      return numeric(
+        row[awayField]
+      );
+
+    }
+
+
+    if (
+      row.away_team === team
+    ) {
+
+      return numeric(
+        row[homeField]
+      );
+
+    }
+
+
+    return null;
+
+  }
+
+
+  function detailPair(
+    label,
+    own,
+    opponent
+  ) {
+
+    if (
+      own === null &&
+      opponent === null
+    ) {
+
+      return '';
+
+    }
+
+
+    return `
+
+      <span class="pill">
+
+        ${escapeHtml(label)}:
+        ${formatNumber(own)}
+        —
+        ${formatNumber(opponent)}
+
+      </span>
+
+    `;
+
+  }
+
+
   function renderDetailMatch(
     row,
     team
@@ -3158,8 +3481,26 @@
       );
 
 
+    const shotsAgainst =
+      opponentStat(
+        row,
+        team,
+        'home_shots',
+        'away_shots'
+      );
+
+
     const shotsTarget =
       matchStat(
+        row,
+        team,
+        'home_shots_on_target',
+        'away_shots_on_target'
+      );
+
+
+    const shotsTargetAgainst =
+      opponentStat(
         row,
         team,
         'home_shots_on_target',
@@ -3176,8 +3517,26 @@
       );
 
 
+    const cornersAgainst =
+      opponentStat(
+        row,
+        team,
+        'home_corners',
+        'away_corners'
+      );
+
+
     const fouls =
       matchStat(
+        row,
+        team,
+        'home_fouls',
+        'away_fouls'
+      );
+
+
+    const foulsAgainst =
+      opponentStat(
         row,
         team,
         'home_fouls',
@@ -3194,8 +3553,26 @@
       );
 
 
+    const yellowAgainst =
+      opponentStat(
+        row,
+        team,
+        'home_yellow_cards',
+        'away_yellow_cards'
+      );
+
+
     const red =
       matchStat(
+        row,
+        team,
+        'home_red_cards',
+        'away_red_cards'
+      );
+
+
+    const redAgainst =
+      opponentStat(
         row,
         team,
         'home_red_cards',
@@ -3209,6 +3586,100 @@
         team,
         'home_xg',
         'away_xg'
+      );
+
+
+    const xgAgainst =
+      opponentStat(
+        row,
+        team,
+        'home_xg',
+        'away_xg'
+      );
+
+
+    const possession =
+      matchStat(
+        row,
+        team,
+        'home_possession',
+        'away_possession'
+      );
+
+
+    const possessionAgainst =
+      opponentStat(
+        row,
+        team,
+        'home_possession',
+        'away_possession'
+      );
+
+
+    let detailStats = '';
+
+
+    detailStats +=
+      detailPair(
+        'Strzały',
+        shots,
+        shotsAgainst
+      );
+
+
+    detailStats +=
+      detailPair(
+        'Celne',
+        shotsTarget,
+        shotsTargetAgainst
+      );
+
+
+    detailStats +=
+      detailPair(
+        'Rożne',
+        corners,
+        cornersAgainst
+      );
+
+
+    detailStats +=
+      detailPair(
+        'Faule',
+        fouls,
+        foulsAgainst
+      );
+
+
+    detailStats +=
+      detailPair(
+        'ŻK',
+        yellow,
+        yellowAgainst
+      );
+
+
+    detailStats +=
+      detailPair(
+        'CK',
+        red,
+        redAgainst
+      );
+
+
+    detailStats +=
+      detailPair(
+        'Posiadanie',
+        possession,
+        possessionAgainst
+      );
+
+
+    detailStats +=
+      detailPair(
+        'xG',
+        xg,
+        xgAgainst
       );
 
 
@@ -3283,6 +3754,7 @@
             ${
               result
                 ? `
+
                   <span
                     class="form-dot ${resultClass}"
                     style="
@@ -3294,6 +3766,7 @@
                   >
                     ${result}
                   </span>
+
                 `
                 : ''
             }
@@ -3305,66 +3778,7 @@
 
         <div class="detail-stats">
 
-          <span class="pill">
-            Strzały:
-            ${formatNumber(
-              shots
-            )}
-          </span>
-
-
-          <span class="pill">
-            Celne:
-            ${formatNumber(
-              shotsTarget
-            )}
-          </span>
-
-
-          <span class="pill">
-            Rożne:
-            ${formatNumber(
-              corners
-            )}
-          </span>
-
-
-          <span class="pill">
-            Faule:
-            ${formatNumber(
-              fouls
-            )}
-          </span>
-
-
-          <span class="pill">
-            ŻK:
-            ${formatNumber(
-              yellow
-            )}
-          </span>
-
-
-          <span class="pill">
-            CK:
-            ${formatNumber(
-              red
-            )}
-          </span>
-
-
-          ${
-            xg !== null
-              ? `
-                <span class="pill">
-                  xG:
-                  ${formatNumber(
-                    xg
-                  )}
-                </span>
-              `
-              : ''
-          }
+          ${detailStats}
 
         </div>
 
@@ -3381,19 +3795,8 @@
   ) {
 
     /*
-     * UWAGA:
-     *
-     * rows są już:
-     *
-     * 1. przefiltrowane wg ligi
-     * 2. przefiltrowane wg Home/Away
-     * 3. ograniczone do wybranej
-     *    liczby meczów
-     *
-     * Sędzia NIE filtruje rows.
-     *
-     * Pokazujemy maksymalnie 5
-     * najnowszych z tej próby.
+     * Szczegóły pokazują maksymalnie
+     * 5 najnowszych meczów z wybranej próby.
      */
 
     const matches =
@@ -3538,11 +3941,7 @@
 
 
     const yellow = [];
-
-
     const red = [];
-
-
     const fouls = [];
 
 
@@ -3970,15 +4369,7 @@
 
 
       /*
-       * WAŻNE:
-       *
-       * selected.league = ''
-       *
-       * oznacza:
-       * WSZYSTKIE LIGI.
-       *
-       * Nie wybieramy żadnej ligi
-       * automatycznie.
+       * Domyślnie wszystkie ligi.
        */
 
       selected.league =
@@ -4011,204 +4402,6 @@
 
 
   /* =========================================
-     ANALIZA
-     ========================================= */
-
-  function analyze() {
-
-    const home =
-      selected.home;
-
-
-    const away =
-      selected.away;
-
-
-    if (
-      !home ||
-      !away
-    ) {
-
-      setStatus(
-        'Wybierz gospodarza i gościa.',
-        'error'
-      );
-
-      return;
-
-    }
-
-
-    if (
-      home === away
-    ) {
-
-      setStatus(
-        'Wybierz dwie różne drużyny.',
-        'error'
-      );
-
-      return;
-
-    }
-
-
-    const venueMode =
-      els.venueSelect.value;
-
-
-    /*
-     * NAJPIERW filtrujemy:
-     *
-     * - ligę
-     * - Home/Away
-     *
-     * POTEM wybieramy liczbę meczów.
-     */
-
-    let homeRows =
-      teamRows(
-        home,
-        venueMode
-      );
-
-
-    let awayRows =
-      teamRows(
-        away,
-        venueMode
-      );
-
-
-    homeRows =
-      selectedSample(
-        homeRows
-      );
-
-
-    awayRows =
-      selectedSample(
-        awayRows
-      );
-
-
-    /*
-     * WAŻNE:
-     *
-     * NIE MA tutaj:
-     *
-     * if (selected.referee) {
-     *   homeRows = ...
-     *   awayRows = ...
-     * }
-     *
-     * Sędzia NIE ogranicza próby.
-     */
-
-
-    const homeStats =
-      teamStats(
-        home,
-        homeRows
-      );
-
-
-    const awayStats =
-      teamStats(
-        away,
-        awayRows
-      );
-
-
-    els.resultHome.textContent =
-      home;
-
-
-    els.resultAway.textContent =
-      away;
-
-
-    els.formHomeTitle.textContent =
-      home;
-
-
-    els.formAwayTitle.textContent =
-      away;
-
-
-    els.resultHomeMeta.textContent =
-      `${homeRows.length} meczów`;
-
-
-    els.resultAwayMeta.textContent =
-      `${awayRows.length} meczów`;
-
-
-    renderComparison(
-      homeStats,
-      awayStats
-    );
-
-
-    renderForm(
-      els.formHome,
-      homeRows,
-      home
-    );
-
-
-    renderForm(
-      els.formAway,
-      awayRows,
-      away
-    );
-
-
-    renderH2H(
-      home,
-      away
-    );
-
-
-    renderDetails(
-      homeRows,
-      awayRows
-    );
-
-
-    renderRefereeProfile(
-      selected.referee
-    );
-
-
-    els.result
-      .classList
-      .remove(
-        'hidden'
-      );
-
-
-    setStatus(
-      `Analiza: ${home} vs ${away}`,
-      'ok'
-    );
-
-
-    window.scrollTo({
-
-      top:
-        els.result.offsetTop -
-        10,
-
-      behavior:
-        'smooth'
-
-    });
-
-  }
-
-
-  /* =========================================
      EVENTY — LIGA
      ========================================= */
 
@@ -4227,12 +4420,6 @@
     .addEventListener(
       'input',
       () => {
-
-        /*
-         * Jeżeli użytkownik zaczyna
-         * ponownie pisać, poprzedni wybór
-         * ligi przestaje obowiązywać.
-         */
 
         selected.league =
           '';
@@ -4430,6 +4617,200 @@
       'click',
       analyze
     );
+
+
+  /* =========================================
+     ANALIZA — GŁÓWNA FUNKCJA
+     ========================================= */
+
+  function analyze() {
+
+    const home =
+      selected.home;
+
+
+    const away =
+      selected.away;
+
+
+    if (
+      !home ||
+      !away
+    ) {
+
+      setStatus(
+        'Wybierz gospodarza i gościa.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    if (
+      home === away
+    ) {
+
+      setStatus(
+        'Wybierz dwie różne drużyny.',
+        'error'
+      );
+
+      return;
+
+    }
+
+
+    const venueMode =
+      els.venueSelect.value;
+
+
+    /*
+     * Najpierw:
+     *
+     * 1. liga
+     * 2. Home/Away
+     *
+     * Potem:
+     *
+     * 3. liczba meczów
+     */
+
+
+    let homeRows =
+      teamRows(
+        home,
+        venueMode
+      );
+
+
+    let awayRows =
+      teamRows(
+        away,
+        venueMode
+      );
+
+
+    homeRows =
+      selectedSample(
+        homeRows
+      );
+
+
+    awayRows =
+      selectedSample(
+        awayRows
+      );
+
+
+    /*
+     * SĘDZIA NIE JEST FILTREM PRÓBY.
+     *
+     * Jest osobnym modułem.
+     */
+
+
+    const homeStats =
+      teamStats(
+        home,
+        homeRows
+      );
+
+
+    const awayStats =
+      teamStats(
+        away,
+        awayRows
+      );
+
+
+    els.resultHome.textContent =
+      home;
+
+
+    els.resultAway.textContent =
+      away;
+
+
+    els.formHomeTitle.textContent =
+      home;
+
+
+    els.formAwayTitle.textContent =
+      away;
+
+
+    els.resultHomeMeta.textContent =
+      `${homeRows.length} meczów`;
+
+
+    els.resultAwayMeta.textContent =
+      `${awayRows.length} meczów`;
+
+
+    renderComparison(
+      homeStats,
+      awayStats
+    );
+
+
+    renderForm(
+      els.formHome,
+      homeRows,
+      home
+    );
+
+
+    renderForm(
+      els.formAway,
+      awayRows,
+      away
+    );
+
+
+    renderH2H(
+      home,
+      away
+    );
+
+
+    renderDetails(
+      homeRows,
+      awayRows
+    );
+
+
+    renderRefereeProfile(
+      selected.referee
+    );
+
+
+    els.result
+      .classList
+      .remove(
+        'hidden'
+      );
+
+
+    setStatus(
+      `Analiza: ${home} vs ${away}`,
+      'ok'
+    );
+
+
+    window.scrollTo({
+
+      top:
+        els.result.offsetTop -
+        10,
+
+      behavior:
+        'smooth'
+
+    });
+
+  }
 
 
   /* =========================================
