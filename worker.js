@@ -268,15 +268,10 @@ function getLeague(code) {
 }
 
 /*
- * WAŻNE:
+ * Football-Data:
  *
- * Football-Data używa:
  * 2025/26 -> 2526
  * 2026/27 -> 2627
- *
- * Nie:
- * 202526
- * 202627
  */
 function getSourceUrl(season, code) {
   const [start, end] = season.split('/');
@@ -590,8 +585,7 @@ async function importCSV(
   const refereeMap = new Map();
 
   for (
-    const referee of
-      refereeRows.results || []
+    const referee of refereeRows.results || []
   ) {
     refereeMap.set(
       referee.source_name,
@@ -926,6 +920,92 @@ async function importLeagueSeason(
   );
 }
 
+/*
+ * =========================================================
+ * IMPORT ALL LEAGUES
+ * =========================================================
+ */
+
+async function importAllLeagues(
+  env,
+  seasonName
+) {
+  const results = [];
+
+  let successful = 0;
+  let failed = 0;
+  let totalImported = 0;
+
+  for (const league of LEAGUES) {
+    try {
+      console.log(
+        `Starting import ${league.code} ${seasonName}`
+      );
+
+      const result =
+        await importLeagueSeason(
+          env,
+          league.code,
+          seasonName
+        );
+
+      results.push({
+        ok: true,
+        ...result
+      });
+
+      successful++;
+      totalImported +=
+        Number(result.imported || 0);
+
+      console.log(
+        `Import OK ${league.code}: ${result.imported} matches`
+      );
+    } catch (e) {
+      failed++;
+
+      results.push({
+        ok: false,
+        league:
+          league.name,
+        country:
+          league.country,
+        code:
+          league.code,
+        season:
+          seasonName,
+        error:
+          String(
+            e.message || e
+          )
+      });
+
+      console.error(
+        `Import FAILED ${league.code}:`,
+        String(
+          e.message || e
+        )
+      );
+    }
+  }
+
+  return {
+    season:
+      seasonName,
+
+    requested:
+      LEAGUES.length,
+
+    successful,
+
+    failed,
+
+    totalImported,
+
+    results
+  };
+}
+
 async function getLeagueList(env) {
   const result =
     await env.DB
@@ -985,7 +1065,8 @@ async function getSeasonList(env) {
 export default {
   async fetch(
     request,
-    env
+    env,
+    ctx
   ) {
     const url =
       new URL(request.url);
@@ -1449,7 +1530,102 @@ export default {
                 e.message || e
               ),
             note:
-              'Existing D1 data was not deleted or cleared.'
+              'Existing data was not deleted or cleared.'
+          },
+          502
+        );
+      }
+    }
+
+    /*
+     * ================================
+     * IMPORT ALL LEAGUES / SEASON
+     * ================================
+     *
+     * Domyślnie:
+     * 2025/26
+     *
+     * Przykład:
+     * /api/import-all?token=FA-IMPORT-2026-09&season=2025/26
+     */
+
+    if (
+      url.pathname ===
+      '/api/import-all'
+    ) {
+      const token =
+        url.searchParams.get(
+          'token'
+        );
+
+      if (
+        token !==
+        IMPORT_TOKEN
+      ) {
+        return json(
+          {
+            ok: false,
+            error:
+              'Unauthorized'
+          },
+          401
+        );
+      }
+
+      const seasonName =
+        clean(
+          url.searchParams.get(
+            'season'
+          )
+        ) || '2025/26';
+
+      if (
+        !SEASONS.includes(
+          seasonName
+        )
+      ) {
+        return json(
+          {
+            ok: false,
+            error:
+              `Unknown season: ${seasonName}`,
+            available:
+              SEASONS
+          },
+          400
+        );
+      }
+
+      try {
+        const result =
+          await importAllLeagues(
+            env,
+            seasonName
+          );
+
+        const counts =
+          await getCounts(env);
+
+        return json({
+          ok: true,
+
+          message:
+            'Mass league import finished.',
+
+          result,
+
+          counts
+        });
+      } catch (e) {
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              ),
+            note:
+              'Existing data was not deleted or cleared.'
           },
           502
         );
@@ -1528,7 +1704,7 @@ export default {
                 e.message || e
               ),
             note:
-              'Existing D1 data was not deleted or cleared.'
+              'Existing data was not deleted or cleared.'
           },
           502
         );
@@ -1561,10 +1737,8 @@ export default {
      * Na tym etapie cron
      * odświeża Premier League.
      *
-     * Po przetestowaniu
-     * wieloligowego importu
-     * rozszerzymy cron na wszystkie
-     * aktywne ligi.
+     * Później rozszerzymy go na
+     * wszystkie aktywne ligi.
      */
 
     ctx.waitUntil(
