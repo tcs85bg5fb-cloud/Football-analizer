@@ -370,13 +370,13 @@
 
     .match-list {
       display: grid;
-      gap: 10px;
+      gap: 8px;
     }
 
     .mini-match {
       display: block;
 
-      padding: 12px;
+      padding: 10px;
 
       border: 1px solid #e5e7eb;
       border-radius: 11px;
@@ -407,25 +407,37 @@
     }
 
     .h2h-stats {
-      margin-top: 10px;
-      padding-top: 9px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+
+      margin-top: 9px;
+      padding-top: 8px;
+
       border-top: 1px solid #eef2f7;
     }
 
-    .h2h-stats .stats th,
-    .h2h-stats .stats td {
-      padding: 7px 4px;
-      font-size: 12px;
+    .h2h-stat-pill {
+      display: inline-flex;
+      align-items: center;
+
+      min-height: 28px;
+      padding: 4px 9px;
+
+      border-radius: 999px;
+
+      background: #f1f5f9;
+      color: #475569;
+
+      font-size: 11px;
+      font-weight: 800;
+
+      margin: 0;
     }
 
-    .h2h-stats .stats th:first-child,
-    .h2h-stats .stats td:first-child {
-      width: 46%;
-    }
-
-    .h2h-stats .stats th:not(:first-child),
-    .h2h-stats .stats td:not(:first-child) {
-      width: 27%;
+    .h2h-stat-pill .better {
+      font-weight: 900;
+      color: #111827;
     }
 
     /* =========================================
@@ -1024,17 +1036,22 @@
 
   const API = '';
 
+
   const state = {
+
     matches: [],
     leagues: []
+
   };
 
 
   const selected = {
+
     league: '',
     home: '',
     away: '',
     referee: ''
+
   };
 
 
@@ -1176,6 +1193,10 @@
 
   }
 
+
+  /*
+   * Puste wartości NIE są zamieniane na 0.
+   */
 
   function numeric(value) {
 
@@ -2217,6 +2238,11 @@
       venueMode === 'split'
     ) {
 
+      /*
+       * Gospodarz:
+       * tylko mecze domowe.
+       */
+
       if (
         team === selected.home
       ) {
@@ -2227,6 +2253,11 @@
 
       }
 
+
+      /*
+       * Gość:
+       * tylko mecze wyjazdowe.
+       */
 
       if (
         team === selected.away
@@ -2240,6 +2271,10 @@
 
     }
 
+
+    /*
+     * Wszystkie mecze.
+     */
 
     return isHome
       ? 'home'
@@ -2257,6 +2292,10 @@
       .filter(
         row => {
 
+          /*
+           * Filtr ligi.
+           */
+
           if (
             selected.league &&
             row.league_code !==
@@ -2267,6 +2306,10 @@
 
           }
 
+
+          /*
+           * Filtr Home/Away.
+           */
 
           return (
             getTeamSide(
@@ -2460,7 +2503,9 @@
               row[awayField]
             );
 
-        } else if (
+        }
+
+        else if (
           row.away_team === team
         ) {
 
@@ -2545,6 +2590,7 @@
       draws,
       losses,
 
+
       goalsFor:
         averageFor(
           'home_goals',
@@ -2556,6 +2602,7 @@
           'home_goals',
           'away_goals'
         ),
+
 
       shots:
         averageFor(
@@ -2569,6 +2616,7 @@
           'away_shots'
         ),
 
+
       shotsTarget:
         averageFor(
           'home_shots_on_target',
@@ -2580,6 +2628,7 @@
           'home_shots_on_target',
           'away_shots_on_target'
         ),
+
 
       xg:
         averageFor(
@@ -2593,6 +2642,7 @@
           'away_xg'
         ),
 
+
       corners:
         averageFor(
           'home_corners',
@@ -2604,6 +2654,7 @@
           'home_corners',
           'away_corners'
         ),
+
 
       fouls:
         averageFor(
@@ -2617,6 +2668,7 @@
           'away_fouls'
         ),
 
+
       yellow:
         averageFor(
           'home_yellow_cards',
@@ -2629,6 +2681,7 @@
           'away_yellow_cards'
         ),
 
+
       red:
         averageFor(
           'home_red_cards',
@@ -2640,6 +2693,7 @@
           'home_red_cards',
           'away_red_cards'
         ),
+
 
       possession:
         averageFor(
@@ -2659,117 +2713,215 @@
 
 
   /* =========================================
-     DEFINICJE STATYSTYK
+     PORÓWNANIE
      ========================================= */
 
   const STAT_DEFINITIONS = [
 
     {
-      label: 'Średnia goli',
-      key: 'goalsFor',
-      higherBetter: true
+      label:
+        'Średnia goli',
+
+      key:
+        'goalsFor',
+
+      higherBetter:
+        true
     },
 
     {
-      label: 'Średnia goli straconych',
-      key: 'goalsAgainst',
-      higherBetter: false
+      label:
+        'Średnia goli straconych',
+
+      key:
+        'goalsAgainst',
+
+      higherBetter:
+        false
+    },
+
+
+    {
+      label:
+        'Średnia strzałów',
+
+      key:
+        'shots',
+
+      higherBetter:
+        true
     },
 
     {
-      label: 'Średnia strzałów',
-      key: 'shots',
-      higherBetter: true
+      label:
+        'Średnia strzałów przeciwnika',
+
+      key:
+        'shotsAgainst',
+
+      higherBetter:
+        false
+    },
+
+
+    {
+      label:
+        'Strzały celne',
+
+      key:
+        'shotsTarget',
+
+      higherBetter:
+        true
     },
 
     {
-      label: 'Średnia strzałów przeciwnika',
-      key: 'shotsAgainst',
-      higherBetter: false
+      label:
+        'Strzały celne przeciwnika',
+
+      key:
+        'shotsTargetAgainst',
+
+      higherBetter:
+        false
+    },
+
+
+    {
+      label:
+        'xG',
+
+      key:
+        'xg',
+
+      higherBetter:
+        true
     },
 
     {
-      label: 'Strzały celne',
-      key: 'shotsTarget',
-      higherBetter: true
+      label:
+        'xG przeciwnika',
+
+      key:
+        'xgAgainst',
+
+      higherBetter:
+        false
+    },
+
+
+    {
+      label:
+        'Rzuty rożne',
+
+      key:
+        'corners',
+
+      higherBetter:
+        true
     },
 
     {
-      label: 'Strzały celne przeciwnika',
-      key: 'shotsTargetAgainst',
-      higherBetter: false
+      label:
+        'Rzuty rożne przeciwnika',
+
+      key:
+        'cornersAgainst',
+
+      higherBetter:
+        false
+    },
+
+
+    {
+      label:
+        'Faule',
+
+      key:
+        'fouls',
+
+      higherBetter:
+        false
     },
 
     {
-      label: 'xG',
-      key: 'xg',
-      higherBetter: true
+      label:
+        'Faule przeciwnika',
+
+      key:
+        'foulsAgainst',
+
+      higherBetter:
+        true
+    },
+
+
+    {
+      label:
+        'Żółte kartki',
+
+      key:
+        'yellow',
+
+      higherBetter:
+        false
     },
 
     {
-      label: 'xG przeciwnika',
-      key: 'xgAgainst',
-      higherBetter: false
+      label:
+        'Żółte kartki przeciwnika',
+
+      key:
+        'yellowAgainst',
+
+      higherBetter:
+        true
+    },
+
+
+    {
+      label:
+        'Czerwone kartki',
+
+      key:
+        'red',
+
+      higherBetter:
+        false
     },
 
     {
-      label: 'Rzuty rożne',
-      key: 'corners',
-      higherBetter: true
+      label:
+        'Czerwone kartki przeciwnika',
+
+      key:
+        'redAgainst',
+
+      higherBetter:
+        true
+    },
+
+
+    {
+      label:
+        'Posiadanie piłki %',
+
+      key:
+        'possession',
+
+      higherBetter:
+        true
     },
 
     {
-      label: 'Rzuty rożne przeciwnika',
-      key: 'cornersAgainst',
-      higherBetter: false
-    },
+      label:
+        'Posiadanie przeciwnika %',
 
-    {
-      label: 'Faule',
-      key: 'fouls',
-      higherBetter: false
-    },
+      key:
+        'possessionAgainst',
 
-    {
-      label: 'Faule przeciwnika',
-      key: 'foulsAgainst',
-      higherBetter: true
-    },
-
-    {
-      label: 'Żółte kartki',
-      key: 'yellow',
-      higherBetter: false
-    },
-
-    {
-      label: 'Żółte kartki przeciwnika',
-      key: 'yellowAgainst',
-      higherBetter: true
-    },
-
-    {
-      label: 'Czerwone kartki',
-      key: 'red',
-      higherBetter: false
-    },
-
-    {
-      label: 'Czerwone kartki przeciwnika',
-      key: 'redAgainst',
-      higherBetter: true
-    },
-
-    {
-      label: 'Posiadanie piłki %',
-      key: 'possession',
-      higherBetter: true
-    },
-
-    {
-      label: 'Posiadanie przeciwnika %',
-      key: 'possessionAgainst',
-      higherBetter: false
+      higherBetter:
+        false
     }
 
   ];
@@ -3034,10 +3186,22 @@
 
 
   /* =========================================
-     H2H — STATYSTYKI POJEDYNCZEGO MECZU
+     H2H
      ========================================= */
 
-  function h2hStatValue(
+  /*
+   * Pobiera konkretną statystykę dla jednej
+   * z analizowanych drużyn.
+   *
+   * Dzięki temu w H2H zawsze pokazujemy:
+   *
+   * wybrany gospodarz — wybrany gość
+   *
+   * niezależnie od tego, kto faktycznie
+   * był gospodarzem historycznego meczu.
+   */
+
+  function h2hTeamStat(
     row,
     team,
     homeField,
@@ -3071,337 +3235,325 @@
   }
 
 
-  function h2hStatsForTeam(
-    row,
-    team
+  /*
+   * Jedna pigułka statystyczna H2H.
+   *
+   * Lepsza wartość jest pogrubiona
+   * dokładnie według tej samej logiki
+   * co główne porównanie.
+   */
+
+  function h2hStatPair(
+    label,
+    homeValue,
+    awayValue,
+    higherBetter
   ) {
 
-    return {
+    if (
+      homeValue === null &&
+      awayValue === null
+    ) {
 
-      goalsFor:
-        h2hStatValue(
-          row,
-          team,
-          'home_goals',
-          'away_goals'
-        ),
+      return '';
 
-      goalsAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_goals',
-          'away_goals'
-        ),
+    }
 
-      shots:
-        h2hStatValue(
-          row,
-          team,
-          'home_shots',
-          'away_shots'
-        ),
 
-      shotsAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_shots',
-          'away_shots'
-        ),
+    const [
+      homeClass,
+      awayClass
+    ] =
+      compareClass(
+        homeValue,
+        awayValue,
+        higherBetter
+      );
 
-      shotsTarget:
-        h2hStatValue(
-          row,
-          team,
-          'home_shots_on_target',
-          'away_shots_on_target'
-        ),
 
-      shotsTargetAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_shots_on_target',
-          'away_shots_on_target'
-        ),
+    return `
 
-      xg:
-        h2hStatValue(
-          row,
-          team,
-          'home_xg',
-          'away_xg'
-        ),
+      <span class="h2h-stat-pill">
 
-      xgAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_xg',
-          'away_xg'
-        ),
+        ${escapeHtml(
+          label
+        )}:
 
-      corners:
-        h2hStatValue(
-          row,
-          team,
-          'home_corners',
-          'away_corners'
-        ),
+        <span
+          class="${homeClass}"
+        >
+          ${formatNumber(
+            homeValue
+          )}
+        </span>
 
-      cornersAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_corners',
-          'away_corners'
-        ),
+        <span>
+          &nbsp;—&nbsp;
+        </span>
 
-      fouls:
-        h2hStatValue(
-          row,
-          team,
-          'home_fouls',
-          'away_fouls'
-        ),
+        <span
+          class="${awayClass}"
+        >
+          ${formatNumber(
+            awayValue
+          )}
+        </span>
 
-      foulsAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_fouls',
-          'away_fouls'
-        ),
+      </span>
 
-      yellow:
-        h2hStatValue(
-          row,
-          team,
-          'home_yellow_cards',
-          'away_yellow_cards'
-        ),
-
-      yellowAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_yellow_cards',
-          'away_yellow_cards'
-        ),
-
-      red:
-        h2hStatValue(
-          row,
-          team,
-          'home_red_cards',
-          'away_red_cards'
-        ),
-
-      redAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_red_cards',
-          'away_red_cards'
-        ),
-
-      possession:
-        h2hStatValue(
-          row,
-          team,
-          'home_possession',
-          'away_possession'
-        ),
-
-      possessionAgainst:
-        h2hStatValue(
-          row,
-          team === row.home_team
-            ? row.away_team
-            : row.home_team,
-          'home_possession',
-          'away_possession'
-        )
-
-    };
+    `;
 
   }
 
 
-  function renderH2HStatTable(
+  /*
+   * Statystyki pojedynczego meczu H2H.
+   *
+   * Celowo używamy tych samych statystyk,
+   * które znajdują się w "Szczegółach próby":
+   *
+   * Strzały
+   * Celne
+   * Rożne
+   * Faule
+   * ŻK
+   * CK
+   * Posiadanie
+   * xG
+   */
+
+  function renderH2HStats(
     row,
     homeTeam,
     awayTeam
   ) {
 
-    const homeStats =
-      h2hStatsForTeam(
-        row,
-        homeTeam
+    let html = '';
+
+
+    /* ===== STRZAŁY ===== */
+
+    html +=
+      h2hStatPair(
+        'Strzały',
+
+        h2hTeamStat(
+          row,
+          homeTeam,
+          'home_shots',
+          'away_shots'
+        ),
+
+        h2hTeamStat(
+          row,
+          awayTeam,
+          'home_shots',
+          'away_shots'
+        ),
+
+        true
       );
 
 
-    const awayStats =
-      h2hStatsForTeam(
-        row,
-        awayTeam
+    /* ===== STRZAŁY CELNE ===== */
+
+    html +=
+      h2hStatPair(
+        'Celne',
+
+        h2hTeamStat(
+          row,
+          homeTeam,
+          'home_shots_on_target',
+          'away_shots_on_target'
+        ),
+
+        h2hTeamStat(
+          row,
+          awayTeam,
+          'home_shots_on_target',
+          'away_shots_on_target'
+        ),
+
+        true
       );
 
 
-    let html = `
+    /* ===== ROŻNE ===== */
 
-      <div class="h2h-stats">
+    html +=
+      h2hStatPair(
+        'Rożne',
 
-        <table class="stats">
+        h2hTeamStat(
+          row,
+          homeTeam,
+          'home_corners',
+          'away_corners'
+        ),
 
-          <thead>
+        h2hTeamStat(
+          row,
+          awayTeam,
+          'home_corners',
+          'away_corners'
+        ),
 
-            <tr>
-
-              <th>
-                Statystyka
-              </th>
-
-              <th>
-                ${escapeHtml(
-                  homeTeam
-                )}
-              </th>
-
-              <th>
-                ${escapeHtml(
-                  awayTeam
-                )}
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-    `;
+        true
+      );
 
 
-    for (
-      const stat of
-        STAT_DEFINITIONS
+    /* ===== FAULE ===== */
+
+    html +=
+      h2hStatPair(
+        'Faule',
+
+        h2hTeamStat(
+          row,
+          homeTeam,
+          'home_fouls',
+          'away_fouls'
+        ),
+
+        h2hTeamStat(
+          row,
+          awayTeam,
+          'home_fouls',
+          'away_fouls'
+        ),
+
+        false
+      );
+
+
+    /* ===== ŻÓŁTE KARTKI ===== */
+
+    html +=
+      h2hStatPair(
+        'ŻK',
+
+        h2hTeamStat(
+          row,
+          homeTeam,
+          'home_yellow_cards',
+          'away_yellow_cards'
+        ),
+
+        h2hTeamStat(
+          row,
+          awayTeam,
+          'home_yellow_cards',
+          'away_yellow_cards'
+        ),
+
+        false
+      );
+
+
+    /* ===== CZERWONE KARTKI ===== */
+
+    html +=
+      h2hStatPair(
+        'CK',
+
+        h2hTeamStat(
+          row,
+          homeTeam,
+          'home_red_cards',
+          'away_red_cards'
+        ),
+
+        h2hTeamStat(
+          row,
+          awayTeam,
+          'home_red_cards',
+          'away_red_cards'
+        ),
+
+        false
+      );
+
+
+    /* ===== POSIADANIE ===== */
+
+    html +=
+      h2hStatPair(
+        'Posiadanie',
+
+        h2hTeamStat(
+          row,
+          homeTeam,
+          'home_possession',
+          'away_possession'
+        ),
+
+        h2hTeamStat(
+          row,
+          awayTeam,
+          'home_possession',
+          'away_possession'
+        ),
+
+        true
+      );
+
+
+    /* ===== xG ===== */
+
+    html +=
+      h2hStatPair(
+        'xG',
+
+        h2hTeamStat(
+          row,
+          homeTeam,
+          'home_xg',
+          'away_xg'
+        ),
+
+        h2hTeamStat(
+          row,
+          awayTeam,
+          'home_xg',
+          'away_xg'
+        ),
+
+        true
+      );
+
+
+    if (
+      !html
     ) {
 
-      const [
-        homeClass,
-        awayClass
-      ] =
-        compareClass(
-          homeStats[
-            stat.key
-          ],
-
-          awayStats[
-            stat.key
-          ],
-
-          stat.higherBetter
-        );
-
-
-      /*
-       * Nie pokazujemy pustego wiersza,
-       * jeżeli żadna drużyna nie ma
-       * tej statystyki.
-       */
-
-      if (
-        homeStats[stat.key] === null &&
-        awayStats[stat.key] === null
-      ) {
-
-        continue;
-
-      }
-
-
-      html += `
-
-        <tr>
-
-          <td>
-            ${escapeHtml(
-              stat.label
-            )}
-          </td>
-
-          <td
-            class="${homeClass}"
-          >
-            ${formatNumber(
-              homeStats[
-                stat.key
-              ]
-            )}
-          </td>
-
-          <td
-            class="${awayClass}"
-          >
-            ${formatNumber(
-              awayStats[
-                stat.key
-              ]
-            )}
-          </td>
-
-        </tr>
-
-      `;
+      return '';
 
     }
 
 
-    html += `
+    return `
 
-          </tbody>
+      <div class="h2h-stats">
 
-        </table>
+        ${html}
 
       </div>
 
     `;
 
-
-    return html;
-
   }
 
+
+  /*
+   * Pojedynczy mecz H2H.
+   */
 
   function renderMiniMatch(
     row,
     homeTeam,
     awayTeam
   ) {
-
-    /*
-     * Statystyki H2H są prezentowane
-     * z perspektywy dwóch analizowanych drużyn,
-     * a nie z perspektywy gospodarza meczu.
-     */
 
     return `
 
@@ -3419,22 +3571,17 @@
           </div>
 
 
-          <div>
+          <div class="mini-teams">
 
-            <div class="mini-teams">
+            ${escapeHtml(
+              row.home_team
+            )}
 
-              ${escapeHtml(
-                row.home_team
-              )}
+            —
 
-              —
-
-              ${escapeHtml(
-                row.away_team
-              )}
-
-            </div>
-
+            ${escapeHtml(
+              row.away_team
+            )}
 
             <div class="small">
 
@@ -3476,7 +3623,7 @@
         </div>
 
 
-        ${renderH2HStatTable(
+        ${renderH2HStats(
           row,
           homeTeam,
           awayTeam
@@ -3489,6 +3636,14 @@
   }
 
 
+  /*
+   * H2H:
+   * maksymalnie 10 najnowszych spotkań.
+   *
+   * H2H NIE jest ograniczane filtrem ligi
+   * ani Home/Away.
+   */
+
   function renderH2H(
     home,
     away
@@ -3498,11 +3653,6 @@
       state.matches
         .filter(
           row => {
-
-            /*
-             * H2H pozostaje niezależne
-             * od wybranej ligi.
-             */
 
             return (
 
@@ -4021,6 +4171,11 @@
     team,
     rows
   ) {
+
+    /*
+     * Szczegóły pokazują maksymalnie
+     * 5 najnowszych meczów z wybranej próby.
+     */
 
     const matches =
       rows.slice(
@@ -4591,6 +4746,10 @@
         matches;
 
 
+      /*
+       * Domyślnie wszystkie ligi.
+       */
+
       selected.league =
         '';
 
@@ -4838,6 +4997,10 @@
     );
 
 
+  /* =========================================
+     ANALIZA — GŁÓWNA FUNKCJA
+     ========================================= */
+
   function analyze() {
 
     const home =
@@ -4881,6 +5044,18 @@
       els.venueSelect.value;
 
 
+    /*
+     * Najpierw:
+     *
+     * 1. liga
+     * 2. Home/Away
+     *
+     * Potem:
+     *
+     * 3. liczba meczów
+     */
+
+
     let homeRows =
       teamRows(
         home,
@@ -4905,6 +5080,13 @@
       selectedSample(
         awayRows
       );
+
+
+    /*
+     * SĘDZIA NIE JEST FILTREM PRÓBY.
+     *
+     * Jest osobnym modułem.
+     */
 
 
     const homeStats =
