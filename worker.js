@@ -1,22 +1,55 @@
-const SOURCES = [
-  {
-    season: '2025/26',
-    file: '/E0_2025-26.csv'
-  },
-  {
-    season: '2026/27',
-    remote: 'https://' + 'football-data.co.uk/mmz4281/2627/E0.csv'
-  }
-];
-
+const FOOTBALL_DATA_SOURCE = 'football-data';
 const IMPORT_TOKEN = 'FA-IMPORT-2026-09';
 
+const LEAGUES = [
+  { code: 'E0', name: 'Premier League', country: 'England' },
+  { code: 'E1', name: 'Championship', country: 'England' },
+  { code: 'E2', name: 'League One', country: 'England' },
+  { code: 'E3', name: 'League Two', country: 'England' },
+  { code: 'EC', name: 'National League', country: 'England' },
+
+  { code: 'SC0', name: 'Premiership', country: 'Scotland' },
+  { code: 'SC1', name: 'Championship', country: 'Scotland' },
+  { code: 'SC2', name: 'League One', country: 'Scotland' },
+  { code: 'SC3', name: 'League Two', country: 'Scotland' },
+
+  { code: 'D1', name: 'Bundesliga', country: 'Germany' },
+  { code: 'D2', name: '2. Bundesliga', country: 'Germany' },
+
+  { code: 'I1', name: 'Serie A', country: 'Italy' },
+  { code: 'I2', name: 'Serie B', country: 'Italy' },
+
+  { code: 'SP1', name: 'La Liga', country: 'Spain' },
+  { code: 'SP2', name: 'Segunda División', country: 'Spain' },
+
+  { code: 'F1', name: 'Ligue 1', country: 'France' },
+  { code: 'F2', name: 'Ligue 2', country: 'France' },
+
+  { code: 'N1', name: 'Eredivisie', country: 'Netherlands' },
+  { code: 'B1', name: 'Jupiler League', country: 'Belgium' },
+  { code: 'P1', name: 'Liga Portugal', country: 'Portugal' },
+  { code: 'T1', name: 'Süper Lig', country: 'Turkey' },
+  { code: 'G1', name: 'Super League', country: 'Greece' }
+];
+
+const SEASONS = [
+  '2025/26',
+  '2026/27'
+];
+
 function clean(value) {
-  if (value === undefined || value === null) return null;
+  if (value === undefined || value === null) {
+    return null;
+  }
 
   const v = String(value).trim();
 
-  if (!v || v === '-' || v === 'NA' || v === 'N/A') {
+  if (
+    !v ||
+    v === '-' ||
+    v === 'NA' ||
+    v === 'N/A'
+  ) {
     return null;
   }
 
@@ -26,26 +59,37 @@ function clean(value) {
 function num(value) {
   const v = clean(value);
 
-  if (v === null) return null;
+  if (v === null) {
+    return null;
+  }
 
-  const n = Number(String(v).replace(',', '.'));
+  const n = Number(
+    String(v).replace(',', '.')
+  );
 
-  return Number.isFinite(n) ? n : null;
+  return Number.isFinite(n)
+    ? n
+    : null;
 }
 
 function int(value) {
   const n = num(value);
 
-  return n === null ? null : Math.trunc(n);
+  return n === null
+    ? null
+    : Math.trunc(n);
 }
 
 function dateToISO(value) {
   const v = clean(value);
 
-  if (!v) return null;
+  if (!v) {
+    return null;
+  }
 
-  // dd/mm/yyyy
-  const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  const m = v.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+  );
 
   if (m) {
     const [, day, month, year] = m;
@@ -53,12 +97,12 @@ function dateToISO(value) {
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 
-  // yyyy-mm-dd
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(v)
+  ) {
     return v;
   }
 
-  // fallback
   const d = new Date(v);
 
   if (!Number.isNaN(d.getTime())) {
@@ -71,14 +115,23 @@ function dateToISO(value) {
 function getResult(row) {
   const direct = clean(row.FTR);
 
-  if (direct === 'H' || direct === 'D' || direct === 'A') {
+  if (
+    direct === 'H' ||
+    direct === 'D' ||
+    direct === 'A'
+  ) {
     return direct;
   }
 
   const home = int(row.FTHG);
   const away = int(row.FTAG);
 
-  if (home === null || away === null) return null;
+  if (
+    home === null ||
+    away === null
+  ) {
+    return null;
+  }
 
   if (home > away) return 'H';
   if (home < away) return 'A';
@@ -89,14 +142,23 @@ function getResult(row) {
 function getHTResult(row) {
   const direct = clean(row.HTR);
 
-  if (direct === 'H' || direct === 'D' || direct === 'A') {
+  if (
+    direct === 'H' ||
+    direct === 'D' ||
+    direct === 'A'
+  ) {
     return direct;
   }
 
   const home = int(row.HTHG);
   const away = int(row.HTAG);
 
-  if (home === null || away === null) return null;
+  if (
+    home === null ||
+    away === null
+  ) {
+    return null;
+  }
 
   if (home > away) return 'H';
   if (home < away) return 'A';
@@ -107,7 +169,10 @@ function getHTResult(row) {
 function getOdds(row) {
   const odds = {};
 
-  for (const [key, value] of Object.entries(row)) {
+  for (
+    const [key, value]
+    of Object.entries(row)
+  ) {
     if (
       key.startsWith('B365') ||
       key.startsWith('BW') ||
@@ -139,12 +204,19 @@ function parseCSV(text) {
   let cell = '';
   let inQuotes = false;
 
-  for (let i = 0; i < text.length; i++) {
+  for (
+    let i = 0;
+    i < text.length;
+    i++
+  ) {
     const char = text[i];
     const next = text[i + 1];
 
     if (char === '"') {
-      if (inQuotes && next === '"') {
+      if (
+        inQuotes &&
+        next === '"'
+      ) {
         cell += '"';
         i++;
       } else {
@@ -154,21 +226,38 @@ function parseCSV(text) {
       continue;
     }
 
-    if (char === ',' && !inQuotes) {
+    if (
+      char === ',' &&
+      !inQuotes
+    ) {
       row.push(cell);
       cell = '';
       continue;
     }
 
-    if ((char === '\n' || char === '\r') && !inQuotes) {
-      if (char === '\r' && next === '\n') {
+    if (
+      (
+        char === '\n' ||
+        char === '\r'
+      ) &&
+      !inQuotes
+    ) {
+      if (
+        char === '\r' &&
+        next === '\n'
+      ) {
         i++;
       }
 
       row.push(cell);
       cell = '';
 
-      if (row.some(v => String(v).trim() !== '')) {
+      if (
+        row.some(
+          v =>
+            String(v).trim() !== ''
+        )
+      ) {
         rows.push(row);
       }
 
@@ -179,60 +268,89 @@ function parseCSV(text) {
     cell += char;
   }
 
-  if (cell.length > 0 || row.length > 0) {
+  if (
+    cell.length > 0 ||
+    row.length > 0
+  ) {
     row.push(cell);
 
-    if (row.some(v => String(v).trim() !== '')) {
+    if (
+      row.some(
+        v =>
+          String(v).trim() !== ''
+      )
+    ) {
       rows.push(row);
     }
   }
 
-  if (rows.length === 0) {
+  if (!rows.length) {
     return [];
   }
 
-  const headers = rows[0].map(h => String(h).trim());
+  const headers =
+    rows[0].map(
+      h => String(h).trim()
+    );
 
-  return rows.slice(1).map(values => {
-    const obj = {};
+  return rows
+    .slice(1)
+    .map(values => {
+      const obj = {};
 
-    for (let i = 0; i < headers.length; i++) {
-      obj[headers[i]] = values[i] ?? '';
-    }
+      for (
+        let i = 0;
+        i < headers.length;
+        i++
+      ) {
+        obj[headers[i]] =
+          values[i] ?? '';
+      }
 
-    return obj;
-  });
+      return obj;
+    });
 }
 
-async function getLocalCSV(env, request, file) {
-  const assetUrl = new URL(file, request.url);
+function getLeague(code) {
+  return LEAGUES.find(
+    league =>
+      league.code === code
+  );
+}
 
-  const assetRequest = new Request(assetUrl.toString(), {
-    method: 'GET'
-  });
+function getSourceUrl(
+  season,
+  code
+) {
+  const years =
+    season.replace('/', '');
 
-  const response = await env.ASSETS.fetch(assetRequest);
-
-  if (!response.ok) {
-    throw new Error(
-      `Local asset HTTP ${response.status} for ${file}`
-    );
-  }
-
-  return await response.text();
+  return (
+    'https://' +
+    'football-data.co.uk/mmz4281/' +
+    years +
+    '/' +
+    code +
+    '.csv'
+  );
 }
 
 async function getRemoteCSV(url) {
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'User-Agent': 'Football-Analizer/1.0'
-    },
-    cf: {
-      cacheTtl: 0,
-      cacheEverything: false
-    }
-  });
+  const response =
+    await fetch(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          'User-Agent':
+            'Football-Analizer/1.0'
+        },
+        cf: {
+          cacheTtl: 0,
+          cacheEverything: false
+        }
+      }
+    );
 
   if (!response.ok) {
     throw new Error(
@@ -240,10 +358,16 @@ async function getRemoteCSV(url) {
     );
   }
 
-  const text = await response.text();
+  const text =
+    await response.text();
 
-  if (!text || text.trim().length < 100) {
-    throw new Error('Remote CSV is empty or suspiciously small');
+  if (
+    !text ||
+    text.trim().length < 100
+  ) {
+    throw new Error(
+      'Remote CSV is empty or suspiciously small'
+    );
   }
 
   return text;
@@ -263,39 +387,38 @@ async function getCounts(env) {
     .first();
 }
 
-async function importCSV(env, source, csv) {
-  const rows = parseCSV(csv);
-
-  if (!rows.length) {
-    throw new Error(
-      `No rows found for season ${source.season}`
-    );
-  }
-
-  // --------------------------------------------------
-  // LEAGUE
-  // --------------------------------------------------
-
+async function ensureLeague(
+  env,
+  leagueConfig
+) {
   await env.DB
     .prepare(`
       INSERT INTO leagues
-        (name, country, code, source)
+        (
+          name,
+          country,
+          code,
+          source
+        )
       VALUES
         (?, ?, ?, ?)
+
       ON CONFLICT(source, code)
       DO UPDATE SET
-        name = excluded.name,
-        country = excluded.country
+        name =
+          excluded.name,
+        country =
+          excluded.country
     `)
     .bind(
-      'Premier League',
-      'England',
-      'E0',
-      'football-data'
+      leagueConfig.name,
+      leagueConfig.country,
+      leagueConfig.code,
+      FOOTBALL_DATA_SOURCE
     )
     .run();
 
-  const league = await env.DB
+  return await env.DB
     .prepare(`
       SELECT id
       FROM leagues
@@ -304,32 +427,29 @@ async function importCSV(env, source, csv) {
       LIMIT 1
     `)
     .bind(
-      'football-data',
-      'E0'
+      FOOTBALL_DATA_SOURCE,
+      leagueConfig.code
     )
     .first();
+}
 
-  if (!league) {
-    throw new Error(
-      'League was not created/found'
+async function ensureSeason(
+  env,
+  leagueId,
+  seasonName
+) {
+  const years =
+    seasonName.split('/');
+
+  const startYear =
+    Number(
+      `20${years[0]}`
     );
-  }
 
-  const leagueId = league.id;
-
-  // --------------------------------------------------
-  // SEASON
-  // --------------------------------------------------
-
-  const years = source.season.split('/');
-
-  const startYear = Number(
-    `20${years[0]}`
-  );
-
-  const endYear = Number(
-    `20${years[1]}`
-  );
+  const endYear =
+    Number(
+      `20${years[1]}`
+    );
 
   await env.DB
     .prepare(`
@@ -343,22 +463,26 @@ async function importCSV(env, source, csv) {
         )
       VALUES
         (?, ?, ?, ?, ?)
+
       ON CONFLICT(league_id, name)
       DO UPDATE SET
-        start_year = excluded.start_year,
-        end_year = excluded.end_year,
-        source = excluded.source
+        start_year =
+          excluded.start_year,
+        end_year =
+          excluded.end_year,
+        source =
+          excluded.source
     `)
     .bind(
       leagueId,
-      source.season,
+      seasonName,
       startYear,
       endYear,
-      'football-data'
+      FOOTBALL_DATA_SOURCE
     )
     .run();
 
-  const season = await env.DB
+  return await env.DB
     .prepare(`
       SELECT id
       FROM seasons
@@ -368,33 +492,88 @@ async function importCSV(env, source, csv) {
     `)
     .bind(
       leagueId,
-      source.season
+      seasonName
     )
     .first();
+}
 
-  if (!season) {
+async function importCSV(
+  env,
+  leagueConfig,
+  seasonName,
+  csv
+) {
+  const rows =
+    parseCSV(csv);
+
+  if (!rows.length) {
     throw new Error(
-      `Season ${source.season} was not created/found`
+      `No rows found for ${leagueConfig.code} ${seasonName}`
     );
   }
 
-  const seasonId = season.id;
+  const league =
+    await ensureLeague(
+      env,
+      leagueConfig
+    );
 
-  // --------------------------------------------------
-  // TEAMS
-  // --------------------------------------------------
-
-  const teamNames = new Set();
-
-  for (const row of rows) {
-    const home = clean(row.HomeTeam);
-    const away = clean(row.AwayTeam);
-
-    if (home) teamNames.add(home);
-    if (away) teamNames.add(away);
+  if (!league) {
+    throw new Error(
+      `League ${leagueConfig.code} was not created`
+    );
   }
 
-  for (const teamName of teamNames) {
+  const season =
+    await ensureSeason(
+      env,
+      league.id,
+      seasonName
+    );
+
+  if (!season) {
+    throw new Error(
+      `Season ${seasonName} was not created`
+    );
+  }
+
+  const teamNames =
+    new Set();
+
+  const refereeNames =
+    new Set();
+
+  for (
+    const row of rows
+  ) {
+    const home =
+      clean(row.HomeTeam);
+
+    const away =
+      clean(row.AwayTeam);
+
+    const referee =
+      clean(row.Referee);
+
+    if (home) {
+      teamNames.add(home);
+    }
+
+    if (away) {
+      teamNames.add(away);
+    }
+
+    if (referee) {
+      refereeNames.add(
+        referee
+      );
+    }
+  }
+
+  for (
+    const teamName
+    of teamNames
+  ) {
     await env.DB
       .prepare(`
         INSERT INTO teams
@@ -406,34 +585,25 @@ async function importCSV(env, source, csv) {
           )
         VALUES
           (?, ?, ?, ?)
+
         ON CONFLICT(source, source_name)
         DO UPDATE SET
-          name = excluded.name
+          name =
+            excluded.name
       `)
       .bind(
         teamName,
-        'England',
-        'football-data',
+        leagueConfig.country,
+        FOOTBALL_DATA_SOURCE,
         teamName
       )
       .run();
   }
 
-  // --------------------------------------------------
-  // REFEREES
-  // --------------------------------------------------
-
-  const refereeNames = new Set();
-
-  for (const row of rows) {
-    const referee = clean(row.Referee);
-
-    if (referee) {
-      refereeNames.add(referee);
-    }
-  }
-
-  for (const refereeName of refereeNames) {
+  for (
+    const refereeName
+    of refereeNames
+  ) {
     await env.DB
       .prepare(`
         INSERT INTO referees
@@ -445,70 +615,74 @@ async function importCSV(env, source, csv) {
           )
         VALUES
           (?, ?, ?, ?)
+
         ON CONFLICT(source, source_name)
         DO UPDATE SET
-          name = excluded.name
+          name =
+            excluded.name
       `)
       .bind(
         refereeName,
-        'England',
-        'football-data',
+        leagueConfig.country,
+        FOOTBALL_DATA_SOURCE,
         refereeName
       )
       .run();
   }
 
-  // --------------------------------------------------
-  // ID MAPS
-  // --------------------------------------------------
+  const teamRows =
+    await env.DB
+      .prepare(`
+        SELECT
+          id,
+          source_name
+        FROM teams
+        WHERE source = ?
+      `)
+      .bind(
+        FOOTBALL_DATA_SOURCE
+      )
+      .all();
 
-  const teamRows = await env.DB
-    .prepare(`
-      SELECT
-        id,
-        source_name
-      FROM teams
-      WHERE source = ?
-    `)
-    .bind(
-      'football-data'
-    )
-    .all();
+  const teamMap =
+    new Map();
 
-  const teamMap = new Map();
-
-  for (const team of teamRows.results || []) {
+  for (
+    const team
+    of teamRows.results || []
+  ) {
     teamMap.set(
       team.source_name,
       team.id
     );
   }
 
-  const refereeRows = await env.DB
-    .prepare(`
-      SELECT
-        id,
-        source_name
-      FROM referees
-      WHERE source = ?
-    `)
-    .bind(
-      'football-data'
-    )
-    .all();
+  const refereeRows =
+    await env.DB
+      .prepare(`
+        SELECT
+          id,
+          source_name
+        FROM referees
+        WHERE source = ?
+      `)
+      .bind(
+        FOOTBALL_DATA_SOURCE
+      )
+      .all();
 
-  const refereeMap = new Map();
+  const refereeMap =
+    new Map();
 
-  for (const referee of refereeRows.results || []) {
+  for (
+    const referee
+    of refereeRows.results || []
+  ) {
     refereeMap.set(
       referee.source_name,
       referee.id
     );
   }
-
-  // --------------------------------------------------
-  // MATCHES
-  // --------------------------------------------------
 
   let imported = 0;
 
@@ -519,23 +693,25 @@ async function importCSV(env, source, csv) {
     i < rows.length;
     i += batchSize
   ) {
-    const batch = rows.slice(
-      i,
-      i + batchSize
-    );
+    const batch =
+      rows.slice(
+        i,
+        i + batchSize
+      );
 
     const statements = [];
 
-    for (const row of batch) {
-      const date = dateToISO(row.Date);
+    for (
+      const row of batch
+    ) {
+      const date =
+        dateToISO(row.Date);
 
-      const homeTeam = clean(
-        row.HomeTeam
-      );
+      const homeTeam =
+        clean(row.HomeTeam);
 
-      const awayTeam = clean(
-        row.AwayTeam
-      );
+      const awayTeam =
+        clean(row.AwayTeam);
 
       if (
         !date ||
@@ -546,10 +722,14 @@ async function importCSV(env, source, csv) {
       }
 
       const homeTeamId =
-        teamMap.get(homeTeam);
+        teamMap.get(
+          homeTeam
+        );
 
       const awayTeamId =
-        teamMap.get(awayTeam);
+        teamMap.get(
+          awayTeam
+        );
 
       if (
         !homeTeamId ||
@@ -597,7 +777,7 @@ async function importCSV(env, source, csv) {
         JSON.stringify(row);
 
       const sourceMatchId =
-        `${source.season}|${date}|${homeTeam}|${awayTeam}`;
+        `${seasonName}|${date}|${homeTeam}|${awayTeam}`;
 
       statements.push(
         env.DB
@@ -651,12 +831,27 @@ async function importCSV(env, source, csv) {
               source,
               source_match_id
             )
+
             VALUES
             (
-              ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-              ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-              ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+              ?, ?, ?, ?,
+              ?, ?, ?,
+              ?, ?, ?,
+              ?, ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?,
+              ?, ?
             )
+
             ON CONFLICT(
               source,
               league_id,
@@ -665,6 +860,7 @@ async function importCSV(env, source, csv) {
               home_team_id,
               away_team_id
             )
+
             DO UPDATE SET
 
               referee_id =
@@ -746,8 +942,8 @@ async function importCSV(env, source, csv) {
                 CURRENT_TIMESTAMP
           `)
           .bind(
-            leagueId,
-            seasonId,
+            league.id,
+            season.id,
             date,
             'finished',
 
@@ -790,7 +986,7 @@ async function importCSV(env, source, csv) {
             odds,
             rawData,
 
-            'football-data',
+            FOOTBALL_DATA_SOURCE,
             sourceMatchId
           )
       );
@@ -798,7 +994,9 @@ async function importCSV(env, source, csv) {
       imported++;
     }
 
-    if (statements.length) {
+    if (
+      statements.length
+    ) {
       await env.DB.batch(
         statements
       );
@@ -806,74 +1004,154 @@ async function importCSV(env, source, csv) {
   }
 
   return {
-    season: source.season,
-    rows: rows.length,
+    league:
+      leagueConfig.name,
+
+    country:
+      leagueConfig.country,
+
+    code:
+      leagueConfig.code,
+
+    season:
+      seasonName,
+
+    rows:
+      rows.length,
+
     imported
   };
 }
 
-async function importSeason(
+async function importLeagueSeason(
   env,
-  request,
-  source
+  leagueCode,
+  seasonName
 ) {
-  if (!source.file) {
+  const league =
+    getLeague(
+      leagueCode
+    );
+
+  if (!league) {
     throw new Error(
-      `Season ${source.season} has no local file`
+      `Unknown league code: ${leagueCode}`
     );
   }
 
+  if (
+    !SEASONS.includes(
+      seasonName
+    )
+  ) {
+    throw new Error(
+      `Unknown season: ${seasonName}`
+    );
+  }
+
+  const url =
+    getSourceUrl(
+      seasonName,
+      leagueCode
+    );
+
   const csv =
-    await getLocalCSV(
-      env,
-      request,
-      source.file
+    await getRemoteCSV(
+      url
     );
 
   return await importCSV(
     env,
-    source,
+    league,
+    seasonName,
     csv
   );
 }
 
-async function refreshCurrentSeason(env) {
-  const source =
-    SOURCES.find(
-      item =>
-        item.season === '2026/27'
-    );
+async function getLeagueList(
+  env
+) {
+  const result =
+    await env.DB
+      .prepare(`
+        SELECT
+          l.id,
+          l.name,
+          l.country,
+          l.code,
+          COUNT(DISTINCT m.id)
+            AS matches
+        FROM leagues l
+        LEFT JOIN matches m
+          ON m.league_id = l.id
+        GROUP BY
+          l.id,
+          l.name,
+          l.country,
+          l.code
+        ORDER BY
+          l.country,
+          l.name
+      `)
+      .all();
 
-  if (!source || !source.remote) {
-    throw new Error(
-      'Current season remote source is not configured'
-    );
-  }
+  return (
+    result.results || []
+  );
+}
 
-  const csv =
-    await getRemoteCSV(
-      source.remote
-    );
+async function getSeasonList(
+  env
+) {
+  const result =
+    await env.DB
+      .prepare(`
+        SELECT
+          s.id,
+          s.name,
+          s.start_year,
+          s.end_year,
+          l.name AS league,
+          l.code AS league_code,
+          l.country
+        FROM seasons s
+        JOIN leagues l
+          ON l.id =
+            s.league_id
+        ORDER BY
+          s.start_year DESC,
+          l.country,
+          l.name
+      `)
+      .all();
 
-  return await importCSV(
-    env,
-    source,
-    csv
+  return (
+    result.results || []
   );
 }
 
 export default {
-  async fetch(request, env) {
-    const url =
-      new URL(request.url);
 
-    // --------------------------------------------------
-    // BASIC TEST
-    // --------------------------------------------------
+  async fetch(
+    request,
+    env
+  ) {
+
+    const url =
+      new URL(
+        request.url
+      );
+
+
+    /* ================================
+       TEST
+    ================================= */
 
     if (
-      url.pathname === '/api/test'
+      url.pathname ===
+      '/api/test'
     ) {
+
       return new Response(
         'WORKER OK',
         {
@@ -884,67 +1162,148 @@ export default {
           }
         }
       );
+
     }
 
-    // --------------------------------------------------
-    // D1 TEST
-    // --------------------------------------------------
+
+    /* ================================
+       DB TEST
+    ================================= */
 
     if (
-      url.pathname === '/api/db-test'
+      url.pathname ===
+      '/api/db-test'
     ) {
-      try {
-        const counts =
-          await getCounts(env);
 
-        return new Response(
-          JSON.stringify({
-            ok: true,
-            database:
-              'football-analyzer-db',
-            counts
-          }),
-          {
-            status: 200,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8'
-            }
-          }
-        );
+      try {
+
+        const counts =
+          await getCounts(
+            env
+          );
+
+        return json({
+          ok: true,
+          database:
+            'football-analyzer-db',
+          counts
+        });
+
       } catch (e) {
-        return new Response(
-          JSON.stringify({
+
+        return json(
+          {
             ok: false,
             error:
               String(
                 e.message || e
               )
-          }),
-          {
-            status: 500,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8'
-            }
-          }
+          },
+          500
         );
+
       }
+
     }
 
-    // --------------------------------------------------
-    // D1 MATCHES API
-    // --------------------------------------------------
+
+    /* ================================
+       LEAGUES API
+    ================================= */
 
     if (
-      url.pathname === '/api/matches'
+      url.pathname ===
+      '/api/leagues'
     ) {
+
       try {
+
+        const leagues =
+          await getLeagueList(
+            env
+          );
+
+        return json({
+          ok: true,
+          available:
+            LEAGUES,
+          imported:
+            leagues
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              )
+          },
+          500
+        );
+
+      }
+
+    }
+
+
+    /* ================================
+       SEASONS API
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/seasons'
+    ) {
+
+      try {
+
+        const seasons =
+          await getSeasonList(
+            env
+          );
+
+        return json({
+          ok: true,
+          seasons
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              )
+          },
+          500
+        );
+
+      }
+
+    }
+
+
+    /* ================================
+       MATCHES API
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/matches'
+    ) {
+
+      try {
+
         const requestedLimit =
           Number(
             url.searchParams.get(
               'limit'
-            ) || '10'
+            ) || '1000'
           );
 
         const requestedOffset =
@@ -952,6 +1311,27 @@ export default {
             url.searchParams.get(
               'offset'
             ) || '0'
+          );
+
+        const leagueCode =
+          clean(
+            url.searchParams.get(
+              'league'
+            )
+          );
+
+        const seasonName =
+          clean(
+            url.searchParams.get(
+              'season'
+            )
+          );
+
+        const teamName =
+          clean(
+            url.searchParams.get(
+              'team'
+            )
           );
 
         const limit =
@@ -963,10 +1343,10 @@ export default {
                 ? Math.trunc(
                     requestedLimit
                   )
-                : 10,
+                : 1000,
               1
             ),
-            1000
+            2000
           );
 
         const offset =
@@ -981,105 +1361,173 @@ export default {
             0
           );
 
+
+        const where = [];
+        const binds = [];
+
+
+        if (leagueCode) {
+
+          where.push(
+            'l.code = ?'
+          );
+
+          binds.push(
+            leagueCode
+          );
+
+        }
+
+
+        if (seasonName) {
+
+          where.push(
+            's.name = ?'
+          );
+
+          binds.push(
+            seasonName
+          );
+
+        }
+
+
+        if (teamName) {
+
+          where.push(
+            '(ht.name = ? OR at.name = ?)'
+          );
+
+          binds.push(
+            teamName,
+            teamName
+          );
+
+        }
+
+
+        const whereSQL =
+          where.length
+            ? 'WHERE ' +
+              where.join(
+                ' AND '
+              )
+            : '';
+
+
+        const query = `
+
+          SELECT
+
+            m.id,
+            m.match_date,
+            m.status,
+
+            s.name AS season,
+
+            l.name AS league,
+            l.country AS league_country,
+            l.code AS league_code,
+
+            ht.name AS home_team,
+            at.name AS away_team,
+
+            r.name AS referee,
+
+            m.home_goals,
+            m.away_goals,
+            m.result,
+
+            m.home_ht_goals,
+            m.away_ht_goals,
+            m.ht_result,
+
+            m.home_shots,
+            m.away_shots,
+
+            m.home_shots_on_target,
+            m.away_shots_on_target,
+
+            m.home_xg,
+            m.away_xg,
+
+            m.home_corners,
+            m.away_corners,
+
+            m.home_fouls,
+            m.away_fouls,
+
+            m.home_yellow_cards,
+            m.away_yellow_cards,
+
+            m.home_red_cards,
+            m.away_red_cards,
+
+            m.home_possession,
+            m.away_possession,
+
+            m.odds_json,
+            m.raw_data_json,
+
+            m.source,
+            m.source_match_id,
+
+            m.created_at,
+            m.updated_at
+
+          FROM matches m
+
+          JOIN leagues l
+            ON l.id =
+              m.league_id
+
+          JOIN seasons s
+            ON s.id =
+              m.season_id
+
+          JOIN teams ht
+            ON ht.id =
+              m.home_team_id
+
+          JOIN teams at
+            ON at.id =
+              m.away_team_id
+
+          LEFT JOIN referees r
+            ON r.id =
+              m.referee_id
+
+          ${whereSQL}
+
+          ORDER BY
+            m.match_date DESC,
+            m.id DESC
+
+          LIMIT ?
+          OFFSET ?
+
+        `;
+
+
+        binds.push(
+          limit,
+          offset
+        );
+
+
         const result =
           await env.DB
-            .prepare(`
-              SELECT
-                m.id,
-                m.match_date,
-                m.status,
-
-                s.name AS season,
-                l.name AS league,
-
-                ht.name AS home_team,
-                at.name AS away_team,
-
-                r.name AS referee,
-
-                m.home_goals,
-                m.away_goals,
-                m.result,
-
-                m.home_ht_goals,
-                m.away_ht_goals,
-                m.ht_result,
-
-                m.home_shots,
-                m.away_shots,
-
-                m.home_shots_on_target,
-                m.away_shots_on_target,
-
-                m.home_xg,
-                m.away_xg,
-
-                m.home_corners,
-                m.away_corners,
-
-                m.home_fouls,
-                m.away_fouls,
-
-                m.home_yellow_cards,
-                m.away_yellow_cards,
-
-                m.home_red_cards,
-                m.away_red_cards,
-
-                m.home_possession,
-                m.away_possession,
-
-                m.odds_json,
-                m.raw_data_json,
-
-                m.source,
-                m.source_match_id,
-
-                m.created_at,
-                m.updated_at
-
-              FROM matches m
-
-              JOIN leagues l
-                ON l.id =
-                  m.league_id
-
-              JOIN seasons s
-                ON s.id =
-                  m.season_id
-
-              JOIN teams ht
-                ON ht.id =
-                  m.home_team_id
-
-              JOIN teams at
-                ON at.id =
-                  m.away_team_id
-
-              LEFT JOIN referees r
-                ON r.id =
-                  m.referee_id
-
-              ORDER BY
-                m.match_date DESC,
-                m.id DESC
-
-              LIMIT ?
-              OFFSET ?
-            `)
-            .bind(
-              limit,
-              offset
-            )
+            .prepare(query)
+            .bind(...binds)
             .all();
 
-        const counts =
-          await getCounts(env);
 
         const matches =
           (
-            result.results || []
+            result.results ||
+            []
           ).map(match => ({
+
             ...match,
 
             odds:
@@ -1095,368 +1543,280 @@ export default {
                     match.raw_data_json
                   )
                 : {}
+
           }));
 
-        return new Response(
-          JSON.stringify({
-            ok: true,
-            count:
-              matches.length,
-            total_matches:
-              counts.matches,
-            limit,
-            offset,
-            matches
-          }),
-          {
-            status: 200,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8',
-              'cache-control':
-                'public, max-age=300',
-              'access-control-allow-origin':
-                '*'
-            }
-          }
-        );
+
+        return json({
+          ok: true,
+          count:
+            matches.length,
+          limit,
+          offset,
+          matches
+        });
+
       } catch (e) {
-        return new Response(
-          JSON.stringify({
+
+        return json(
+          {
             ok: false,
             error:
               String(
                 e.message || e
               )
-          }),
-          {
-            status: 500,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8',
-              'access-control-allow-origin':
-                '*'
-            }
-          }
+          },
+          500
         );
+
       }
+
     }
 
-    // --------------------------------------------------
-    // OLD CSV API
-    // --------------------------------------------------
+
+    /* ================================
+       IMPORT ONE LEAGUE / SEASON
+    ================================= */
 
     if (
-      url.pathname === '/api/data'
+      url.pathname ===
+      '/api/import'
     ) {
-      const cache =
-        caches.default;
 
-      const cacheKey =
-        new Request(
-          url.toString(),
-          request
+      const token =
+        url.searchParams.get(
+          'token'
         );
 
-      const cached =
-        await cache.match(
-          cacheKey
+      if (
+        token !==
+        IMPORT_TOKEN
+      ) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              'Unauthorized'
+          },
+          401
         );
 
-      if (cached) {
-        return cached;
       }
 
+
       try {
-        const results =
-          await Promise.all(
-            SOURCES.map(
-              async source => {
-                if (!source.file) {
-                  return {
-                    season:
-                      source.season,
-                    csv: ''
-                  };
-                }
 
-                const csv =
-                  await getLocalCSV(
-                    env,
-                    request,
-                    source.file
-                  );
-
-                return {
-                  season:
-                    source.season,
-                  csv
-                };
-              }
+        const leagueCode =
+          clean(
+            url.searchParams.get(
+              'league'
             )
           );
 
-        const body =
-          JSON.stringify({
-            fetchedAt:
-              new Date().toISOString(),
-
-            source:
-              'local-static-assets',
-
-            sources: results
-          });
-
-        const response =
-          new Response(
-            body,
-            {
-              status: 200,
-              headers: {
-                'content-type':
-                  'application/json; charset=utf-8',
-
-                'cache-control':
-                  'public, max-age=86400, s-maxage=86400',
-
-                'access-control-allow-origin':
-                  '*'
-              }
-            }
+        const seasonName =
+          clean(
+            url.searchParams.get(
+              'season'
+            )
           );
 
-        await cache.put(
-          cacheKey,
-          response.clone()
-        );
 
-        return response;
-      } catch (e) {
-        return new Response(
-          JSON.stringify({
-            error:
-              String(
-                e.message || e
-              )
-          }),
-          {
-            status: 502,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8',
-
-              'access-control-allow-origin':
-                '*'
-            }
-          }
-        );
-      }
-    }
-
-    // --------------------------------------------------
-    // ONE-TIME LOCAL IMPORT
-    // --------------------------------------------------
-
-    if (
-      url.pathname === '/api/import'
-    ) {
-      const token =
-        url.searchParams.get(
-          'token'
-        );
-
-      if (
-        token !== IMPORT_TOKEN
-      ) {
-        return new Response(
-          JSON.stringify({
-            ok: false,
-            error:
-              'Unauthorized'
-          }),
-          {
-            status: 401,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8'
-            }
-          }
-        );
-      }
-
-      try {
-        const results = [];
-
-        for (
-          const source of SOURCES
+        if (
+          !leagueCode ||
+          !seasonName
         ) {
-          if (!source.file) {
-            continue;
-          }
 
-          const result =
-            await importSeason(
-              env,
-              request,
-              source
-            );
-
-          results.push(
-            result
+          return json(
+            {
+              ok: false,
+              error:
+                'Use league=E0&season=2025/26'
+            },
+            400
           );
+
         }
 
-        const counts =
-          await getCounts(env);
 
-        return new Response(
-          JSON.stringify({
-            ok: true,
-            results,
-            counts
-          }),
-          {
-            status: 200,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8',
-
-              'access-control-allow-origin':
-                '*'
-            }
-          }
-        );
-      } catch (e) {
-        return new Response(
-          JSON.stringify({
-            ok: false,
-            error:
-              String(
-                e.message || e
-              )
-          }),
-          {
-            status: 500,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8',
-
-              'access-control-allow-origin':
-                '*'
-            }
-          }
-        );
-      }
-    }
-
-    // --------------------------------------------------
-    // CURRENT SEASON REFRESH
-    // --------------------------------------------------
-
-    if (
-      url.pathname === '/api/refresh'
-    ) {
-      const token =
-        url.searchParams.get(
-          'token'
-        );
-
-      if (
-        token !== IMPORT_TOKEN
-      ) {
-        return new Response(
-          JSON.stringify({
-            ok: false,
-            error:
-              'Unauthorized'
-          }),
-          {
-            status: 401,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8'
-            }
-          }
-        );
-      }
-
-      try {
         const result =
-          await refreshCurrentSeason(
+          await importLeagueSeason(
+            env,
+            leagueCode,
+            seasonName
+          );
+
+
+        const counts =
+          await getCounts(
             env
           );
 
-        const counts =
-          await getCounts(env);
 
-        return new Response(
-          JSON.stringify({
-            ok: true,
-            result,
-            counts
-          }),
-          {
-            status: 200,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8',
+        return json({
+          ok: true,
+          result,
+          counts
+        });
 
-              'access-control-allow-origin':
-                '*'
-            }
-          }
-        );
       } catch (e) {
-        return new Response(
-          JSON.stringify({
+
+        return json(
+          {
             ok: false,
             error:
               String(
                 e.message || e
               ),
-
             note:
               'Existing D1 data was not deleted or cleared.'
-          }),
-          {
-            status: 502,
-            headers: {
-              'content-type':
-                'application/json; charset=utf-8',
-
-              'access-control-allow-origin':
-                '*'
-            }
-          }
+          },
+          502
         );
+
       }
+
     }
 
-    // --------------------------------------------------
-    // STATIC ASSETS
-    // --------------------------------------------------
+
+    /* ================================
+       CURRENT SEASON REFRESH
+    ================================= */
+
+    if (
+      url.pathname ===
+      '/api/refresh'
+    ) {
+
+      const token =
+        url.searchParams.get(
+          'token'
+        );
+
+      if (
+        token !==
+        IMPORT_TOKEN
+      ) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              'Unauthorized'
+          },
+          401
+        );
+
+      }
+
+
+      try {
+
+        const leagueCode =
+          clean(
+            url.searchParams.get(
+              'league'
+            )
+          );
+
+
+        if (!leagueCode) {
+
+          return json(
+            {
+              ok: false,
+              error:
+                'Use league=E0'
+            },
+            400
+          );
+
+        }
+
+
+        const result =
+          await importLeagueSeason(
+            env,
+            leagueCode,
+            '2026/27'
+          );
+
+
+        const counts =
+          await getCounts(
+            env
+          );
+
+
+        return json({
+          ok: true,
+          result,
+          counts
+        });
+
+      } catch (e) {
+
+        return json(
+          {
+            ok: false,
+            error:
+              String(
+                e.message || e
+              ),
+            note:
+              'Existing D1 data was not deleted or cleared.'
+          },
+          502
+        );
+
+      }
+
+    }
+
+
+    /* ================================
+       STATIC ASSETS
+    ================================= */
 
     return env.ASSETS.fetch(
       request
     );
+
   },
 
-  // ----------------------------------------------------
-  // CRON
-  // ----------------------------------------------------
+
+  /* ================================
+     CRON
+  ================================= */
 
   async scheduled(
     controller,
     env,
     ctx
   ) {
+
+    /*
+      Na tym etapie cron odświeża
+      Premier League, żeby zachować
+      działającą automatyzację.
+
+      Po przetestowaniu wieloligowego
+      importu rozszerzymy cron na
+      wszystkie aktywne ligi.
+    */
+
     ctx.waitUntil(
       (async () => {
+
         try {
+
           const result =
-            await refreshCurrentSeason(
-              env
+            await importLeagueSeason(
+              env,
+              'E0',
+              '2026/27'
             );
+
 
           console.log(
             'Football-Data refresh OK',
@@ -1464,15 +1824,53 @@ export default {
               result
             )
           );
+
         } catch (e) {
+
           console.error(
             'Football-Data refresh failed:',
             String(
               e.message || e
             )
           );
+
         }
+
       })()
     );
+
   }
+
 };
+
+
+/* ================================
+   JSON RESPONSE
+================================ */
+
+function json(
+  data,
+  status = 200
+) {
+
+  return new Response(
+    JSON.stringify(
+      data
+    ),
+    {
+      status,
+
+      headers: {
+        'content-type':
+          'application/json; charset=utf-8',
+
+        'cache-control':
+          'no-store',
+
+        'access-control-allow-origin':
+          '*'
+      }
+    }
+  );
+
+}
