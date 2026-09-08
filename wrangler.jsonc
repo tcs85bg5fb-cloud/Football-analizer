@@ -3,13 +3,11 @@
   "name": "football-analizer",
   "main": "worker.js",
   "compatibility_date": "2026-09-05",
-
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
     "run_worker_first": true
   },
-
   "d1_databases": [
     {
       "binding": "DB",
@@ -17,10 +15,13 @@
       "database_id": "bf4b50b7-cf9c-4f0a-a1ee-1cf2b5403f14"
     }
   ],
-
   "triggers": {
     "crons": [
-      "0 3 * * *"
+      "0 3 * * *",
+      "0 8 * * *",
+      "0 13 * * *",
+      "0 18 * * *",
+      "0 23 * * *"
     ]
   }
 }
