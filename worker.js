@@ -38,10 +38,15 @@ const SEASONS = [
 ];
 
 /*
+ * =========================================================
+ * IMPORT LIMITS
+ * =========================================================
+ */
+
+/*
  * Na darmowym planie Cloudflare
- * trzymamy się bezpiecznego limitu.
- *
- * 3 ligi na jedno wywołanie.
+ * bezpiecznie importujemy 3 ligi
+ * na jedno wywołanie.
  */
 const MASS_IMPORT_CHUNK_SIZE = 3;
 
@@ -50,6 +55,62 @@ const MASS_IMPORT_CHUNK_SIZE = 3;
  * w jednym batchu.
  */
 const MATCH_BATCH_SIZE = 100;
+
+/*
+ * =========================================================
+ * CRON REFRESH PARTS
+ * =========================================================
+ *
+ * 22 ligi podzielone na 8 bezpiecznych paczek.
+ *
+ * Part 1 -> E0, E1, E2
+ * Part 2 -> E3, EC, SC0
+ * Part 3 -> SC1, SC2, SC3
+ * Part 4 -> D1, D2, I1
+ * Part 5 -> I2, SP1, SP2
+ * Part 6 -> F1, F2, N1
+ * Part 7 -> B1, P1, T1
+ * Part 8 -> G1
+ *
+ * Cron uruchamia się 5 razy dziennie.
+ * Każde uruchomienie bierze kolejną paczkę.
+ */
+
+const REFRESH_PARTS = [
+  ['E0', 'E1', 'E2'],
+  ['E3', 'EC', 'SC0'],
+  ['SC1', 'SC2', 'SC3'],
+  ['D1', 'D2', 'I1'],
+  ['I2', 'SP1', 'SP2'],
+  ['F1', 'F2', 'N1'],
+  ['B1', 'P1', 'T1'],
+  ['G1']
+];
+
+/*
+ * Godziny zgodne z wrangler.json:
+ *
+ * 03:00 UTC
+ * 08:00 UTC
+ * 13:00 UTC
+ * 18:00 UTC
+ * 23:00 UTC
+ *
+ * Cloudflare cron działa w UTC.
+ */
+const CRON_HOURS = [
+  3,
+  8,
+  13,
+  18,
+  23
+];
+
+/*
+ * =========================================================
+ * BASIC HELPERS
+ * =========================================================
+ */
 
 function clean(value) {
   if (value === undefined || value === null) {
@@ -216,6 +277,12 @@ function getOdds(row) {
   return odds;
 }
 
+/*
+ * =========================================================
+ * CSV PARSER
+ * =========================================================
+ */
+
 function parseCSV(text) {
   const rows = [];
 
@@ -331,6 +398,12 @@ function parseCSV(text) {
     });
 }
 
+/*
+ * =========================================================
+ * FOOTBALL-DATA
+ * =========================================================
+ */
+
 function getLeague(code) {
   return LEAGUES.find(
     league =>
@@ -402,6 +475,12 @@ async function getRemoteCSV(url) {
 
   return text;
 }
+
+/*
+ * =========================================================
+ * COUNTS
+ * =========================================================
+ */
 
 async function getCounts(env) {
   return await env.DB
@@ -597,7 +676,8 @@ async function importCSV(
     new Set();
 
   for (
-    const row of rows
+    const row
+    of rows
   ) {
     const home =
       clean(row.HomeTeam);
@@ -624,8 +704,6 @@ async function importCSV(
   /*
    * =======================================================
    * TEAMS + REFEREES
-   *
-   * Wszystko jednym DB.batch().
    * =======================================================
    */
 
@@ -692,8 +770,6 @@ async function importCSV(
   /*
    * =======================================================
    * MAPY TEAM / REFEREE
-   *
-   * Dwa SELECT-y w jednym DB.batch().
    * =======================================================
    */
 
@@ -754,8 +830,6 @@ async function importCSV(
   /*
    * =======================================================
    * MATCHES
-   *
-   * 100 statements na batch.
    * =======================================================
    */
 
@@ -1111,8 +1185,6 @@ async function importLeagueSeason(
 /*
  * =========================================================
  * MASS IMPORT
- *
- * Domyślnie 3 ligi na jedno wywołanie.
  * =========================================================
  */
 
@@ -1338,6 +1410,79 @@ async function getSeasonList(env) {
     result.results || []
   );
 }
+
+/*
+ * =========================================================
+ * CRON - WYBÓR PACZKI
+ * =========================================================
+ *
+ * Na podstawie daty i godziny wyliczamy,
+ * którą paczkę należy odświeżyć.
+ *
+ * Dzięki temu nie potrzebujemy dodatkowej
+ * tabeli w D1 do przechowywania stanu.
+ */
+
+function getCronRefreshPart(
+  scheduledTime
+) {
+  const date =
+    new Date(
+      scheduledTime
+    );
+
+  const hour =
+    date.getUTCHours();
+
+  let slot =
+    CRON_HOURS.indexOf(
+      hour
+    );
+
+  /*
+   * Zabezpieczenie:
+   * jeżeli Cloudflare poda godzinę,
+   * której nie ma w konfiguracji,
+   * używamy 0.
+   */
+  if (slot < 0) {
+    slot = 0;
+  }
+
+  /*
+   * Liczba dni od epoki.
+   */
+  const dayNumber =
+    Math.floor(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate()
+      ) /
+      86400000
+    );
+
+  /*
+   * Każdy dzień ma 5 slotów.
+   *
+   * 5 slotów x kolejne dni
+   * daje ciągłą rotację 1..8.
+   */
+  const index =
+    (
+      dayNumber * CRON_HOURS.length +
+      slot
+    ) %
+    REFRESH_PARTS.length;
+
+  return index + 1;
+}
+
+/*
+ * =========================================================
+ * MAIN WORKER
+ * =========================================================
+ */
 
 export default {
   async fetch(
@@ -1848,13 +1993,6 @@ export default {
      * MASS IMPORT
      * ================================
      *
-     * Przykład:
-     *
-     * /api/import-all
-     *   ?token=FA-IMPORT-2026-09
-     *   &season=2025/26
-     *   &part=1
-     *
      * part=1 -> E0, E1, E2
      * part=2 -> E3, EC, SC0
      * part=3 -> SC1, SC2, SC3
@@ -2071,9 +2209,9 @@ export default {
   },
 
   /*
-   * ================================
+   * ========================================================
    * CRON
-   * ================================
+   * ========================================================
    */
 
   async scheduled(
@@ -2081,30 +2219,104 @@ export default {
     env,
     ctx
   ) {
-    /*
-     * Na tym etapie cron
-     * nadal odświeża Premier League.
-     */
+    const scheduledTime =
+      controller.scheduledTime;
+
+    const part =
+      getCronRefreshPart(
+        scheduledTime
+      );
+
+    const leagues =
+      REFRESH_PARTS[
+        part - 1
+      ];
+
+    console.log(
+      'Football-Data scheduled refresh START',
+      JSON.stringify({
+        scheduledTime:
+          new Date(
+            scheduledTime
+          ).toISOString(),
+
+        part,
+
+        totalParts:
+          REFRESH_PARTS.length,
+
+        leagues
+      })
+    );
 
     ctx.waitUntil(
       (async () => {
         try {
-          const result =
-            await importLeagueSeason(
-              env,
-              'E0',
-              '2026/27'
-            );
+          /*
+           * Cron zawsze odświeża
+           * bieżący sezon 2026/27.
+           */
+          const results = [];
+
+          for (
+            const leagueCode
+            of leagues
+          ) {
+            try {
+              console.log(
+                `Cron import START ${leagueCode} 2026/27`
+              );
+
+              const result =
+                await importLeagueSeason(
+                  env,
+                  leagueCode,
+                  '2026/27'
+                );
+
+              results.push({
+                ok: true,
+                ...result
+              });
+
+              console.log(
+                `Cron import OK ${leagueCode}: ${result.imported} matches`
+              );
+            } catch (e) {
+              results.push({
+                ok: false,
+
+                code:
+                  leagueCode,
+
+                error:
+                  String(
+                    e.message || e
+                  )
+              });
+
+              console.error(
+                `Cron import FAILED ${leagueCode}:`,
+                String(
+                  e.message || e
+                )
+              );
+            }
+          }
 
           console.log(
-            'Football-Data refresh OK',
-            JSON.stringify(
-              result
-            )
+            'Football-Data scheduled refresh FINISHED',
+            JSON.stringify({
+              part,
+
+              leagues,
+
+              results
+            })
           );
         } catch (e) {
           console.error(
-            'Football-Data refresh failed:',
+            'Football-Data scheduled refresh FAILED:',
             String(
               e.message || e
             )
@@ -2116,9 +2328,9 @@ export default {
 };
 
 /*
- * ================================
+ * =========================================================
  * JSON RESPONSE
- * ================================
+ * =========================================================
  */
 
 function json(
