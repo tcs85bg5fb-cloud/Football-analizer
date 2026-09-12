@@ -2,157 +2,418 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f2f2f7">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111">
 <title>Football Stats Analyzer</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f2f2f7;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:900px;margin:auto;padding:10px}.card{background:#fff;border-radius:18px;padding:16px;margin:10px 0;box-shadow:0 1px 5px #0001}h1{margin:0 0 5px;font-size:26px}h2{margin:0;font-size:20px}.muted{color:#6e6e73;font-size:13px}.small{color:#6e6e73;font-size:12px}.note{background:#f2f2f7;border-radius:12px;padding:10px;margin-top:10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field{position:relative}input,select{width:100%;height:46px;padding:0 12px;border:1px solid #c7c7cc;border-radius:11px;background:#fff;color:#171717;font-size:16px}.searchbox{margin-bottom:0}button{width:100%;height:48px;margin-top:12px;border:0;border-radius:12px;background:#111;color:#fff;font-size:17px;font-weight:750}.autocomplete{position:absolute;z-index:100;left:0;right:0;top:52px;background:#fff;border:1px solid #d1d1d6;border-radius:12px;box-shadow:0 7px 22px #0002;max-height:260px;overflow:auto}.autocomplete-item{padding:11px 12px;border-bottom:1px solid #eee;cursor:pointer}.autocomplete-item:last-child{border-bottom:0}.autocomplete-item strong{display:block}.autocomplete-item span{display:block;color:#6e6e73;font-size:12px;margin-top:2px}.autocomplete-empty{padding:12px;color:#6e6e73;font-size:13px}.selection{margin-top:7px;min-height:16px;color:#6e6e73;font-size:12px}
-.selection:not(:empty){min-height:40px;padding:9px 11px;background:#f2f2f7;border:1px solid #d1d1d6;border-radius:11px;color:#171717;font-size:14px;font-weight:750;display:flex;align-items:center}
-.selection:not(:empty)::before{content:"✓";display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-right:7px;border-radius:50%;background:#171717;color:#fff;font-size:12px;font-weight:850}
-.badge{display:inline-block;padding:6px 9px;border-radius:9px;background:#eee;font-size:12px;font-weight:700;white-space:nowrap}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px}.compare{margin-top:10px}.cr{display:grid;grid-template-columns:minmax(0,1fr) 72px 72px;gap:7px;align-items:center;padding:7px 0;border-bottom:1px solid #eee;font-size:14px}.cr:last-child{border-bottom:0}.cr.head{font-size:12px;color:#6e6e73;font-weight:700;padding-top:0}.num{text-align:right;font-variant-numeric:tabular-nums}.better{font-weight:850}.sub{color:#777;font-size:12px}.formline{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:9px}.formteam{width:100%;font-weight:750}.dot{display:inline-flex;width:25px;height:25px;border-radius:50%;align-items:center;justify-content:center;font-size:11px;font-weight:850}.dot.w{background:#e5f7eb;color:#15803d}.dot.d{background:#fff2c7;color:#946200}.dot.l{background:#ffe5e5;color:#c62828}.team-section{border-top:1px solid #eee;padding-top:14px;margin-top:14px}.team-section:first-child{border-top:0;padding-top:0;margin-top:10px}.match{padding:11px 0;border-bottom:1px solid #eee}.match:last-child{border-bottom:0}.match-head{display:flex;justify-content:space-between;align-items:center;color:#6e6e73;font-size:12px}.match-name{font-weight:750;margin:5px 0}.score{font-weight:850;color:#171717}.result{display:inline-flex;min-width:28px;height:25px;padding:0 7px;border-radius:9px;align-items:center;justify-content:center;font-weight:850}.result.w{background:#e5f7eb;color:#15803d}.result.d{background:#fff2c7;color:#946200}.result.l{background:#ffe5e5;color:#c62828}.match-table{width:100%;border-collapse:collapse;font-size:13px}.match-table td{padding:4px 0;border-bottom:1px solid #f0f0f0}.match-table tr:last-child td{border-bottom:0}.match-table td:first-child{color:#6e6e73;width:55%}.match-table td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:650}
-.recent-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:9px;border:1px solid #e5e5ea;border-radius:12px}
-.recent-table{width:100%;min-width:920px;border-collapse:collapse;font-size:12px}
-.recent-table th,.recent-table td{padding:8px 9px;border-bottom:1px solid #eee;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
-.recent-table th{background:#f7f7f9;color:#6e6e73;font-size:11px;font-weight:750;position:sticky;top:0;z-index:1}
-.recent-table th:first-child,.recent-table td:first-child,.recent-table th:nth-child(2),.recent-table td:nth-child(2){text-align:left}
-.recent-table tbody tr:last-child td{border-bottom:0}
-.recent-table .opponent{font-weight:750}
-.table-note{margin-top:6px;color:#6e6e73;font-size:11px}
-.ref-row{display:grid;grid-template-columns:1fr 85px;gap:8px;padding:8px 0;border-bottom:1px solid #eee;font-size:14px}.ref-row:last-child{border-bottom:0}.ref-row div:last-child{text-align:right}.empty{padding:12px 0;color:#6e6e73}.error{background:#fff1f1;color:#a51d1d;border:1px solid #efcccc}@media(max-width:650px){main{padding:7px}.card{padding:14px}.grid,.controls{grid-template-columns:1fr}.cr{grid-template-columns:minmax(0,1fr) 66px 66px}}
+*{box-sizing:border-box}
+body{margin:0;background:#f2f2f7;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:1050px;margin:auto;padding:14px}
+.card{background:#fff;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 1px 5px #0001}
+h1{margin:0 0 4px;font-size:28px}h2{margin:0 0 10px;font-size:20px}
+.muted{color:#6e6e73;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+label{display:block;font-weight:600;font-size:13px;margin-bottom:6px}
+select,input[type=date]{width:100%;padding:13px;border:1px solid #c7c7cc;border-radius:11px;background:#fff;font-size:17px}
+input[type=search]{width:100%;padding:11px 12px;border:1px solid #c7c7cc;border-radius:10px;background:#fff;font-size:16px}
+button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:11px;background:#111;color:#fff;font-size:17px;font-weight:700}
+button.secondary{background:#fff;color:#171717;border:1px solid #c7c7cc}
+.tabs{display:flex;gap:8px;overflow:auto;margin:8px 0}
+.tab{white-space:nowrap;border:1px solid #d1d1d6;background:#fff;color:#171717;padding:9px 12px;border-radius:10px;font-weight:600}
+.tab.active{background:#111;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid #eee;text-align:right}
+th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#eee;font-size:12px;font-weight:600}
+.metric{font-size:22px;font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{background:#f2f2f7;border-radius:12px;padding:11px;margin-top:10px}
+.small{font-size:12px;color:#6e6e73}
+.section-title{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.empty{padding:12px 0;color:#6e6e73}
+.selected-team{margin-top:8px;padding:10px 12px;border-radius:11px;background:#f2f2f7;font-weight:700}
+.search-wrap{margin-top:8px}
+.fixture-league{margin-top:16px}
+.fixture-league:first-child{margin-top:0}
+.fixture-league-title{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:4px}
+.fixture-row{display:grid;grid-template-columns:58px 1fr 1fr 72px;gap:8px;align-items:center;padding:11px 0;border-bottom:1px solid #eee}
+.fixture-time{text-align:left;font-weight:700}
+.fixture-team{text-align:right}
+.fixture-team.away{text-align:left}
+.fixture-score{text-align:center;font-weight:800}
+.fixture-ref{font-size:11px;color:#6e6e73;text-align:right}
+@media(max-width:700px){
+ .grid,.two{grid-template-columns:1fr}
+ .grid3{grid-template-columns:1fr 1fr}
+ main{padding:10px}
+ table{font-size:13px}
+ h1{font-size:25px}
+ .fixture-row{grid-template-columns:48px 1fr 1fr}
+ .fixture-ref{grid-column:2/4;text-align:left}
+}
 </style>
 </head>
-<body><main>
-<section class="card"><h1>⚽ Football Stats Analyzer</h1><div class="muted">Porównanie drużyn na podstawie danych z D1.</div><div class="note small">Domyślnie: HOME dla gospodarza i AWAY dla gościa. Możesz przełączyć na wszystkie mecze.</div></section>
+<body>
+<main>
+
 <section class="card">
-<div class="grid">
-<div class="field"><label>Gospodarz</label><input id="homeSearch" class="searchbox" autocomplete="off" placeholder="🔍 Wyszukaj drużynę…"><div id="homeAuto" class="autocomplete" hidden></div><div id="homeSelected" class="selection"></div></div>
-<div class="field"><label>Gość</label><input id="awaySearch" class="searchbox" autocomplete="off" placeholder="🔍 Wyszukaj drużynę…"><div id="awayAuto" class="autocomplete" hidden></div><div id="awaySelected" class="selection"></div></div>
+  <h1>⚽ Football Stats Analyzer</h1>
+  <div class="muted">Porównanie drużyn na podstawie danych z D1.</div>
+  <div class="tabs">
+    <button id="tabAnalysis" class="tab active" type="button">Analiza</button>
+    <button id="tabFixtures" class="tab" type="button">Mecze</button>
+  </div>
+  <div id="status" class="small">Ładowanie danych…</div>
+</section>
+
+<div id="analysisView">
+
+<section class="card">
+  <div class="grid">
+    <div>
+      <label>Gospodarz</label>
+      <div class="search-wrap"><input id="homeSearch" type="search" placeholder="Szukaj drużyny…"></div>
+      <select id="home"></select>
+      <div id="homeSelected" class="selected-team">✓ —</div>
+    </div>
+    <div>
+      <label>Gość</label>
+      <div class="search-wrap"><input id="awaySearch" type="search" placeholder="Szukaj drużyny…"></div>
+      <select id="away"></select>
+      <div id="awaySelected" class="selected-team">✓ —</div>
+    </div>
+  </div>
+
+  <div class="grid3" style="margin-top:12px">
+    <div>
+      <label>Mecze do analizy</label>
+      <select id="sample">
+        <option value="5">5</option><option value="10" selected>10</option>
+        <option value="15">15</option><option value="20">20</option>
+        <option value="30">30</option><option value="50">50</option>
+        <option value="all">All</option>
+      </select>
+    </div>
+    <div>
+      <label>Sposób analizy</label>
+      <select id="venueMode">
+        <option value="split" selected>Home / Away</option>
+        <option value="all">Wszystkie mecze</option>
+      </select>
+    </div>
+    <div>
+      <label>Sędzia</label>
+      <select id="referee"></select>
+    </div>
+  </div>
+
+  <div class="search-wrap"><input id="refSearch" type="search" placeholder="Szukaj sędziego…"></div>
+  <button id="analyze" type="button">Analizuj mecz</button>
+</section>
+
+<div id="results"></div>
 </div>
-<div class="grid" style="margin-top:12px">
-<div class="field"><label>Liga — opcjonalnie</label><input id="leagueSearch" class="searchbox" autocomplete="off" placeholder="🔍 Wyszukaj ligę…"><div id="leagueAuto" class="autocomplete" hidden></div><div id="leagueSelected" class="selection"></div></div>
-<div class="field"><label>Sędzia — opcjonalnie</label><input id="refSearch" class="searchbox" autocomplete="off" placeholder="🔍 Wyszukaj sędziego…"><div id="refAuto" class="autocomplete" hidden></div><div id="refSelected" class="selection"></div></div>
+
+<div id="fixturesView" style="display:none">
+<section class="card">
+  <div class="section-title">
+    <h2>📅 Mecze</h2>
+    <span id="fixtureCount" class="badge">—</span>
+  </div>
+  <div class="grid">
+    <div>
+      <label>Data</label>
+      <input id="fixtureDate" type="date">
+    </div>
+    <div>
+      <label>Opcjonalnie liga</label>
+      <select id="fixtureLeague"><option value="">Wszystkie ligi</option></select>
+    </div>
+  </div>
+  <button id="loadFixtures" type="button">Pokaż mecze</button>
+  <div id="fixtureStatus" class="small" style="margin-top:10px"></div>
+</section>
+<div id="fixturesResults"></div>
 </div>
-<div class="controls"><div><label>Mecze do analizy</label><select id="sample"><option value="5" selected>5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="30">30</option><option value="50">50</option><option value="all">Wszystkie</option></select></div><div><label>Sposób analizy</label><select id="venueMode"><option value="split" selected>Home / Away</option><option value="all">Wszystkie mecze</option></select></div></div>
-<button id="analyze">Analizuj mecz</button><div id="status" class="muted" style="margin-top:10px"></div>
-</section><div id="results"></div></main>
+
+</main>
+
 <script>
-let DATA=[],LEAGUES=[],TEAMS=[],REFEREES=[],homeTeam='',awayTeam='',league=null,referee=null;
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pl').trim();
-function num(v){if(v===null||v===undefined||v==='')return null;const n=Number(String(v).replace(',','.'));return Number.isFinite(n)?n:null}
-function avg(a){const x=a.map(num).filter(v=>v!==null);return x.length?x.reduce((s,v)=>s+v,0)/x.length:null}
-function f(v){const n=num(v);return n===null?'—':n.toFixed(1).replace('.',',')}
-function dateVal(v){if(!v)return 0;let s=String(v),m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]).getTime();m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);if(m)return new Date(+m[3],+m[2]-1,+m[1]).getTime();return Date.parse(s)||0}
-function dateText(v){if(!v)return '—';const s=String(v);return /^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(0,10):s}
-function team(m,side){return side==='home'?(m.home_team??m.HomeTeam??''):(m.away_team??m.AwayTeam??'')}
-function lcode(m){return m.league_code||m.leagueCode||null}
-function lname(code){const l=LEAGUES.find(x=>x.code===code);return l?`${l.country} — ${l.name}`:(code||'')}
-function teamRows(t,v){return DATA.filter(m=>{const h=team(m,'home')===t,a=team(m,'away')===t;if(v==='home'&&!h)return false;if(v==='away'&&!a)return false;if(v==='all'&&!h&&!a)return false;if(league&&lcode(m)!==league.code)return false;return true}).sort((a,b)=>dateVal(b.match_date??b.Date)-dateVal(a.match_date??a.Date))}
-function own(m,t,h,a){return team(m,'home')===t?num(m[h]):num(m[a])}
-function opp(m,t,h,a){return team(m,'home')===t?num(m[a]):num(m[h])}
-const ST=[
- {k:'goals',n:'Gole',h:'home_goals',a:'away_goals',o:'higher',d:'lower'},
- {k:'shots',n:'Strzały',h:'home_shots',a:'away_shots',o:'higher',d:'lower'},
- {k:'sot',n:'Strzały celne',h:'home_shots_on_target',a:'away_shots_on_target',o:'higher',d:'lower'},
- {k:'xg',n:'xG',h:'home_xg',a:'away_xg',o:'higher',d:'lower'},
- {k:'corners',n:'Rożne',h:'home_corners',a:'away_corners',o:'higher',d:'lower'},
- {k:'fouls',n:'Faule',h:'home_fouls',a:'away_fouls',o:'lower',d:'higher'},
- {k:'yellow',n:'Żółte kartki',h:'home_yellow_cards',a:'away_yellow_cards',o:'lower',d:'higher'},
- {k:'red',n:'Czerwone kartki',h:'home_red_cards',a:'away_red_cards',o:'lower',d:'higher'},
- {k:'possession',n:'Posiadanie %',h:'home_possession',a:'away_possession',o:'higher',d:'lower'}
+let DATA=[],TEAMS=[],REFEREES=[],SOURCE_COLUMNS=[];
+const LEAGUE_ORDER=[
+ ['E0','Premier League','England'],['E1','Championship','England'],['E2','League One','England'],
+ ['E3','League Two','England'],['EC','National League','England'],
+ ['SC0','Premiership','Scotland'],['SC1','Championship','Scotland'],['SC2','League One','Scotland'],['SC3','League Two','Scotland'],
+ ['D1','Bundesliga','Germany'],['D2','2. Bundesliga','Germany'],
+ ['I1','Serie A','Italy'],['I2','Serie B','Italy'],
+ ['SP1','La Liga','Spain'],['SP2','La Liga 2','Spain'],
+ ['F1','Ligue 1','France'],['F2','Ligue 2','France'],
+ ['N1','Eredivisie','Netherlands'],['B1','Jupiler League','Belgium'],
+ ['P1','Liga Portugal','Portugal'],['T1','Süper Lig','Turkey'],['G1','Super League','Greece']
 ];
-function stats(t,v,limit){let r=teamRows(t,v);if(limit!=='all')r=r.slice(0,+limit);const o={n:r.length};ST.forEach(s=>o[s.k]={own:avg(r.map(m=>own(m,t,s.h,s.a))),against:avg(r.map(m=>opp(m,t,s.h,s.a)))});return o}
-function better(a,b,rule){a=num(a);b=num(b);if(a===null||b===null||a===b)return '';return (rule==='higher'?a>b:a<b)?'better':''}
-function comparison(h,a,hv,av,limit){const hs=stats(h,hv,limit),as=stats(a,av,limit);return `<section class="card"><div class="section-title"><h2>📊 Porównanie</h2><span class="badge">${limit==='all'?'Wszystkie':limit} meczów</span></div><div class="compare"><div class="cr head"><div>Statystyka</div><div class="num">${esc(h)}</div><div class="num">${esc(a)}</div></div>${ST.map(s=>`<div class="cr"><div>${esc(s.n)}</div><div class="num ${better(hs[s.k].own,as[s.k].own,s.o)}">${f(hs[s.k].own)}</div><div class="num ${better(as[s.k].own,hs[s.k].own,s.o)}">${f(as[s.k].own)}</div></div><div class="cr"><div class="sub">↳ przeciwko</div><div class="num ${better(hs[s.k].against,as[s.k].against,s.d)}">${f(hs[s.k].against)}</div><div class="num ${better(as[s.k].against,hs[s.k].against,s.d)}">${f(as[s.k].against)}</div></div>`).join('')}</div><div class="small" style="margin-top:8px">Statystyki są razem: wartość drużyny oraz wartość „przeciwko”.</div></section>`}
-function outcome(m,t){const hg=num(m.home_goals),ag=num(m.away_goals);if(hg===null||ag===null)return '—';const d=team(m,'home')===t?hg-ag:ag-hg;return d>0?'W':d<0?'L':'D'}
-function recentMatch(m,t){
-  const ih=team(m,'home')===t;
-  const pair=(h,a)=>{
-    const x=ih?num(m[h]):num(m[a]);
-    const y=ih?num(m[a]):num(m[h]);
-    return `${f(x)} — ${f(y)}`;
-  };
-  const r=outcome(m,t);
-  return `<tr>
-    <td>${esc(dateText(m.match_date??m.Date))}</td>
-    <td class="opponent">${esc(ih?team(m,'away'):team(m,'home'))}</td>
-    <td><span class="result ${r.toLowerCase()}">${r}</span> ${m.home_goals??'—'}:${m.away_goals??'—'}</td>
-    <td>${pair('home_goals','away_goals')}</td>
-    <td>${pair('home_shots','away_shots')}</td>
-    <td>${pair('home_shots_on_target','away_shots_on_target')}</td>
-    <td>${pair('home_xg','away_xg')}</td>
-    <td>${pair('home_corners','away_corners')}</td>
-    <td>${pair('home_fouls','away_fouls')}</td>
-    <td>${pair('home_yellow_cards','away_yellow_cards')}</td>
-    <td>${pair('home_red_cards','away_red_cards')}</td>
-    <td>${pair('home_possession','away_possession')}</td>
-  </tr>`;
+
+async function loadLiveData(){
+ const res=await fetch('/api/matches?limit=2000',{cache:'no-store'});
+ if(!res.ok)throw new Error('Nie udało się pobrać danych z bazy D1.');
+ const payload=await res.json();
+ if(!payload.ok)throw new Error(payload.error||'API D1 zwróciło błąd.');
+ const rows=[],cols=new Set();
+ (payload.matches||[]).forEach(match=>{
+   const raw=match.raw_data&&typeof match.raw_data==='object'?match.raw_data:{};
+   const m={...raw,Season:match.season,Date:raw.Date||formatISODate(match.match_date),
+     HomeTeam:match.home_team,AwayTeam:match.away_team,Referee:match.referee,
+     FTHG:match.home_goals,FTAG:match.away_goals,FTR:match.result,
+     HTHG:match.home_ht_goals,HTAG:match.away_ht_goals,HTR:match.ht_result,
+     HS:match.home_shots,AS:match.away_shots,HST:match.home_shots_on_target,AST:match.away_shots_on_target,
+     HxG:match.home_xg,AxG:match.away_xg,HC:match.home_corners,AC:match.away_corners,
+     HF:match.home_fouls,AF:match.away_fouls,HY:match.home_yellow_cards,AY:match.away_yellow_cards,
+     HR:match.home_red_cards,AR:match.away_red_cards,HP:match.home_possession,AP:match.away_possession};
+   rows.push(m);Object.keys(raw).forEach(k=>cols.add(k));
+ });
+ DATA=rows;SOURCE_COLUMNS=[...cols];
+ TEAMS=[...new Set(DATA.flatMap(m=>[m.HomeTeam,m.AwayTeam]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
+ REFEREES=[...new Set(DATA.map(m=>m.Referee).filter(Boolean))].sort(sortBySurname);
+ return payload;
+}
+function formatISODate(v){if(!v)return '';const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]}/${m[2]}/${m[1]}`:String(v)}
+function dateVal(s){if(!s)return 0;const v=String(s),p=v.split('/');if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]).getTime();const m=v.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?new Date(+m[1],+m[2]-1,+m[3]).getTime():0}
+const num=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
+const avg=a=>{const x=a.filter(v=>v!=null);return x.length?x.reduce((s,v)=>s+v,0)/x.length:null};
+const f=x=>x==null?'—':x.toFixed(1);
+const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function sortBySurname(a,b){
+ const pa=String(a).trim().split(/\s+/),pb=String(b).trim().split(/\s+/);
+ return (pa.at(-1)||'').localeCompare(pb.at(-1)||'','pl')||String(a).localeCompare(String(b),'pl');
+}
+function fillSelect(sel,items){
+ sel.innerHTML='';
+ items.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o)});
+}
+function filterSelect(searchId,selectId,items){
+ const q=document.getElementById(searchId).value.trim().toLocaleLowerCase('pl');
+ const current=document.getElementById(selectId).value;
+ const filtered=q?items.filter(x=>x.toLocaleLowerCase('pl').includes(q)):items;
+ fillSelect(document.getElementById(selectId),filtered);
+ if(filtered.includes(current))document.getElementById(selectId).value=current;
+ updateSelectedTeams();
+}
+function updateSelectedTeams(){
+ document.getElementById('homeSelected').textContent='✓ '+(document.getElementById('home').value||'—');
+ document.getElementById('awaySelected').textContent='✓ '+(document.getElementById('away').value||'—');
+}
+function stats(team,venue,limit){
+ let r=DATA.filter(m=>venue==='home'?m.HomeTeam===team:venue==='away'?m.AwayTeam===team:(m.HomeTeam===team||m.AwayTeam===team))
+   .sort((a,b)=>dateVal(b.Date)-dateVal(a.Date));
+ if(limit!=='all')r=r.slice(0,Number(limit));
+ const get=(m,k)=>num(m[k]);
+ const own=(m,k)=>venue==='home'?get(m,k[0]):venue==='away'?get(m,k[1]):(m.HomeTeam===team?get(m,k[0]):get(m,k[1]));
+ const opp=(m,k)=>venue==='home'?get(m,k[1]):venue==='away'?get(m,k[0]):(m.HomeTeam===team?get(m,k[1]):get(m,k[0]));
+ return {
+   matches:r.length,
+   goals:avg(r.map(m=>own(m,['FTHG','FTAG']))),
+   goalsAgainst:avg(r.map(m=>opp(m,['FTHG','FTAG']))),
+   shots:avg(r.map(m=>own(m,['HS','AS']))),
+   shotsAgainst:avg(r.map(m=>opp(m,['HS','AS']))),
+   on:avg(r.map(m=>own(m,['HST','AST']))),
+   onAgainst:avg(r.map(m=>opp(m,['HST','AST']))),
+   xg:avg(r.map(m=>own(m,['HxG','AxG']))),
+   xgAgainst:avg(r.map(m=>opp(m,['HxG','AxG']))),
+   corners:avg(r.map(m=>own(m,['HC','AC']))),
+   cornersAgainst:avg(r.map(m=>opp(m,['HC','AC']))),
+   fouls:avg(r.map(m=>own(m,['HF','AF']))),
+   foulsAgainst:avg(r.map(m=>opp(m,['HF','AF']))),
+   yellow:avg(r.map(m=>own(m,['HY','AY']))),
+   yellowAgainst:avg(r.map(m=>opp(m,['HY','AY'])))
+ };
+}
+function summaryCompare(h,a,mode,limit){
+ const hv=mode==='split'?'home':'all',av=mode==='split'?'away':'all',hs=stats(h,hv,limit),as=stats(a,av,limit);
+ const rows=[['Gole',hs.goals,as.goals],['Strzały',hs.shots,as.shots],['Celne',hs.on,as.on],['xG',hs.xg,as.xg],['Rożne',hs.corners,as.corners],['Faule',hs.fouls,as.fouls],['Żółte kartki',hs.yellow,as.yellow]];
+ return `<section class="card"><div class="section-title"><h2>📊 Porównanie</h2><span class="badge">${limit==='all'?'wszystkie mecze':limit+' meczów'}</span></div>
+ <div class="scroll"><table><tr><th>Statystyka</th><th>${esc(h)}</th><th>${esc(a)}</th></tr>
+ ${rows.map(r=>`<tr><td>${r[0]}</td><td>${f(r[1])}</td><td>${f(r[2])}</td></tr>`).join('')}</table></div></section>`;
+}
+function formCard(team,venue,limit){
+ const r=DATA.filter(m=>venue==='home'?m.HomeTeam===team:venue==='away'?m.AwayTeam===team:(m.HomeTeam===team||m.AwayTeam===team))
+   .sort((a,b)=>dateVal(b.Date)-dateVal(a.Date)).slice(0,limit==='all'?99999:Number(limit));
+ return `<section class="card"><div class="section-title"><h2>📈 Forma — ${esc(team)}</h2><span class="badge">${r.length}</span></div>
+ ${r.length?`<div class="scroll"><table><tr><th>Data</th><th>Mecz</th><th>Wynik</th><th>Gole</th><th>Strzały</th><th>Celne</th><th>xG</th><th>Rożne</th></tr>
+ ${r.map(m=>`<tr><td>${esc(m.Date)}</td><td>${esc(m.HomeTeam)} – ${esc(m.AwayTeam)}</td><td><b>${esc(outcomeFor(m,team))}</b></td><td>${m.FTHG??'—'}:${m.FTAG??'—'}</td><td>${m.HS??'—'}:${m.AS??'—'}</td><td>${m.HST??'—'}:${m.AST??'—'}</td><td>${m.HxG??m.xG??'—'}:${m.AxG??'—'}</td><td>${m.HC??'—'}:${m.AC??'—'}</td></tr>`).join('')}</table></div>`:'<div class="empty">Brak danych.</div>'}</section>`;
+}
+function outcomeFor(m,team){
+ if(m.FTHG==null||m.FTAG==null)return '—';
+ const home=Number(m.FTHG),away=Number(m.FTAG);
+ if(m.HomeTeam===team)return home>away?'W':home<away?'L':'D';
+ return away>home?'W':away<home?'L':'D';
+}
+function h2hCard(h,a){
+ const r=DATA.filter(m=>(m.HomeTeam===h&&m.AwayTeam===a)||(m.HomeTeam===a&&m.AwayTeam===h)).sort((x,y)=>dateVal(y.Date)-dateVal(x.Date)).slice(0,10);
+ return `<section class="card"><h2>🤝 H2H — ostatnie ${r.length}</h2>${r.length?`<div class="scroll"><table><tr><th>Data</th><th>Mecz</th><th>Wynik</th><th>Strzały</th><th>Celne</th><th>Rożne</th><th>Faule</th><th>ŻK</th></tr>${r.map(m=>`<tr><td>${esc(m.Date)}</td><td>${esc(m.HomeTeam)} – ${esc(m.AwayTeam)}</td><td>${m.FTHG??'—'}:${m.FTAG??'—'}</td><td>${m.HS??'—'}:${m.AS??'—'}</td><td>${m.HST??'—'}:${m.AST??'—'}</td><td>${m.HC??'—'}:${m.AC??'—'}</td><td>${m.HF??'—'}:${m.AF??'—'}</td><td>${m.HY??'—'}:${m.AY??'—'}</td></tr>`).join('')}</table></div>`:'<div class="empty">Brak H2H w danych.</div>'}</section>`;
+}
+function refereeProfile(name){
+ if(!name)return '';
+ const r=DATA.filter(m=>m.Referee===name),av=k=>avg(r.map(m=>num(m[k])));
+ const total=(a,b)=>avg(r.map(m=>{const x=num(m[a]),y=num(m[b]);return x!=null&&y!=null?x+y:null}));
+ return `<section class="card"><div class="section-title"><h2>👨‍⚖️ ${esc(name)}</h2><span class="badge">${r.length} meczów</span></div>
+ <div class="scroll"><table><tr><th>Statystyka</th><th>Średnia na mecz</th></tr>
+ <tr><td>Faule gospodarzy</td><td>${f(av('HF'))}</td></tr><tr><td>Faule gości</td><td>${f(av('AF'))}</td></tr><tr><td>Faule łącznie</td><td>${f(total('HF','AF'))}</td></tr>
+ <tr><td>Żółte gospodarzy</td><td>${f(av('HY'))}</td></tr><tr><td>Żółte gości</td><td>${f(av('AY'))}</td></tr><tr><td>Żółte łącznie</td><td>${f(total('HY','AY'))}</td></tr>
+ <tr><td>Czerwone łącznie</td><td>${f(total('HR','AR'))}</td></tr></table></div></section>`;
+}
+function allDataNote(){return `<section class="card"><h2>📦 Dane</h2><div class="muted">Dane są pobierane bezpośrednio z D1. ${DATA.length} meczów, ${TEAMS.length} drużyn, ${REFEREES.length} sędziów.</div></section>`}
+
+function analyze(){
+ const h=document.getElementById('home').value,a=document.getElementById('away').value;
+ if(!h||!a||h===a){document.getElementById('results').innerHTML='<section class="card">Wybierz dwie różne drużyny.</section>';return}
+ const limit=document.getElementById('sample').value,mode=document.getElementById('venueMode').value,r=document.getElementById('referee').value;
+ const hv=mode==='split'?'home':'all',av=mode==='split'?'away':'all';
+ document.getElementById('results').innerHTML=`
+ <section class="card"><h2>${esc(h)} — ${esc(a)}</h2><span class="badge">Analiza danych</span>
+ <div class="muted" style="margin-top:8px">Zakres: ${limit==='all'?'wszystkie mecze':limit+' meczów'} · Tryb: ${mode==='split'?'Home / Away':'Wszystkie mecze'}</div></section>
+ ${summaryCompare(h,a,mode,limit)}
+ ${formCard(h,hv,limit)}${formCard(a,av,limit)}
+ ${h2hCard(h,a)}${refereeProfile(r)}${allDataNote()}`;
 }
 
-function recentTeam(t,v,limit){
-  const rows=teamRows(t,v);
-  const r=limit==='all'?rows:rows.slice(0,+limit);
-  return `<div class="team-section">
-    <div class="section-title">
-      <h2>📋 ${esc(t)}</h2>
-      <span class="badge">${v==='home'?'HOME':v==='away'?'AWAY':'HOME + AWAY'} • ${r.length}</span>
-    </div>
-    ${
-      r.length
-      ? `<div class="recent-table-wrap">
-          <table class="recent-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Przeciwnik</th>
-                <th>Wynik</th>
-                <th>Gole</th>
-                <th>Strzały</th>
-                <th>Celne</th>
-                <th>xG</th>
-                <th>Rożne</th>
-                <th>Faule</th>
-                <th>ŻK</th>
-                <th>CK</th>
-                <th>Posiadanie</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${r.map(m=>recentMatch(m,t)).join('')}
-            </tbody>
-          </table>
-        </div>
-        <div class="table-note">Wartości statystyk: <strong>${esc(t)} — przeciwnik</strong>.</div>`
-      : '<div class="empty">Brak dostępnych meczów.</div>'
-    }
-  </div>`;
+function localDateISO(){
+ const d=new Date(),off=d.getTimezoneOffset(),x=new Date(d.getTime()-off*60000);
+ return x.toISOString().slice(0,10);
+}
+function fixtureTeamName(x){
+ return x?.name||x?.team?.name||x?.raw?.name||'';
+}
+function fixtureLogo(x){
+ return x?.logo||x?.team?.logo||x?.raw?.logo||'';
+}
+function fixtureDateTime(f){
+ const raw=f.raw_data&&typeof f.raw_data==='object'?f.raw_data:{};
+ const fx=raw.fixture||f.fixture||{};
+ return {date:f.match_date||fx.date||'',timestamp:fx.timestamp||null};
+}
+function fixtureStatus(f){
+ const raw=f.raw_data&&typeof f.raw_data==='object'?f.raw_data:{};
+ const fx=raw.fixture||f.fixture||{};
+ const st=fx.status?.short||fx.status?.long||f.status||'';
+ return st;
+}
+async function loadFixtures(){
+ const date=document.getElementById('fixtureDate').value;
+ const league=document.getElementById('fixtureLeague').value;
+ if(!date)return;
+ const status=document.getElementById('fixtureStatus'),out=document.getElementById('fixturesResults');
+ status.textContent='Pobieranie meczów…';out.innerHTML='';
+ try{
+   const q=new URLSearchParams({date});
+   if(league)q.set('league',league);
+   const res=await fetch('/api/fixtures?'+q.toString(),{cache:'no-store'});
+   if(!res.ok)throw new Error('Nie udało się pobrać terminarza.');
+   const payload=await res.json();
+   if(!payload.ok)throw new Error(payload.error||'API terminarza zwróciło błąd.');
+   let fixtures=payload.fixtures||payload.matches||[];
+   fixtures=fixtures.filter(f=>{
+     const h=f.home_team||fixtureTeamName(f.home)||f.home?.name;
+     const a=f.away_team||fixtureTeamName(f.away)||f.away?.name;
+     return TEAMS.includes(h)&&TEAMS.includes(a);
+   });
+   renderFixtures(fixtures,date);
+   status.textContent=`Pokazano tylko mecze drużyn obecnych w danych statystycznych.`;
+ }catch(e){status.textContent=e.message;out.innerHTML='<section class="card"><div class="empty">Nie udało się pobrać meczów. Spróbuj ponownie.</div></section>'}
+}
+function renderFixtures(fixtures,date){
+ const out=document.getElementById('fixturesResults');
+ document.getElementById('fixtureCount').textContent=fixtures.length+' meczów';
+ if(!fixtures.length){out.innerHTML='<section class="card"><div class="empty">Brak meczów dla wybranej daty.</div></section>';return}
+ const map=new Map();
+ fixtures.forEach(f=>{
+   const code=f.league_code||f.league?.code||f.raw_data?.league?.code||'';
+   const found=LEAGUE_ORDER.find(x=>x[0]===code);
+   const name=f.league||f.league_name||f.league?.name||f.raw_data?.league?.name||'Inne';
+   const country=f.league_country||f.league?.country||f.raw_data?.league?.country||'';
+   const key=code||name;
+   if(!map.has(key))map.set(key,{code,name,country,order:found?LEAGUE_ORDER.indexOf(found):999,rows:[]});
+   map.get(key).rows.push(f);
+ });
+ const groups=[...map.values()].sort((a,b)=>a.order-b.order||a.country.localeCompare(b.country,'pl')||a.name.localeCompare(b.name,'pl'));
+ out.innerHTML=`<section class="card"><div class="small" style="margin-bottom:12px">Data: <b>${esc(formatISODate(date))}</b></div>
+ ${groups.map(g=>`<div class="fixture-league"><div class="fixture-league-title"><b>${esc(g.name)}</b><span class="badge">${esc(g.country||g.code)}</span></div>
+ ${g.rows.sort((a,b)=>{
+   const ta=fixtureDateTime(a).timestamp||0,tb=fixtureDateTime(b).timestamp||0;return ta-tb;
+ }).map(fixtureRow).join('')}</div>`).join('')}</section>`;
+}
+function fixtureRow(f){
+ const h=f.home_team||fixtureTeamName(f.home)||f.raw_data?.teams?.home?.name||'—';
+ const a=f.away_team||fixtureTeamName(f.away)||f.raw_data?.teams?.away?.name||'—';
+ const raw=f.raw_data&&typeof f.raw_data==='object'?f.raw_data:{},fx=raw.fixture||{};
+ const ts=fx.timestamp?new Date(Number(fx.timestamp)*1000):null;
+ const time=ts?ts.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}):'—';
+ const scoreHome=f.home_goals??raw.goals?.home,scoreAway=f.away_goals??raw.goals?.away;
+ const played=scoreHome!=null&&scoreAway!=null;
+ const ref=f.referee||raw.fixture?.referee||'';
+ const status=fixtureStatus(f);
+ return `<div class="fixture-row">
+   <div class="fixture-time">${esc(time)}</div>
+   <div class="fixture-team">${esc(h)}</div>
+   <div class="fixture-team away">${esc(a)}</div>
+   <div class="fixture-score">${played?`${scoreHome}:${scoreAway}`:esc(status||'—')}</div>
+   ${ref?`<div class="fixture-ref">Sędzia: ${esc(ref)}</div>`:''}
+ </div>`;
 }
 
-function recentCard(h,a,hv,av,limit){
-  return `<section class="card">
-    <div class="section-title">
-      <h2>📋 Ostatnie mecze</h2>
-      <span class="badge">${limit==='all'?'Wszystkie':limit} meczów</span>
-    </div>
-    <div class="small" style="margin-top:4px">
-      Jeden wiersz = jeden mecz. Kolumny zawierają kolejne statystyki.
-    </div>
-    ${recentTeam(h,hv,limit)}
-    ${recentTeam(a,av,limit)}
-  </section>`;
+function showView(which){
+ const analysis=which==='analysis';
+ document.getElementById('analysisView').style.display=analysis?'block':'none';
+ document.getElementById('fixturesView').style.display=analysis?'none':'block';
+ document.getElementById('tabAnalysis').classList.toggle('active',analysis);
+ document.getElementById('tabFixtures').classList.toggle('active',!analysis);
 }
-function formCard(h,a,hv,av,limit){const n=limit==='all'?5:Math.min(5,+limit),line=(t,v)=>{const r=teamRows(t,v).slice(0,n);return `<div class="formline"><div class="formteam">${esc(t)}</div>${r.map(m=>{const x=outcome(m,t);return `<span class="dot ${x.toLowerCase()}">${x}</span>`}).join('')}</div>`};return `<section class="card"><h2>📈 Forma</h2>${line(h,hv)}${line(a,av)}<div class="small" style="margin-top:7px">Ostatnie ${n} spotkań.</div></section>`}
-function h2hCard(h,a){const r=DATA.filter(m=>{const x=team(m,'home'),y=team(m,'away');return(x===h&&y===a)||(x===a&&y===h)}).sort((x,y)=>dateVal(y.match_date??y.Date)-dateVal(x.match_date??x.Date)).slice(0,10);return `<section class="card"><div class="section-title"><h2>🤝 H2H</h2><span class="badge">${r.length} / 10</span></div>${r.length?r.map(m=>`<div class="match"><div class="match-head"><span>${esc(dateText(m.match_date??m.Date))}</span><span>${esc(m.referee??m.Referee??'')}</span></div><div class="match-name">${esc(team(m,'home'))} — ${esc(team(m,'away'))} <span class="score">${m.home_goals??'—'}:${m.away_goals??'—'}</span></div><div class="small">${esc(lname(lcode(m)))}</div><div class="small" style="margin-top:4px">Strzały ${f(m.home_shots)} — ${f(m.away_shots)} · Celne ${f(m.home_shots_on_target)} — ${f(m.away_shots_on_target)} · Rożne ${f(m.home_corners)} — ${f(m.away_corners)}</div></div>`).join(''):'<div class="empty">Brak H2H.</div>'}</section>`}
-function refCard(r){if(!r)return '';const a=DATA.filter(m=>(m.referee??m.Referee)===r),tot=(x,y)=>avg(a.map(m=>{const p=num(m[x]),q=num(m[y]);return p!==null&&q!==null?p+q:null}));return `<section class="card"><div class="section-title"><h2>👨‍⚖️ Sędzia: ${esc(r)}</h2><span class="badge">${a.length} meczów</span></div><div style="margin-top:7px">${[['Faule gospodarzy',avg(a.map(m=>m.home_fouls))],['Faule gości',avg(a.map(m=>m.away_fouls))],['Faule łącznie',tot('home_fouls','away_fouls')],['Żółte gospodarzy',avg(a.map(m=>m.home_yellow_cards))],['Żółte gości',avg(a.map(m=>m.away_yellow_cards))],['Żółte łącznie',tot('home_yellow_cards','away_yellow_cards')],['Czerwone łącznie',tot('home_red_cards','away_red_cards')]].map(x=>`<div class="ref-row"><div>${x[0]}</div><div>${f(x[1])}</div></div>`).join('')}</div></section>`}
-function analyze(){if(!homeTeam||!awayTeam){$('results').innerHTML='<section class="card error">Wybierz obie drużyny.</section>';return}if(homeTeam===awayTeam){$('results').innerHTML='<section class="card error">Wybierz dwie różne drużyny.</section>';return}const lim=$('sample').value,mode=$('venueMode').value,hv=mode==='split'?'home':'all',av=mode==='split'?'away':'all';$('results').innerHTML=`<section class="card"><div class="section-title"><h2>${esc(homeTeam)} — ${esc(awayTeam)}</h2><span class="badge">${league?esc(lname(league.code)):'Wszystkie ligi'}</span></div><div class="muted" style="margin-top:7px">${hv==='home'?'HOME':'Wszystkie mecze'} dla ${esc(homeTeam)} · ${av==='away'?'AWAY':'Wszystkie mecze'} dla ${esc(awayTeam)} · próba: ${lim==='all'?'wszystkie':lim}</div></section>${comparison(homeTeam,awayTeam,hv,av,lim)}${formCard(homeTeam,awayTeam,hv,av,lim)}${recentCard(homeTeam,awayTeam,hv,av,lim)}${h2hCard(homeTeam,awayTeam)}${refCard(referee)}`}
-function auto(el,items,pick,kind){el.innerHTML='';if(!items.length){el.innerHTML='<div class="autocomplete-empty">Brak wyników.</div>';el.hidden=false;return}items.slice(0,60).forEach(item=>{const d=document.createElement('div');d.className='autocomplete-item';if(kind==='league')d.innerHTML=`<strong>${esc(item.country)} — ${esc(item.name)}</strong><span>${esc(item.code)}</span>`;else if(kind==='ref'){const s=String(item).trim().split(/\s+/).pop();d.innerHTML=`<strong>${esc(item)}</strong><span>Nazwisko: ${esc(s)}</span>`}else{const cs=[...new Set(DATA.filter(m=>team(m,'home')===item||team(m,'away')===item).map(lcode).filter(Boolean))].slice(0,3);d.innerHTML=`<strong>${esc(item)}</strong>${cs.length?`<span>${esc(cs.map(lname).join(' • '))}</span>`:''}`}d.onmousedown=e=>{e.preventDefault();pick(item)};el.appendChild(d)});el.hidden=false}
-function closeAuto(){document.querySelectorAll('.autocomplete').forEach(x=>x.hidden=true)}
-function setup(){const hs=$('homeSearch'),as=$('awaySearch'),ls=$('leagueSearch'),rs=$('refSearch');hs.onfocus=()=>auto($('homeAuto'),TEAMS.filter(t=>!norm(hs.value)||norm(t).includes(norm(hs.value))),pickHome,'team');hs.oninput=hs.onfocus;as.onfocus=()=>auto($('awayAuto'),TEAMS.filter(t=>!norm(as.value)||norm(t).includes(norm(as.value))),pickAway,'team');as.oninput=as.onfocus;ls.onfocus=()=>auto($('leagueAuto'),LEAGUES.filter(l=>!norm(ls.value)||norm(`${l.country} ${l.name} ${l.code}`).includes(norm(ls.value))),pickLeague,'league');ls.oninput=()=>{league=null;$('leagueSelected').textContent='';auto($('leagueAuto'),LEAGUES.filter(l=>!norm(ls.value)||norm(`${l.country} ${l.name} ${l.code}`).includes(norm(ls.value))),pickLeague,'league')};rs.onfocus=()=>auto($('refAuto'),REFEREES.filter(r=>!norm(rs.value)||norm(r).includes(norm(rs.value))),pickRef,'ref');rs.oninput=rs.onfocus;document.addEventListener('mousedown',e=>{if(!e.target.closest('.field'))closeAuto()});$('analyze').onclick=analyze;$('sample').onchange=analyze;$('venueMode').onchange=analyze}
-function pickHome(t){homeTeam=t;$('homeSearch').value='';$('homeSelected').textContent=`${t}`;$('homeAuto').hidden=true;if(awayTeam===t){awayTeam='';$('awaySelected').textContent=''}}
-function pickAway(t){awayTeam=t;$('awaySearch').value='';$('awaySelected').textContent=`${t}`;$('awayAuto').hidden=true;if(homeTeam===t){homeTeam='';$('homeSelected').textContent=''}}
-function pickLeague(l){league=l;$('leagueSearch').value='';$('leagueSelected').textContent=`${l.country} — ${l.name}`;$('leagueAuto').hidden=true}
-function pickRef(r){referee=r;$('refSearch').value='';$('refSelected').textContent=`${r}`;$('refAuto').hidden=true}
-async function load(){let all=[],off=0,lim=2000;while(true){const r=await fetch(`/api/matches?limit=${lim}&offset=${off}`,{cache:'no-store'});if(!r.ok)throw Error(`API meczów: HTTP ${r.status}`);const p=await r.json();if(!p.ok)throw Error(p.error||'Błąd API');const rows=p.matches||[];all.push(...rows);if(rows.length<lim||(p.total!=null&&all.length>=Number(p.total)))break;off+=rows.length}DATA=all;const lr=await fetch('/api/leagues',{cache:'no-store'});if(!lr.ok)throw Error(`API lig: HTTP ${lr.status}`);const lp=await lr.json();LEAGUES=(lp.available||lp.imported||[]).map(x=>({code:x.code,name:x.name,country:x.country||''})).filter(x=>x.code&&x.name).sort((a,b)=>a.country.localeCompare(b.country,'pl')||a.name.localeCompare(b.name,'pl'));TEAMS=[...new Set(DATA.flatMap(m=>[team(m,'home'),team(m,'away')]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));REFEREES=[...new Set(DATA.map(m=>m.referee??m.Referee).filter(Boolean))].sort((a,b)=>{const x=norm(a).split(/\s+/).pop(),y=norm(b).split(/\s+/).pop();return x.localeCompare(y,'pl')||norm(a).localeCompare(norm(b,'pl'))})}
-(async()=>{try{await load();setup();homeTeam=TEAMS.includes('Arsenal')?'Arsenal':TEAMS[0]||'';awayTeam=TEAMS.includes('Liverpool')?'Liverpool':TEAMS.find(x=>x!==homeTeam)||TEAMS[1]||'';$('homeSelected').textContent=homeTeam?`${homeTeam}`:'';$('awaySelected').textContent=awayTeam?`${awayTeam}`:'';$('status').textContent=`Aktualne dane: ${DATA.length} meczów • ${TEAMS.length} drużyn • ${REFEREES.length} sędziów • ${LEAGUES.length} lig.`;analyze()}catch(e){console.error(e);$('status').textContent='';$('results').innerHTML=`<section class="card error"><h2>Nie udało się załadować danych</h2><div style="margin-top:7px">${esc(e.message||e)}</div></section>`}})();
-</script></body></html>
+
+async function boot(){
+ const status=document.getElementById('status');
+ status.textContent='Pobieranie danych z bazy D1…';
+ try{
+   await loadLiveData();
+   fillSelect(document.getElementById('home'),TEAMS);
+   fillSelect(document.getElementById('away'),TEAMS);
+   fillSelect(document.getElementById('referee'),['',...REFEREES]);
+   document.getElementById('home').value=TEAMS.includes('Arsenal')?'Arsenal':TEAMS[0]||'';
+   document.getElementById('away').value=TEAMS.includes('Liverpool')?'Liverpool':TEAMS.find(t=>t!==document.getElementById('home').value)||TEAMS[1]||'';
+   updateSelectedTeams();
+
+   const fl=document.getElementById('fixtureLeague');
+   LEAGUE_ORDER.forEach(x=>{const o=document.createElement('option');o.value=x[0];o.textContent=x[1]+' · '+x[2];fl.appendChild(o)});
+
+   document.getElementById('fixtureDate').value=localDateISO();
+   document.getElementById('analyze').onclick=analyze;
+   document.getElementById('sample').onchange=analyze;
+   document.getElementById('venueMode').onchange=analyze;
+   document.getElementById('referee').onchange=analyze;
+   document.getElementById('home').onchange=updateSelectedTeams;
+   document.getElementById('away').onchange=updateSelectedTeams;
+   document.getElementById('homeSearch').oninput=()=>filterSelect('homeSearch','home',TEAMS);
+   document.getElementById('awaySearch').oninput=()=>filterSelect('awaySearch','away',TEAMS);
+   document.getElementById('refSearch').oninput=()=>{
+     const q=document.getElementById('refSearch').value.trim().toLocaleLowerCase('pl');
+     const items=q?REFEREES.filter(x=>x.toLocaleLowerCase('pl').includes(q)):REFEREES;
+     const cur=document.getElementById('referee').value;
+     fillSelect(document.getElementById('referee'),['',...items]);
+     if(items.includes(cur))document.getElementById('referee').value=cur;
+     analyze();
+   };
+   document.getElementById('loadFixtures').onclick=loadFixtures;
+   document.getElementById('tabAnalysis').onclick=()=>showView('analysis');
+   document.getElementById('tabFixtures').onclick=()=>showView('fixtures');
+
+   status.textContent=`D1: ${DATA.length} meczów, ${TEAMS.length} drużyn i ${REFEREES.length} sędziów.`;
+   analyze();
+ }catch(e){
+   console.error(e);
+   status.textContent=e.message||'Nie udało się pobrać danych z D1.';
+   document.getElementById('results').innerHTML='<section class="card"><h2>Nie udało się załadować danych</h2><div class="muted">Spróbuj odświeżyć stronę.</div></section>';
+ }
+}
+boot();
+</script>
+</body>
+</html>
