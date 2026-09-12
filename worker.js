@@ -1,4 +1,5 @@
 const FOOTBALL_DATA_SOURCE = 'football-data';
+const FIXTURE_SOURCE = 'sofascore';
 const IMPORT_TOKEN = 'FA-IMPORT-2026-09';
 
 const LEAGUES = [
@@ -68,13 +69,22 @@ const CRON_HOURS = [
  */
 
 function clean(value) {
-  if (value === undefined || value === null) {
+  if (
+    value === undefined ||
+    value === null
+  ) {
     return null;
   }
 
-  const v = String(value).trim();
+  const v =
+    String(value).trim();
 
-  if (!v || v === '-' || v === 'NA' || v === 'N/A') {
+  if (
+    !v ||
+    v === '-' ||
+    v === 'NA' ||
+    v === 'N/A'
+  ) {
     return null;
   }
 
@@ -82,21 +92,26 @@ function clean(value) {
 }
 
 function num(value) {
-  const v = clean(value);
+  const v =
+    clean(value);
 
   if (v === null) {
     return null;
   }
 
-  const n = Number(
-    String(v).replace(',', '.')
-  );
+  const n =
+    Number(
+      String(v).replace(',', '.')
+    );
 
-  return Number.isFinite(n) ? n : null;
+  return Number.isFinite(n)
+    ? n
+    : null;
 }
 
 function int(value) {
-  const n = num(value);
+  const n =
+    num(value);
 
   return n === null
     ? null
@@ -104,18 +119,25 @@ function int(value) {
 }
 
 function dateToISO(value) {
-  const v = clean(value);
+  const v =
+    clean(value);
 
   if (!v) {
     return null;
   }
 
-  const m = v.match(
-    /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
-  );
+  const m =
+    v.match(
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    );
 
   if (m) {
-    const [, day, month, year] = m;
+    const [
+      ,
+      day,
+      month,
+      year
+    ] = m;
 
     return (
       `${year}-` +
@@ -124,21 +146,31 @@ function dateToISO(value) {
     );
   }
 
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(v)
+  ) {
     return v;
   }
 
-  const d = new Date(v);
+  const d =
+    new Date(v);
 
-  if (!Number.isNaN(d.getTime())) {
-    return d.toISOString().slice(0, 10);
+  if (
+    !Number.isNaN(
+      d.getTime()
+    )
+  ) {
+    return d
+      .toISOString()
+      .slice(0, 10);
   }
 
   return null;
 }
 
 function getResult(row) {
-  const direct = clean(row.FTR);
+  const direct =
+    clean(row.FTR);
 
   if (
     direct === 'H' ||
@@ -148,8 +180,11 @@ function getResult(row) {
     return direct;
   }
 
-  const home = int(row.FTHG);
-  const away = int(row.FTAG);
+  const home =
+    int(row.FTHG);
+
+  const away =
+    int(row.FTAG);
 
   if (
     home === null ||
@@ -170,7 +205,8 @@ function getResult(row) {
 }
 
 function getHTResult(row) {
-  const direct = clean(row.HTR);
+  const direct =
+    clean(row.HTR);
 
   if (
     direct === 'H' ||
@@ -180,8 +216,11 @@ function getHTResult(row) {
     return direct;
   }
 
-  const home = int(row.HTHG);
-  const away = int(row.HTAG);
+  const home =
+    int(row.HTHG);
+
+  const away =
+    int(row.HTAG);
 
   if (
     home === null ||
@@ -221,7 +260,8 @@ function getOdds(row) {
       key.startsWith('1XB') ||
       key.startsWith('BFD')
     ) {
-      const n = num(value);
+      const n =
+        num(value);
 
       if (n !== null) {
         odds[key] = n;
@@ -250,10 +290,15 @@ function parseCSV(text) {
     i < text.length;
     i++
   ) {
-    const char = text[i];
-    const next = text[i + 1];
+    const char =
+      text[i];
 
-    if (char === '"') {
+    const next =
+      text[i + 1];
+
+    if (
+      char === '"'
+    ) {
       if (
         inQuotes &&
         next === '"'
@@ -261,7 +306,8 @@ function parseCSV(text) {
         cell += '"';
         i++;
       } else {
-        inQuotes = !inQuotes;
+        inQuotes =
+          !inQuotes;
       }
 
       continue;
@@ -332,7 +378,8 @@ function parseCSV(text) {
 
   const headers =
     rows[0].map(
-      h => String(h).trim()
+      h =>
+        String(h).trim()
     );
 
   return rows
@@ -370,7 +417,10 @@ function getSourceUrl(
   season,
   code
 ) {
-  const [start, end] =
+  const [
+    start,
+    end
+  ] =
     season.split('/');
 
   const years =
@@ -464,10 +514,13 @@ async function ensureLeague(
         source
       )
       VALUES (?, ?, ?, ?)
+
       ON CONFLICT(source, code)
       DO UPDATE SET
-        name = excluded.name,
-        country = excluded.country
+        name =
+          excluded.name,
+        country =
+          excluded.country
     `).bind(
       leagueConfig.name,
       leagueConfig.country,
@@ -480,7 +533,8 @@ async function ensureLeague(
       SELECT
         id
       FROM leagues
-      WHERE source = ?
+      WHERE
+        source = ?
         AND code = ?
       LIMIT 1
     `).bind(
@@ -514,14 +568,22 @@ async function ensureSeason(
   const years =
     seasonName.split('/');
 
+  /*
+   * 2026/27 -> 2026 / 2027
+   *
+   * Poprzednio było:
+   * 20 + 2026 = 202026
+   */
+
   const startYear =
     Number(
-      `20${years[0]}`
+      years[0]
     );
 
   const endYear =
+    2000 +
     Number(
-      `20${years[1]}`
+      years[1]
     );
 
   const insert =
@@ -534,11 +596,18 @@ async function ensureSeason(
         source
       )
       VALUES (?, ?, ?, ?, ?)
-      ON CONFLICT(league_id, name)
+
+      ON CONFLICT(
+        league_id,
+        name
+      )
       DO UPDATE SET
-        start_year = excluded.start_year,
-        end_year = excluded.end_year,
-        source = excluded.source
+        start_year =
+          excluded.start_year,
+        end_year =
+          excluded.end_year,
+        source =
+          excluded.source
     `).bind(
       leagueId,
       seasonName,
@@ -552,7 +621,8 @@ async function ensureSeason(
       SELECT
         id
       FROM seasons
-      WHERE league_id = ?
+      WHERE
+        league_id = ?
         AND name = ?
       LIMIT 1
     `).bind(
@@ -629,13 +699,19 @@ async function importCSV(
     of rows
   ) {
     const home =
-      clean(row.HomeTeam);
+      clean(
+        row.HomeTeam
+      );
 
     const away =
-      clean(row.AwayTeam);
+      clean(
+        row.AwayTeam
+      );
 
     const referee =
-      clean(row.Referee);
+      clean(
+        row.Referee
+      );
 
     if (home) {
       teamNames.add(home);
@@ -646,7 +722,9 @@ async function importCSV(
     }
 
     if (referee) {
-      refereeNames.add(referee);
+      refereeNames.add(
+        referee
+      );
     }
   }
 
@@ -665,9 +743,14 @@ async function importCSV(
           source_name
         )
         VALUES (?, ?, ?, ?)
-        ON CONFLICT(source, source_name)
+
+        ON CONFLICT(
+          source,
+          source_name
+        )
         DO UPDATE SET
-          name = excluded.name
+          name =
+            excluded.name
       `).bind(
         teamName,
         leagueConfig.country,
@@ -690,9 +773,14 @@ async function importCSV(
           source_name
         )
         VALUES (?, ?, ?, ?)
-        ON CONFLICT(source, source_name)
+
+        ON CONFLICT(
+          source,
+          source_name
+        )
         DO UPDATE SET
-          name = excluded.name
+          name =
+            excluded.name
       `).bind(
         refereeName,
         leagueConfig.country,
@@ -705,9 +793,19 @@ async function importCSV(
   if (
     teamRefStatements.length
   ) {
-    await env.DB.batch(
-      teamRefStatements
-    );
+    for (
+      let i = 0;
+      i <
+      teamRefStatements.length;
+      i += MATCH_BATCH_SIZE
+    ) {
+      await env.DB.batch(
+        teamRefStatements.slice(
+          i,
+          i + MATCH_BATCH_SIZE
+        )
+      );
+    }
   }
 
   const teamQuery =
@@ -716,7 +814,8 @@ async function importCSV(
         id,
         source_name
       FROM teams
-      WHERE source = ?
+      WHERE
+        source = ?
     `).bind(
       FOOTBALL_DATA_SOURCE
     );
@@ -727,7 +826,8 @@ async function importCSV(
         id,
         source_name
       FROM referees
-      WHERE source = ?
+      WHERE
+        source = ?
     `).bind(
       FOOTBALL_DATA_SOURCE
     );
@@ -785,13 +885,19 @@ async function importCSV(
       of batch
     ) {
       const date =
-        dateToISO(row.Date);
+        dateToISO(
+          row.Date
+        );
 
       const homeTeam =
-        clean(row.HomeTeam);
+        clean(
+          row.HomeTeam
+        );
 
       const awayTeam =
-        clean(row.AwayTeam);
+        clean(
+          row.AwayTeam
+        );
 
       if (
         !date ||
@@ -821,7 +927,9 @@ async function importCSV(
       }
 
       const refereeName =
-        clean(row.Referee);
+        clean(
+          row.Referee
+        );
 
       const refereeId =
         refereeName
@@ -833,22 +941,34 @@ async function importCSV(
           : null;
 
       const homeGoals =
-        int(row.FTHG);
+        int(
+          row.FTHG
+        );
 
       const awayGoals =
-        int(row.FTAG);
+        int(
+          row.FTAG
+        );
 
       const homeHTGoals =
-        int(row.HTHG);
+        int(
+          row.HTHG
+        );
 
       const awayHTGoals =
-        int(row.HTAG);
+        int(
+          row.HTAG
+        );
 
       const homeXG =
-        num(row.HxG);
+        num(
+          row.HxG
+        );
 
       const awayXG =
-        num(row.AxG);
+        num(
+          row.AxG
+        );
 
       const odds =
         JSON.stringify(
@@ -856,7 +976,9 @@ async function importCSV(
         );
 
       const rawData =
-        JSON.stringify(row);
+        JSON.stringify(
+          row
+        );
 
       const sourceMatchId =
         `${seasonName}|${date}|${homeTeam}|${awayTeam}`;
@@ -904,6 +1026,7 @@ async function importCSV(
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
             ?, ?
           )
+
           ON CONFLICT(
             source,
             league_id,
@@ -1609,75 +1732,15 @@ async function getMatches(
 
 /*
  * =========================================================
- * API-FOOTBALL
+ * TEAM NAME NORMALIZATION
+ *
+ * NAJWAŻNIEJSZA ZASADA:
+ *
+ * Nazwa istniejąca w tabeli teams jest kanoniczna.
+ *
+ * Fixtures NIGDY nie tworzą nowej drużyny.
  * =========================================================
  */
-
-const API_FOOTBALL_SOURCE = 'api-football';
-const API_BASE = 'https://v3.football.api-sports.io';
-const API_SEASON = 2026;
-
-const API_REFRESH_PARTS = [
-  ['E0', 'E1', 'E2', 'E3', 'EC'],
-  ['SC0', 'SC1', 'SC2', 'SC3', 'D1'],
-  ['D2', 'I1', 'I2', 'SP1', 'SP2'],
-  ['F1', 'F2', 'N1', 'B1'],
-  ['P1', 'T1', 'G1']
-];
-
-const API_REFRESH_HOURS = [
-  3,
-  8,
-  13,
-  18,
-  23
-];
-
-function apiSeasonFromName(
-  seasonName
-) {
-  const match =
-    String(
-      seasonName || ''
-    ).match(
-      /^(\d{4})\/\d{2}$/
-    );
-
-  return match
-    ? Number(match[1])
-    : API_SEASON;
-}
-
-const API_LEAGUE_IDS = {
-  E0: 39,
-  E1: 40,
-  E2: 41,
-  E3: 42,
-  EC: 43,
-
-  SC0: 179,
-  SC1: 180,
-  SC2: 181,
-  SC3: 182,
-
-  D1: 78,
-  D2: 79,
-
-  I1: 135,
-  I2: 136,
-
-  SP1: 140,
-  SP2: 141,
-
-  F1: 61,
-  F2: 62,
-
-  N1: 88,
-  B1: 144,
-  P1: 94,
-  T1: 203,
-  G1: 197
-};
 
 function normalizeTeamName(
   name
@@ -1693,34 +1756,70 @@ function normalizeTeamName(
     )
     .replace(
       /&/g,
-      'and'
+      ' and '
+    )
+    .replace(
+      /['’`]/g,
+      ''
+    )
+    .replace(
+      /\b(fc|afc|cf|sc|ac|bc|cd|ud|rc|rfc|sv|vfb|tsg|fk|sk)\b/g,
+      ' '
+    )
+    .replace(
+      /\bfootball club\b/g,
+      ' '
+    )
+    .replace(
+      /\bfootball\b/g,
+      ' '
+    )
+    .replace(
+      /\bclub\b/g,
+      ' '
     )
     .replace(
       /[^a-z0-9]+/g,
       ' '
     )
-    .trim()
     .replace(
       /\s+/g,
       ' '
-    );
+    )
+    .trim();
 }
 
 const TEAM_ALIASES = {
-  'man united':
-    'manchester united',
+  /*
+   * England
+   */
 
   'man utd':
+    'manchester united',
+
+  'man united':
     'manchester united',
 
   'manchester utd':
     'manchester united',
 
+  'manchester united':
+    'manchester united',
+
   'man city':
     'manchester city',
 
-  'nott m forest':
-    'nottingham forest',
+  'manchester city':
+    'manchester city',
+
+  'spurs':
+    'tottenham',
+
+  'tottenham':
+    'tottenham',
+
+  'tottenham hotspur':
+    'tottenham',
 
   'wolves':
     'wolverhampton wanderers',
@@ -1728,17 +1827,38 @@ const TEAM_ALIASES = {
   'wolverhampton':
     'wolverhampton wanderers',
 
-  'spurs':
-    'tottenham',
+  'wolverhampton wanderers':
+    'wolverhampton wanderers',
 
-  'tottenham hotspur':
-    'tottenham',
+  'nott m forest':
+    'nottingham forest',
+
+  'nottm forest':
+    'nottingham forest',
+
+  'nott forest':
+    'nottingham forest',
+
+  'nottingham forest':
+    'nottingham forest',
 
   'newcastle':
     'newcastle united',
 
+  'newcastle united':
+    'newcastle united',
+
   'west ham':
     'west ham united',
+
+  'west ham united':
+    'west ham united',
+
+  'brighton':
+    'brighton',
+
+  'brighton hove albion':
+    'brighton',
 
   'brighton and hove albion':
     'brighton',
@@ -1746,70 +1866,136 @@ const TEAM_ALIASES = {
   'leicester':
     'leicester city',
 
+  'leicester city':
+    'leicester city',
+
   'ipswich':
+    'ipswich town',
+
+  'ipswich town':
     'ipswich town',
 
   'qpr':
     'queens park rangers',
 
+  'queens park rangers':
+    'queens park rangers',
+
   'stoke':
+    'stoke city',
+
+  'stoke city':
     'stoke city',
 
   'west brom':
     'west bromwich albion',
 
+  'west bromwich':
+    'west bromwich albion',
+
+  'west bromwich albion':
+    'west bromwich albion',
+
   'sheffield utd':
+    'sheffield united',
+
+  'sheffield united':
     'sheffield united',
 
   'sheffield weds':
     'sheffield wednesday',
 
+  'sheffield wednesday':
+    'sheffield wednesday',
+
   'blackburn':
+    'blackburn rovers',
+
+  'blackburn rovers':
     'blackburn rovers',
 
   'bolton':
     'bolton wanderers',
 
+  'bolton wanderers':
+    'bolton wanderers',
+
   'preston':
+    'preston north end',
+
+  'preston north end':
     'preston north end',
 
   'cardiff':
     'cardiff city',
 
+  'cardiff city':
+    'cardiff city',
+
   'swansea':
+    'swansea city',
+
+  'swansea city':
     'swansea city',
 
   'birmingham':
     'birmingham city',
 
+  'birmingham city':
+    'birmingham city',
+
   'coventry':
+    'coventry city',
+
+  'coventry city':
     'coventry city',
 
   'luton':
     'luton town',
 
+  'luton town':
+    'luton town',
+
   'derby':
+    'derby county',
+
+  'derby county':
     'derby county',
 
   'hull':
     'hull city',
 
-  'millwall':
-    'millwall',
+  'hull city':
+    'hull city',
 
   'plymouth':
+    'plymouth argyle',
+
+  'plymouth argyle':
     'plymouth argyle',
 
   'wigan':
     'wigan athletic',
 
+  'wigan athletic':
+    'wigan athletic',
+
   'charlton':
+    'charlton athletic',
+
+  'charlton athletic':
     'charlton athletic',
 
   'exeter':
     'exeter city',
 
+  'exeter city':
+    'exeter city',
+
   'wycombe':
+    'wycombe wanderers',
+
+  'wycombe wanderers':
     'wycombe wanderers',
 
   /*
@@ -1822,16 +2008,28 @@ const TEAM_ALIASES = {
   'bayern munchen':
     'bayern munich',
 
+  'bayern munchen':
+    'bayern munich',
+
+  'fc bayern':
+    'bayern munich',
+
   'borussia dortmund':
     'borussia dortmund',
 
   'dortmund':
     'borussia dortmund',
 
+  'bvb':
+    'borussia dortmund',
+
   'borussia monchengladbach':
     'borussia monchengladbach',
 
   'monchengladbach':
+    'borussia monchengladbach',
+
+  'gladbach':
     'borussia monchengladbach',
 
   'rb leipzig':
@@ -1856,6 +2054,9 @@ const TEAM_ALIASES = {
   'atletico de madrid':
     'atletico madrid',
 
+  'atletico':
+    'atletico madrid',
+
   'athletic bilbao':
     'athletic club',
 
@@ -1875,6 +2076,9 @@ const TEAM_ALIASES = {
     'rayo vallecano',
 
   'celta vigo':
+    'celta vigo',
+
+  'celta':
     'celta vigo',
 
   'rcd espanyol':
@@ -1902,10 +2106,16 @@ const TEAM_ALIASES = {
   'olympique lyonnais':
     'lyon',
 
+  'lyon':
+    'lyon',
+
   'olympique marseille':
     'marseille',
 
   'olympique de marseille':
+    'marseille',
+
+  'marseille':
     'marseille',
 
   /*
@@ -1919,6 +2129,9 @@ const TEAM_ALIASES = {
     'internazionale',
 
   'internazionale':
+    'internazionale',
+
+  'fc internazionale':
     'internazionale',
 
   'ac milan':
@@ -1946,6 +2159,9 @@ const TEAM_ALIASES = {
   'psv eindhoven':
     'psv eindhoven',
 
+  'feyenoord':
+    'feyenoord',
+
   /*
    * Portugal
    */
@@ -1954,6 +2170,9 @@ const TEAM_ALIASES = {
     'sporting cp',
 
   'sporting lisbon':
+    'sporting cp',
+
+  'sporting':
     'sporting cp',
 
   'fc porto':
@@ -2041,7 +2260,8 @@ function similarity(
 
   const intersection =
     [...aa].filter(
-      x => bb.has(x)
+      x =>
+        bb.has(x)
     ).length;
 
   const union =
@@ -2054,6 +2274,21 @@ function similarity(
     ? intersection / union
     : 0;
 }
+
+/*
+ * =========================================================
+ * API-FOOTBALL
+ *
+ * Zostawione tylko dla istniejącego endpointu testowego.
+ * Nie jest już używane do fixtures.
+ * =========================================================
+ */
+
+const API_FOOTBALL_SOURCE =
+  'api-football';
+
+const API_BASE =
+  'https://v3.football.api-sports.io';
 
 async function apiFootball(
   env,
@@ -2074,10 +2309,11 @@ async function apiFootball(
     );
 
   for (
-    const [key, value]
-    of Object.entries(
-      params
-    )
+    const [
+      key,
+      value
+    ]
+    of Object.entries(params)
   ) {
     if (
       value !== undefined &&
@@ -2129,6 +2365,40 @@ async function apiFootball(
   return data;
 }
 
+async function testApiFootball(
+  env
+) {
+  try {
+    const data =
+      await apiFootball(
+        env,
+        '/status'
+      );
+
+    return {
+      ok: true,
+
+      api:
+        data
+    };
+  } catch (e) {
+    return {
+      ok: false,
+
+      error:
+        String(
+          e.message || e
+        )
+    };
+  }
+}
+
+/*
+ * =========================================================
+ * STATS TEAM MAP
+ * =========================================================
+ */
+
 async function getStatsTeamMap(
   env,
   leagueId,
@@ -2169,21 +2439,45 @@ async function getStatsTeamMap(
   );
 }
 
+/*
+ * =========================================================
+ * RESOLVE TEAM
+ *
+ * Zawsze zwracamy istniejącą drużynę
+ * z tabeli teams.
+ *
+ * Nigdy nie INSERTujemy drużyny tutaj.
+ * =========================================================
+ */
+
 function resolveStatsTeam(
   statsTeams,
-  apiName
+  sourceName
 ) {
-  const apiKey =
-    teamKey(
-      apiName
+  const original =
+    clean(
+      sourceName
     );
+
+  if (!original) {
+    return null;
+  }
+
+  const sourceKey =
+    teamKey(
+      original
+    );
+
+  /*
+   * 1. Exact / normalized
+   */
 
   const exact =
     statsTeams.filter(
       team =>
         teamKey(
           team.name
-        ) === apiKey
+        ) === sourceKey
     );
 
   if (
@@ -2192,11 +2486,25 @@ function resolveStatsTeam(
     return exact[0];
   }
 
+  /*
+   * Jeżeli dwie drużyny
+   * mają ten sam znormalizowany
+   * klucz, nie zgadujemy.
+   */
+
   if (
     exact.length > 1
   ) {
     return null;
   }
+
+  /*
+   * 2. Similarity
+   *
+   * Tylko jeśli przewaga
+   * najlepszego wyniku nad
+   * drugim jest odpowiednio duża.
+   */
 
   let best = null;
   let bestScore = 0;
@@ -2208,7 +2516,7 @@ function resolveStatsTeam(
   ) {
     const score =
       similarity(
-        apiKey,
+        sourceKey,
         teamKey(
           team.name
         )
@@ -2245,46 +2553,353 @@ function resolveStatsTeam(
   return null;
 }
 
-function fixtureStatus(
-  short
+/*
+ * =========================================================
+ * SOFASCORE FIXTURES
+ * =========================================================
+ */
+
+const SOFASCORE_BASE =
+  'https://www.sofascore.com/api/v1';
+
+const SOFASCORE_LEAGUE_RULES = {
+  E0: {
+    country: 'england',
+    names: [
+      'premier league'
+    ]
+  },
+
+  E1: {
+    country: 'england',
+    names: [
+      'championship'
+    ]
+  },
+
+  E2: {
+    country: 'england',
+    names: [
+      'league one'
+    ]
+  },
+
+  E3: {
+    country: 'england',
+    names: [
+      'league two'
+    ]
+  },
+
+  EC: {
+    country: 'england',
+    names: [
+      'national league'
+    ]
+  },
+
+  SC0: {
+    country: 'scotland',
+    names: [
+      'premiership',
+      'scottish premiership'
+    ]
+  },
+
+  SC1: {
+    country: 'scotland',
+    names: [
+      'championship',
+      'scottish championship'
+    ]
+  },
+
+  SC2: {
+    country: 'scotland',
+    names: [
+      'league one',
+      'scottish league one'
+    ]
+  },
+
+  SC3: {
+    country: 'scotland',
+    names: [
+      'league two',
+      'scottish league two'
+    ]
+  },
+
+  D1: {
+    country: 'germany',
+    names: [
+      'bundesliga'
+    ]
+  },
+
+  D2: {
+    country: 'germany',
+    names: [
+      '2. bundesliga',
+      '2 bundesliga',
+      'bundesliga 2'
+    ]
+  },
+
+  I1: {
+    country: 'italy',
+    names: [
+      'serie a'
+    ]
+  },
+
+  I2: {
+    country: 'italy',
+    names: [
+      'serie b'
+    ]
+  },
+
+  SP1: {
+    country: 'spain',
+    names: [
+      'la liga',
+      'laliga',
+      'primera division'
+    ]
+  },
+
+  SP2: {
+    country: 'spain',
+    names: [
+      'segunda division',
+      'laliga 2',
+      'laliga hyermotion',
+      'laliga hypermotion'
+    ]
+  },
+
+  F1: {
+    country: 'france',
+    names: [
+      'ligue 1'
+    ]
+  },
+
+  F2: {
+    country: 'france',
+    names: [
+      'ligue 2'
+    ]
+  },
+
+  N1: {
+    country: 'netherlands',
+    names: [
+      'eredivisie'
+    ]
+  },
+
+  B1: {
+    country: 'belgium',
+    names: [
+      'jupiler pro league',
+      'jupiler league',
+      'first division a'
+    ]
+  },
+
+  P1: {
+    country: 'portugal',
+    names: [
+      'primeira liga',
+      'liga portugal'
+    ]
+  },
+
+  T1: {
+    country: 'turkey',
+    names: [
+      'super lig',
+      'süper lig'
+    ]
+  },
+
+  G1: {
+    country: 'greece',
+    names: [
+      'super league',
+      'super league 1'
+    ]
+  }
+};
+
+function normalizeSofaText(
+  value
 ) {
-  const live = [
-    '1H',
-    '2H',
-    'ET',
-    'P',
-    'BT',
-    'LIVE'
-  ];
+  return String(
+    value || ''
+  )
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(
+      /[\u0300-\u036f]/g,
+      ''
+    )
+    .replace(
+      /[^a-z0-9]+/g,
+      ' '
+    )
+    .replace(
+      /\s+/g,
+      ' '
+    )
+    .trim();
+}
+
+function getSofaCountryName(
+  event
+) {
+  return normalizeSofaText(
+    event
+      ?.tournament
+      ?.category
+      ?.name
+  );
+}
+
+function getSofaTournamentName(
+  event
+) {
+  return normalizeSofaText(
+    event
+      ?.tournament
+      ?.uniqueTournament
+      ?.name ||
+    event
+      ?.tournament
+      ?.name
+  );
+}
+
+function getSofaLeagueCode(
+  event,
+  allowedCodes = null
+) {
+  const country =
+    getSofaCountryName(
+      event
+    );
+
+  const tournament =
+    getSofaTournamentName(
+      event
+    );
 
   if (
-    live.includes(
-      short
-    )
+    !country ||
+    !tournament
   ) {
-    return 'live';
+    return null;
   }
 
+  for (
+    const league
+    of LEAGUES
+  ) {
+    if (
+      allowedCodes &&
+      !allowedCodes.includes(
+        league.code
+      )
+    ) {
+      continue;
+    }
+
+    const rule =
+      SOFASCORE_LEAGUE_RULES[
+        league.code
+      ];
+
+    if (!rule) {
+      continue;
+    }
+
+    if (
+      normalizeSofaText(
+        rule.country
+      ) !== country
+    ) {
+      continue;
+    }
+
+    const matches =
+      rule.names.some(
+        name =>
+          normalizeSofaText(
+            name
+          ) === tournament
+      );
+
+    if (matches) {
+      return league.code;
+    }
+  }
+
+  return null;
+}
+
+function getSofaStatus(
+  event
+) {
+  const type =
+    normalizeSofaText(
+      event
+        ?.status
+        ?.type
+    );
+
+  const slug =
+    normalizeSofaText(
+      event
+        ?.status
+        ?.slug
+    );
+
   if (
-    short === 'FT' ||
-    short === 'AET' ||
-    short === 'PEN'
+    type === 'finished' ||
+    slug === 'finished'
   ) {
     return 'finished';
   }
 
   if (
-    short === 'PST' ||
-    short === 'CANC' ||
-    short === 'ABD' ||
-    short === 'AWD' ||
-    short === 'WO'
+    type === 'inprogress' ||
+    type === 'in progress' ||
+    slug === 'inprogress'
+  ) {
+    return 'live';
+  }
+
+  if (
+    type === 'canceled' ||
+    type === 'cancelled' ||
+    slug === 'canceled' ||
+    slug === 'cancelled'
   ) {
     return 'cancelled';
   }
 
   if (
-    short === 'SUSP'
+    type === 'postponed' ||
+    slug === 'postponed'
+  ) {
+    return 'postponed';
+  }
+
+  if (
+    type === 'suspended' ||
+    slug === 'suspended'
   ) {
     return 'postponed';
   }
@@ -2292,376 +2907,670 @@ function fixtureStatus(
   return 'scheduled';
 }
 
-async function importApiLeague(
-  env,
-  leagueConfig,
-  seasonName = CURRENT_SEASON
+function getSofaKickoffISO(
+  event
 ) {
-  const league =
-    await env.DB.prepare(`
-      SELECT
-        id,
-        name,
-        country,
-        code
-
-      FROM leagues
-
-      WHERE
-        code = ?
-        AND
-        source = ?
-
-      LIMIT 1
-    `).bind(
-      leagueConfig.code,
-      FOOTBALL_DATA_SOURCE
-    ).first();
-
-  if (!league) {
-    return {
-      code:
-        leagueConfig.code,
-
-      imported: 0,
-
-      skipped: 0,
-
-      reason:
-        'Brak ligi w bazie statystycznej'
-    };
-  }
-
-  const season =
-    await env.DB.prepare(`
-      SELECT
-        id,
-        name
-
-      FROM seasons
-
-      WHERE
-        league_id = ?
-        AND
-        name = ?
-        AND
-        source = ?
-
-      LIMIT 1
-    `).bind(
-      league.id,
-      seasonName,
-      FOOTBALL_DATA_SOURCE
-    ).first();
-
-  if (!season) {
-    return {
-      code:
-        leagueConfig.code,
-
-      imported: 0,
-
-      skipped: 0,
-
-      reason:
-        'Brak sezonu w bazie statystycznej'
-    };
-  }
-
-  const statsTeams =
-    await getStatsTeamMap(
-      env,
-      league.id,
-      season.id
+  const timestamp =
+    Number(
+      event?.startTimestamp
     );
 
   if (
-    !statsTeams.length
+    !Number.isFinite(
+      timestamp
+    ) ||
+    timestamp <= 0
   ) {
-    return {
-      code:
-        leagueConfig.code,
-
-      imported: 0,
-
-      skipped: 0,
-
-      reason:
-        'Brak drużyn w danych statystycznych'
-    };
+    return null;
   }
 
-  const apiLeagueId =
-    API_LEAGUE_IDS[
-      leagueConfig.code
-    ];
-
-  if (!apiLeagueId) {
-    return {
-      code:
-        leagueConfig.code,
-
-      imported: 0,
-
-      skipped: 0,
-
-      reason:
-        'Brak API league ID'
-    };
-  }
-
-  const data =
-    await apiFootball(
-      env,
-      '/fixtures',
-      {
-        league:
-          apiLeagueId,
-
-        season:
-          apiSeasonFromName(
-            seasonName
-          )
-      }
+  const date =
+    new Date(
+      timestamp * 1000
     );
 
-  const fixtures =
-    data.response || [];
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return null;
+  }
+
+  return date.toISOString();
+}
+
+/*
+ * =========================================================
+ * SOFASCORE FETCH
+ * =========================================================
+ */
+
+async function fetchSofaEvents(
+  date
+) {
+  const urls = [
+    `${SOFASCORE_BASE}/sport/football/scheduled-events/${date}/inverse`,
+    `${SOFASCORE_BASE}/sport/football/scheduled-events/${date}`
+  ];
+
+  const errors = [];
+
+  for (
+    const url
+    of urls
+  ) {
+    try {
+      const response =
+        await fetch(
+          url,
+          {
+            method: 'GET',
+
+            headers: {
+              'Accept':
+                'application/json',
+
+              'User-Agent':
+                'Football-Analizer/1.0',
+
+              'Referer':
+                'https://www.sofascore.com/'
+            },
+
+            cf: {
+              cacheTtl: 0,
+              cacheEverything: false
+            }
+          }
+        );
+
+      if (
+        !response.ok
+      ) {
+        errors.push(
+          `${url}: HTTP ${response.status}`
+        );
+
+        continue;
+      }
+
+      const data =
+        await response.json();
+
+      if (
+        !data ||
+        !Array.isArray(
+          data.events
+        )
+      ) {
+        errors.push(
+          `${url}: brak tablicy events`
+        );
+
+        continue;
+      }
+
+      return {
+        events:
+          data.events,
+
+        url
+      };
+    } catch (e) {
+      errors.push(
+        `${url}: ${
+          e.message || e
+        }`
+      );
+    }
+  }
+
+  throw new Error(
+    'Nie udało się pobrać terminarza SofaScore. ' +
+    errors.join(' | ')
+  );
+}
+
+/*
+ * =========================================================
+ * SOFASCORE FIXTURE DATE IMPORT
+ * =========================================================
+ */
+
+async function importSofaFixtureDate(
+  env,
+  date,
+  seasonName = CURRENT_SEASON,
+  allowedCodes = null
+) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      date
+    )
+  ) {
+    throw new Error(
+      `Nieprawidłowa data: ${date}`
+    );
+  }
+
+  if (
+    !SEASONS.includes(
+      seasonName
+    )
+  ) {
+    throw new Error(
+      `Nieprawidłowy sezon: ${seasonName}`
+    );
+  }
+
+  const feed =
+    await fetchSofaEvents(
+      date
+    );
+
+  /*
+   * Najpierw ustalamy,
+   * które ligi faktycznie
+   * występują tego dnia.
+   */
+
+  const matchedEvents = [];
+
+  const codes =
+    allowedCodes &&
+    allowedCodes.length
+      ? allowedCodes
+      : LEAGUES.map(
+          league =>
+            league.code
+        );
+
+  for (
+    const event
+    of feed.events
+  ) {
+    const code =
+      getSofaLeagueCode(
+        event,
+        codes
+      );
+
+    if (!code) {
+      continue;
+    }
+
+    matchedEvents.push({
+      event,
+      code
+    });
+  }
+
+  /*
+   * Pobieramy z D1 tylko
+   * drużyny istniejące w
+   * statystycznej bazie.
+   */
+
+  const contexts =
+    new Map();
+
+  const uniqueCodes =
+    [
+      ...new Set(
+        matchedEvents.map(
+          item =>
+            item.code
+        )
+      )
+    ];
+
+  for (
+    const code
+    of uniqueCodes
+  ) {
+    const leagueConfig =
+      getLeague(code);
+
+    if (!leagueConfig) {
+      continue;
+    }
+
+    const league =
+      await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          country,
+          code
+        FROM leagues
+        WHERE
+          source = ?
+          AND code = ?
+        LIMIT 1
+      `).bind(
+        FOOTBALL_DATA_SOURCE,
+        code
+      ).first();
+
+    if (!league) {
+      continue;
+    }
+
+    const season =
+      await env.DB.prepare(`
+        SELECT
+          id,
+          name
+        FROM seasons
+        WHERE
+          league_id = ?
+          AND name = ?
+          AND source = ?
+        LIMIT 1
+      `).bind(
+        league.id,
+        seasonName,
+        FOOTBALL_DATA_SOURCE
+      ).first();
+
+    if (!season) {
+      continue;
+    }
+
+    const statsTeams =
+      await getStatsTeamMap(
+        env,
+        league.id,
+        season.id
+      );
+
+    if (
+      !statsTeams.length
+    ) {
+      continue;
+    }
+
+    contexts.set(
+      code,
+      {
+        league,
+        season,
+        statsTeams
+      }
+    );
+  }
 
   let imported = 0;
   let skipped = 0;
 
+  const skippedTeams = [];
+  const statements = [];
+
   for (
-    const fixture
-    of fixtures
+    const item
+    of matchedEvents
   ) {
-    const fixtureId =
-      fixture.fixture?.id;
+    const event =
+      item.event;
 
-    const homeApiName =
-      fixture.teams?.home?.name;
+    const code =
+      item.code;
 
-    const awayApiName =
-      fixture.teams?.away?.name;
+    const context =
+      contexts.get(code);
 
-    const kickoff =
-      fixture.fixture?.date;
+    if (!context) {
+      skipped++;
+      continue;
+    }
+
+    const homeName =
+      clean(
+        event
+          ?.homeTeam
+          ?.name
+      );
+
+    const awayName =
+      clean(
+        event
+          ?.awayTeam
+          ?.name
+      );
 
     if (
-      !fixtureId ||
-      !homeApiName ||
-      !awayApiName ||
-      !kickoff
+      !homeName ||
+      !awayName
     ) {
       skipped++;
       continue;
     }
 
-    const homeTeam =
+    /*
+     * Próbujemy nazwy głównej,
+     * potem shortName.
+     */
+
+    let homeTeam =
       resolveStatsTeam(
-        statsTeams,
-        homeApiName
+        context.statsTeams,
+        homeName
       );
 
-    const awayTeam =
+    if (
+      !homeTeam
+    ) {
+      homeTeam =
+        resolveStatsTeam(
+          context.statsTeams,
+          event
+            ?.homeTeam
+            ?.shortName
+        );
+    }
+
+    let awayTeam =
       resolveStatsTeam(
-        statsTeams,
-        awayApiName
+        context.statsTeams,
+        awayName
       );
+
+    if (
+      !awayTeam
+    ) {
+      awayTeam =
+        resolveStatsTeam(
+          context.statsTeams,
+          event
+            ?.awayTeam
+            ?.shortName
+        );
+    }
+
+    /*
+     * Jeżeli nie udało się
+     * jednoznacznie znaleźć
+     * jednej z drużyn,
+     * NIE zapisujemy meczu.
+     */
 
     if (
       !homeTeam ||
       !awayTeam
     ) {
       skipped++;
+
+      skippedTeams.push({
+        league:
+          code,
+
+        sourceEventId:
+          event?.id ?? null,
+
+        home:
+          homeName,
+
+        away:
+          awayName,
+
+        resolvedHome:
+          homeTeam?.name || null,
+
+        resolvedAway:
+          awayTeam?.name || null
+      });
+
       continue;
     }
 
-    const kickoffDate =
-      new Date(
-        kickoff
-      );
+    /*
+     * Nigdy nie tworzymy
+     * nowych teams.
+     *
+     * Zapisujemy ID istniejących
+     * drużyn statystycznych.
+     */
 
-    if (
-      Number.isNaN(
-        kickoffDate.getTime()
-      )
-    ) {
-      skipped++;
-      continue;
-    }
-
-    const matchDate =
-      kickoff.slice(
-        0,
-        10
+    const sourceMatchId =
+      String(
+        event.id
       );
 
     const status =
-      fixtureStatus(
-        fixture.fixture?.status?.short
+      getSofaStatus(
+        event
       );
 
-    const rawData = {
-      fixture:
-        fixture.fixture || null,
+    const rawData =
+      JSON.stringify({
+        source:
+          'sofascore',
 
-      league:
-        fixture.league || null,
+        fetched_date:
+          date,
 
-      teams:
-        fixture.teams || null
-    };
+        event
+      });
 
-    await env.DB.prepare(`
-      DELETE FROM fixtures
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO fixtures (
+          league_id,
+          season_id,
+          match_date,
+          home_team_id,
+          away_team_id,
+          referee_id,
+          status,
+          source,
+          source_match_id,
+          raw_data_json,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+        )
 
-      WHERE
-        source = ?
-        AND
-        source_match_id = ?
-    `).bind(
-      API_FOOTBALL_SOURCE,
-      String(
-        fixtureId
-      )
-    ).run();
+        ON CONFLICT(
+          source,
+          league_id,
+          season_id,
+          match_date,
+          home_team_id,
+          away_team_id
+        )
+        DO UPDATE SET
+          status =
+            excluded.status,
 
-    await env.DB.prepare(`
-      INSERT INTO fixtures (
-        league_id,
-        season_id,
-        match_date,
-        home_team_id,
-        away_team_id,
-        referee_id,
+          source_match_id =
+            excluded.source_match_id,
+
+          raw_data_json =
+            excluded.raw_data_json,
+
+          updated_at =
+            CURRENT_TIMESTAMP
+      `).bind(
+        context.league.id,
+        context.season.id,
+        date,
+        homeTeam.id,
+        awayTeam.id,
+        null,
         status,
-        source,
-        source_match_id,
-        raw_data_json,
-        created_at,
-        updated_at
-      )
-
-      VALUES (
-        ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?,
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP
-      )
-    `).bind(
-      league.id,
-      season.id,
-      matchDate,
-      homeTeam.id,
-      awayTeam.id,
-      null,
-      status,
-      API_FOOTBALL_SOURCE,
-      String(
-        fixtureId
-      ),
-      JSON.stringify(
+        FIXTURE_SOURCE,
+        sourceMatchId,
         rawData
       )
-    ).run();
+    );
 
     imported++;
   }
 
+  /*
+   * D1 batch ma ograniczenie liczby
+   * statementów, więc dzielimy.
+   */
+
+  for (
+    let i = 0;
+    i < statements.length;
+    i += MATCH_BATCH_SIZE
+  ) {
+    await env.DB.batch(
+      statements.slice(
+        i,
+        i + MATCH_BATCH_SIZE
+      )
+    );
+  }
+
   return {
-    code:
-      leagueConfig.code,
+    ok: true,
 
-    league:
-      leagueConfig.name,
+    source:
+      FIXTURE_SOURCE,
 
-    country:
-      leagueConfig.country,
-
-    apiId:
-      apiLeagueId,
+    date,
 
     season:
       seasonName,
 
-    totalApiFixtures:
-      fixtures.length,
+    fetchedFrom:
+      feed.url,
+
+    sourceEvents:
+      feed.events.length,
+
+    matchedEvents:
+      matchedEvents.length,
 
     imported,
 
-    skipped
+    skipped,
+
+    skippedTeams
   };
 }
 
-async function refreshApiFixtures(
+/*
+ * =========================================================
+ * DATE HELPERS
+ * =========================================================
+ */
+
+function addDaysISO(
+  date,
+  days
+) {
+  const d =
+    new Date(
+      `${date}T12:00:00Z`
+    );
+
+  d.setUTCDate(
+    d.getUTCDate() +
+    days
+  );
+
+  return d
+    .toISOString()
+    .slice(0, 10);
+}
+
+function todayISO() {
+  return new Date()
+    .toISOString()
+    .slice(0, 10);
+}
+
+/*
+ * =========================================================
+ * SOFASCORE FIXTURE WINDOW
+ * =========================================================
+ */
+
+async function refreshSofaFixtureWindow(
   env,
   seasonName = CURRENT_SEASON,
-  leagueCodes = null
+  leagueCodes = null,
+  startDate = null,
+  days = 1
 ) {
-  const wantedCodes =
-    Array.isArray(leagueCodes) &&
-    leagueCodes.length
-      ? new Set(leagueCodes)
-      : null;
+  const start =
+    startDate ||
+    todayISO();
 
-  const leagues =
-    wantedCodes
-      ? LEAGUES.filter(
-          league =>
-            wantedCodes.has(
-              league.code
-            )
+  const safeDays =
+    Math.min(
+      Math.max(
+        Number.isFinite(
+          Number(days)
         )
-      : LEAGUES;
+          ? Math.trunc(
+              Number(days)
+            )
+          : 1,
+        1
+      ),
+      14
+    );
 
   const results = [];
 
+  let totalImported = 0;
+  let totalSkipped = 0;
+
   for (
-    const league
-    of leagues
+    let i = 0;
+    i < safeDays;
+    i++
   ) {
+    const date =
+      addDaysISO(
+        start,
+        i
+      );
+
     try {
       const result =
-        await importApiLeague(
+        await importSofaFixtureDate(
           env,
-          league,
-          seasonName
+          date,
+          seasonName,
+          leagueCodes
         );
 
-      results.push({
-        ok: true,
-        ...result
-      });
-
-      console.log(
-        'API-Football OK',
-        JSON.stringify(
-          result
-        )
+      results.push(
+        result
       );
-    } catch (e) {
-      const error =
-        String(
-          e.message || e
+
+      totalImported +=
+        Number(
+          result.imported || 0
         );
 
+      totalSkipped +=
+        Number(
+          result.skipped || 0
+        );
+    } catch (e) {
       results.push({
         ok: false,
 
-        code:
-          league.code,
+        date,
 
-        league:
-          league.name,
-
-        error
+        error:
+          String(
+            e.message || e
+          )
       });
-
-      console.error(
-        `API-Football FAILED ${league.code}:`,
-        error
-      );
     }
   }
 
@@ -2669,16 +3578,26 @@ async function refreshApiFixtures(
     ok: true,
 
     source:
-      API_FOOTBALL_SOURCE,
+      FIXTURE_SOURCE,
 
     season:
       seasonName,
 
-    requestedLeagues:
-      leagues.map(
-        league =>
-          league.code
+    from:
+      start,
+
+    days:
+      safeDays,
+
+    to:
+      addDaysISO(
+        start,
+        safeDays - 1
       ),
+
+    totalImported,
+
+    totalSkipped,
 
     results
   };
@@ -2686,14 +3605,51 @@ async function refreshApiFixtures(
 
 /*
  * =========================================================
- * FIXTURES API
+ * GET FIXTURES
  * =========================================================
  */
 
 async function getFixtures(
   env,
-  date
+  date,
+  leagueCode = null
 ) {
+  const where = [
+    'f.source = ?',
+    'f.match_date = ?'
+  ];
+
+  const binds = [
+    FIXTURE_SOURCE,
+    date
+  ];
+
+  if (
+    leagueCode
+  ) {
+    where.push(
+      'l.code = ?'
+    );
+
+    binds.push(
+      leagueCode
+    );
+  }
+
+  /*
+   * Kolejność dokładnie taka,
+   * jak LEAGUES.
+   */
+
+  const leagueOrder =
+    LEAGUES.map(
+      (
+        league,
+        index
+      ) =>
+        `WHEN '${league.code}' THEN ${index}`
+    ).join(' ');
+
   const result =
     await env.DB.prepare(`
       SELECT
@@ -2714,30 +3670,36 @@ async function getFixtures(
       FROM fixtures f
 
       JOIN leagues l
-        ON l.id = f.league_id
+        ON l.id =
+           f.league_id
 
       JOIN teams ht
-        ON ht.id = f.home_team_id
+        ON ht.id =
+           f.home_team_id
 
       JOIN teams at
-        ON at.id = f.away_team_id
+        ON at.id =
+           f.away_team_id
 
       WHERE
-        f.source = ?
-        AND
-        f.match_date = ?
+        ${where.join(
+          ' AND '
+        )}
 
       ORDER BY
-        l.country,
-        l.name,
+        CASE l.code
+          ${leagueOrder}
+          ELSE 999
+        END,
+
         json_extract(
           f.raw_data_json,
-          '$.fixture.timestamp'
+          '$.event.startTimestamp'
         ),
+
         ht.name
     `).bind(
-      API_FOOTBALL_SOURCE,
-      date
+      ...binds
     ).all();
 
   return (
@@ -2749,14 +3711,20 @@ async function getFixtures(
       try {
         raw =
           JSON.parse(
-            row.raw_data_json || '{}'
+            row.raw_data_json ||
+            '{}'
           );
       } catch (_) {
         raw = {};
       }
 
-      const fixture =
-        raw.fixture || {};
+      const event =
+        raw.event || {};
+
+      const kickoff =
+        getSofaKickoffISO(
+          event
+        );
 
       return {
         id:
@@ -2768,11 +3736,11 @@ async function getFixtures(
         date:
           row.match_date,
 
-        kickoff:
-          fixture.date || null,
+        kickoff,
 
         timestamp:
-          fixture.timestamp || null,
+          event.startTimestamp ||
+          null,
 
         status:
           row.status,
@@ -2795,7 +3763,8 @@ async function getFixtures(
           row.away_team,
 
         venue:
-          fixture.venue || null
+          event.venue ||
+          null
       };
     }
   );
@@ -2820,7 +3789,9 @@ export default {
       );
 
     /*
+     * -----------------------------------------------------
      * TEST
+     * -----------------------------------------------------
      */
 
     if (
@@ -2841,7 +3812,9 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * API-FOOTBALL TEST
+     * -----------------------------------------------------
      */
 
     if (
@@ -2856,7 +3829,9 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * DB TEST
+     * -----------------------------------------------------
      */
 
     if (
@@ -2891,7 +3866,9 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * LEAGUES
+     * -----------------------------------------------------
      */
 
     if (
@@ -2926,7 +3903,9 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * SEASONS
+     * -----------------------------------------------------
      */
 
     if (
@@ -2958,7 +3937,9 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * MATCHES
+     * -----------------------------------------------------
      */
 
     if (
@@ -2988,9 +3969,15 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * FIXTURES
      *
      * /api/fixtures?date=2026-09-12
+     *
+     * Jeżeli fixtures dla tej daty
+     * jeszcze nie ma w D1, próbujemy
+     * pobrać tę datę automatycznie.
+     * -----------------------------------------------------
      */
 
     if (
@@ -3002,6 +3989,13 @@ export default {
           clean(
             url.searchParams.get(
               'date'
+            )
+          );
+
+        const leagueCode =
+          clean(
+            url.searchParams.get(
+              'league'
             )
           );
 
@@ -3033,11 +4027,54 @@ export default {
           );
         }
 
-        const fixtures =
+        /*
+         * Najpierw sprawdzamy D1.
+         */
+
+        let fixtures =
           await getFixtures(
             env,
-            date
+            date,
+            leagueCode
           );
+
+        /*
+         * Jeżeli brak danych,
+         * pobieramy wybraną datę
+         * z SofaScore.
+         */
+
+        if (
+          fixtures.length === 0
+        ) {
+          try {
+            await importSofaFixtureDate(
+              env,
+              date,
+              CURRENT_SEASON,
+              leagueCode
+                ? [
+                    leagueCode.toUpperCase()
+                  ]
+                : null
+            );
+
+            fixtures =
+              await getFixtures(
+                env,
+                date,
+                leagueCode
+              );
+          } catch (refreshError) {
+            console.error(
+              'Automatic fixtures refresh failed:',
+              String(
+                refreshError.message ||
+                refreshError
+              )
+            );
+          }
+        }
 
         return json({
           ok: true,
@@ -3065,7 +4102,17 @@ export default {
     }
 
     /*
-     * API-FOOTBALL REFRESH
+     * -----------------------------------------------------
+     * FIXTURES REFRESH
+     *
+     * Przykłady:
+     *
+     * /api/fixtures-refresh
+     * /api/fixtures-refresh?date=2026-09-12
+     * /api/fixtures-refresh?date=2026-09-12&days=7
+     * /api/fixtures-refresh?league=E0
+     * /api/fixtures-refresh?part=1
+     * -----------------------------------------------------
      */
 
     if (
@@ -3119,6 +4166,13 @@ export default {
         );
       }
 
+      const leagueParam =
+        clean(
+          url.searchParams.get(
+            'league'
+          )
+        );
+
       const partParam =
         clean(
           url.searchParams.get(
@@ -3126,9 +4180,41 @@ export default {
           )
         );
 
-      let leagueCodes = null;
+      let leagueCodes =
+        null;
 
-      if (partParam) {
+      if (
+        leagueParam
+      ) {
+        const code =
+          leagueParam.toUpperCase();
+
+        if (
+          !getLeague(code)
+        ) {
+          return json(
+            {
+              ok: false,
+
+              error:
+                `Unknown league: ${code}`,
+
+              available:
+                LEAGUES.map(
+                  l =>
+                    l.code
+                )
+            },
+            400
+          );
+        }
+
+        leagueCodes = [
+          code
+        ];
+      } else if (
+        partParam
+      ) {
         const partNumber =
           Number(
             partParam
@@ -3140,7 +4226,7 @@ export default {
           ) ||
           partNumber < 1 ||
           partNumber >
-            API_REFRESH_PARTS.length
+            REFRESH_PARTS.length
         ) {
           return json(
             {
@@ -3150,7 +4236,7 @@ export default {
                 `Unknown part: ${partParam}`,
 
               availableParts:
-                API_REFRESH_PARTS.map(
+                REFRESH_PARTS.map(
                   (
                     codes,
                     index
@@ -3168,31 +4254,61 @@ export default {
         }
 
         leagueCodes =
-          API_REFRESH_PARTS[
+          REFRESH_PARTS[
             partNumber - 1
           ];
       }
 
-      const leagueParam =
+      const dateParam =
         clean(
           url.searchParams.get(
-            'league'
+            'date'
           )
         );
 
-      if (leagueParam) {
-        leagueCodes = [
-          leagueParam.toUpperCase()
-        ];
+      const daysParam =
+        Number(
+          url.searchParams.get(
+            'days'
+          ) || (
+            dateParam
+              ? '1'
+              : '14'
+          )
+        );
+
+      const startDate =
+        dateParam ||
+        todayISO();
+
+      if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(
+          startDate
+        )
+      ) {
+        return json(
+          {
+            ok: false,
+
+            error:
+              'Nieprawidłowa data. Użyj YYYY-MM-DD.'
+          },
+          400
+        );
       }
 
       try {
-        return json(
-          await refreshApiFixtures(
+        const result =
+          await refreshSofaFixtureWindow(
             env,
             season,
-            leagueCodes
-          )
+            leagueCodes,
+            startDate,
+            daysParam
+          );
+
+        return json(
+          result
         );
       } catch (e) {
         return json(
@@ -3210,7 +4326,9 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * IMPORT ONE
+     * -----------------------------------------------------
      */
 
     if (
@@ -3303,7 +4421,9 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * IMPORT ALL
+     * -----------------------------------------------------
      */
 
     if (
@@ -3401,7 +4521,9 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * REFRESH ONE LEAGUE
+     * -----------------------------------------------------
      */
 
     if (
@@ -3480,10 +4602,22 @@ export default {
       }
     }
 
+    /*
+     * -----------------------------------------------------
+     * ASSETS
+     * -----------------------------------------------------
+     */
+
     return env.ASSETS.fetch(
       request
     );
   },
+
+  /*
+   * =======================================================
+   * CRON
+   * =======================================================
+   */
 
   async scheduled(
     controller,
@@ -3502,58 +4636,49 @@ export default {
       date.getUTCDay();
 
     /*
-     * API-FOOTBALL
+     * -----------------------------------------------------
+     * FIXTURES
      *
-     * Poniedziałek:
+     * Raz w tygodniu:
+     * poniedziałek 03:00 UTC
      *
-     * 03:00 -> E0-E3 + EC
-     * 08:00 -> SC0-SC3 + D1
-     * 13:00 -> D2 + I1-I2 + SP1-SP2
-     * 18:00 -> F1-F2 + N1 + B1
-     * 23:00 -> P1 + T1 + G1
-     *
-     * Łącznie 22 ligi.
+     * Pobieramy 14 najbliższych dni.
+     * -----------------------------------------------------
      */
-
-    const apiSlot =
-      API_REFRESH_HOURS.indexOf(
-        hour
-      );
 
     if (
       day === 1 &&
-      apiSlot >= 0
+      hour === 3
     ) {
-      const apiLeagues =
-        API_REFRESH_PARTS[
-          apiSlot
-        ];
+      const startDate =
+        date
+          .toISOString()
+          .slice(
+            0,
+            10
+          );
 
       ctx.waitUntil(
         (async () => {
           try {
             const result =
-              await refreshApiFixtures(
+              await refreshSofaFixtureWindow(
                 env,
                 CURRENT_SEASON,
-                apiLeagues
+                null,
+                startDate,
+                14
               );
 
             console.log(
-              'API-Football weekly batch FINISHED',
-              JSON.stringify({
-                slot:
-                  apiSlot + 1,
-
-                leagues:
-                  apiLeagues,
-
+              'SofaScore fixtures weekly refresh FINISHED',
+              JSON.stringify(
                 result
-              })
+              )
             );
           } catch (e) {
             console.error(
-              'API-Football weekly batch FAILED:',
+              'SofaScore fixtures weekly refresh FAILED:',
               String(
                 e.message || e
               )
@@ -3564,7 +4689,14 @@ export default {
     }
 
     /*
+     * -----------------------------------------------------
      * FOOTBALL-DATA
+     *
+     * Ten cron zostaje tak jak wcześniej.
+     *
+     * Statystyki odświeżają się
+     * rotacyjnie dla 22 lig.
+     * -----------------------------------------------------
      */
 
     const slot =
@@ -3705,40 +4837,6 @@ function getCronRefreshPart(
     REFRESH_PARTS.length;
 
   return index + 1;
-}
-
-/*
- * =========================================================
- * API-FOOTBALL TEST
- * =========================================================
- */
-
-async function testApiFootball(
-  env
-) {
-  try {
-    const data =
-      await apiFootball(
-        env,
-        '/status'
-      );
-
-    return {
-      ok: true,
-
-      api:
-        data
-    };
-  } catch (e) {
-    return {
-      ok: false,
-
-      error:
-        String(
-          e.message || e
-        )
-    };
-  }
 }
 
 /*
