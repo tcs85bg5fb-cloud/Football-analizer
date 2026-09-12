@@ -39,44 +39,8 @@ const SEASONS = [
 
 const CURRENT_SEASON = '2026/27';
 
-/*
- * =========================================================
- * IMPORT LIMITS
- * =========================================================
- */
-
-/*
- * Na darmowym planie Cloudflare
- * bezpiecznie importujemy 3 ligi
- * na jedno wywołanie.
- */
 const MASS_IMPORT_CHUNK_SIZE = 3;
-
-/*
- * D1 pozwala na maksymalnie 100 statementów
- * w jednym batchu.
- */
 const MATCH_BATCH_SIZE = 100;
-
-/*
- * =========================================================
- * CRON REFRESH PARTS
- * =========================================================
- *
- * 22 ligi podzielone na 8 bezpiecznych paczek.
- *
- * Part 1 -> E0, E1, E2
- * Part 2 -> E3, EC, SC0
- * Part 3 -> SC1, SC2, SC3
- * Part 4 -> D1, D2, I1
- * Part 5 -> I2, SP1, SP2
- * Part 6 -> F1, F2, N1
- * Part 7 -> B1, P1, T1
- * Part 8 -> G1
- *
- * Cron uruchamia się 5 razy dziennie.
- * Każde uruchomienie bierze kolejną paczkę.
- */
 
 const REFRESH_PARTS = [
   ['E0', 'E1', 'E2'],
@@ -89,17 +53,6 @@ const REFRESH_PARTS = [
   ['G1']
 ];
 
-/*
- * Godziny zgodne z wrangler.json:
- *
- * 03:00 UTC
- * 08:00 UTC
- * 13:00 UTC
- * 18:00 UTC
- * 23:00 UTC
- *
- * Cloudflare cron działa w UTC.
- */
 const CRON_HOURS = [
   3,
   8,
@@ -413,12 +366,6 @@ function getLeague(code) {
   );
 }
 
-/*
- * Football-Data:
- *
- * 2025/26 -> 2526
- * 2026/27 -> 2627
- */
 function getSourceUrl(
   season,
   code
@@ -1670,12 +1617,6 @@ const API_FOOTBALL_SOURCE = 'api-football';
 const API_BASE = 'https://v3.football.api-sports.io';
 const API_SEASON = 2026;
 
-/*
- * API-Football free plan has a 10 requests/minute limit.
- * Keep each scheduled batch at <= 5 league requests.
- * The five batches are refreshed on Monday at the existing
- * 03/08/13/18/23 UTC cron slots.
- */
 const API_REFRESH_PARTS = [
   ['E0', 'E1', 'E2', 'E3', 'EC'],
   ['SC0', 'SC1', 'SC2', 'SC3', 'D1'],
@@ -1684,11 +1625,27 @@ const API_REFRESH_PARTS = [
   ['P1', 'T1', 'G1']
 ];
 
-const API_REFRESH_HOURS = [3, 8, 13, 18, 23];
+const API_REFRESH_HOURS = [
+  3,
+  8,
+  13,
+  18,
+  23
+];
 
-function apiSeasonFromName(seasonName) {
-  const match = String(seasonName || '').match(/^(\d{4})\/\d{2}$/);
-  return match ? Number(match[1]) : API_SEASON;
+function apiSeasonFromName(
+  seasonName
+) {
+  const match =
+    String(
+      seasonName || ''
+    ).match(
+      /^(\d{4})\/\d{2}$/
+    );
+
+  return match
+    ? Number(match[1])
+    : API_SEASON;
 }
 
 const API_LEAGUE_IDS = {
@@ -1853,7 +1810,179 @@ const TEAM_ALIASES = {
     'exeter city',
 
   'wycombe':
-    'wycombe wanderers'
+    'wycombe wanderers',
+
+  /*
+   * Germany
+   */
+
+  'bayern munich':
+    'bayern munich',
+
+  'bayern munchen':
+    'bayern munich',
+
+  'borussia dortmund':
+    'borussia dortmund',
+
+  'dortmund':
+    'borussia dortmund',
+
+  'borussia monchengladbach':
+    'borussia monchengladbach',
+
+  'monchengladbach':
+    'borussia monchengladbach',
+
+  'rb leipzig':
+    'rb leipzig',
+
+  'leipzig':
+    'rb leipzig',
+
+  'eintracht frankfurt':
+    'eintracht frankfurt',
+
+  'frankfurt':
+    'eintracht frankfurt',
+
+  /*
+   * Spain
+   */
+
+  'atletico madrid':
+    'atletico madrid',
+
+  'atletico de madrid':
+    'atletico madrid',
+
+  'athletic bilbao':
+    'athletic club',
+
+  'athletic club':
+    'athletic club',
+
+  'real betis':
+    'real betis',
+
+  'betis':
+    'real betis',
+
+  'real sociedad':
+    'real sociedad',
+
+  'rayo vallecano':
+    'rayo vallecano',
+
+  'celta vigo':
+    'celta vigo',
+
+  'rcd espanyol':
+    'espanyol',
+
+  'espanyol':
+    'espanyol',
+
+  /*
+   * France
+   */
+
+  'paris saint germain':
+    'paris saint germain',
+
+  'paris sg':
+    'paris saint germain',
+
+  'psg':
+    'paris saint germain',
+
+  'olympique lyon':
+    'lyon',
+
+  'olympique lyonnais':
+    'lyon',
+
+  'olympique marseille':
+    'marseille',
+
+  'olympique de marseille':
+    'marseille',
+
+  /*
+   * Italy
+   */
+
+  'inter':
+    'internazionale',
+
+  'inter milan':
+    'internazionale',
+
+  'internazionale':
+    'internazionale',
+
+  'ac milan':
+    'milan',
+
+  'milan':
+    'milan',
+
+  'as roma':
+    'roma',
+
+  'roma':
+    'roma',
+
+  /*
+   * Netherlands
+   */
+
+  'ajax':
+    'ajax',
+
+  'psv':
+    'psv eindhoven',
+
+  'psv eindhoven':
+    'psv eindhoven',
+
+  /*
+   * Portugal
+   */
+
+  'sporting cp':
+    'sporting cp',
+
+  'sporting lisbon':
+    'sporting cp',
+
+  'fc porto':
+    'porto',
+
+  'porto':
+    'porto',
+
+  'sl benfica':
+    'benfica',
+
+  'benfica':
+    'benfica',
+
+  /*
+   * Turkey
+   */
+
+  'galatasaray':
+    'galatasaray',
+
+  'fenerbahce':
+    'fenerbahce',
+
+  'besiktas':
+    'besiktas',
+
+  'trabzonspor':
+    'trabzonspor'
 };
 
 function teamKey(
@@ -2290,7 +2419,9 @@ async function importApiLeague(
           apiLeagueId,
 
         season:
-          apiSeasonFromName(seasonName)
+          apiSeasonFromName(
+            seasonName
+          )
       }
     );
 
@@ -2469,23 +2600,34 @@ async function refreshApiFixtures(
   leagueCodes = null
 ) {
   const wantedCodes =
-    Array.isArray(leagueCodes) && leagueCodes.length
+    Array.isArray(leagueCodes) &&
+    leagueCodes.length
       ? new Set(leagueCodes)
       : null;
 
-  const leagues = wantedCodes
-    ? LEAGUES.filter(league => wantedCodes.has(league.code))
-    : LEAGUES;
+  const leagues =
+    wantedCodes
+      ? LEAGUES.filter(
+          league =>
+            wantedCodes.has(
+              league.code
+            )
+        )
+      : LEAGUES;
 
   const results = [];
 
-  for (const league of leagues) {
+  for (
+    const league
+    of leagues
+  ) {
     try {
-      const result = await importApiLeague(
-        env,
-        league,
-        seasonName
-      );
+      const result =
+        await importApiLeague(
+          env,
+          league,
+          seasonName
+        );
 
       results.push({
         ok: true,
@@ -2494,15 +2636,25 @@ async function refreshApiFixtures(
 
       console.log(
         'API-Football OK',
-        JSON.stringify(result)
+        JSON.stringify(
+          result
+        )
       );
     } catch (e) {
-      const error = String(e.message || e);
+      const error =
+        String(
+          e.message || e
+        );
 
       results.push({
         ok: false,
-        code: league.code,
-        league: league.name,
+
+        code:
+          league.code,
+
+        league:
+          league.name,
+
         error
       });
 
@@ -2515,9 +2667,19 @@ async function refreshApiFixtures(
 
   return {
     ok: true,
-    source: API_FOOTBALL_SOURCE,
-    season: seasonName,
-    requestedLeagues: leagues.map(league => league.code),
+
+    source:
+      API_FOOTBALL_SOURCE,
+
+    season:
+      seasonName,
+
+    requestedLeagues:
+      leagues.map(
+        league =>
+          league.code
+      ),
+
     results
   };
 }
@@ -2904,10 +3066,6 @@ export default {
 
     /*
      * API-FOOTBALL REFRESH
-     *
-     * /api/fixtures-refresh
-     * ?token=FA-IMPORT-2026-09
-     * &season=2026/27
      */
 
     if (
@@ -2971,30 +3129,48 @@ export default {
       let leagueCodes = null;
 
       if (partParam) {
-        const partNumber = Number(partParam);
+        const partNumber =
+          Number(
+            partParam
+          );
 
         if (
-          !Number.isInteger(partNumber) ||
+          !Number.isInteger(
+            partNumber
+          ) ||
           partNumber < 1 ||
-          partNumber > API_REFRESH_PARTS.length
+          partNumber >
+            API_REFRESH_PARTS.length
         ) {
           return json(
             {
               ok: false,
+
               error:
                 `Unknown part: ${partParam}`,
+
               availableParts:
-                API_REFRESH_PARTS.map((codes, index) => ({
-                  part: index + 1,
-                  leagues: codes
-                }))
+                API_REFRESH_PARTS.map(
+                  (
+                    codes,
+                    index
+                  ) => ({
+                    part:
+                      index + 1,
+
+                    leagues:
+                      codes
+                  })
+                )
             },
             400
           );
         }
 
         leagueCodes =
-          API_REFRESH_PARTS[partNumber - 1];
+          API_REFRESH_PARTS[
+            partNumber - 1
+          ];
       }
 
       const leagueParam =
@@ -3005,7 +3181,9 @@ export default {
         );
 
       if (leagueParam) {
-        leagueCodes = [leagueParam.toUpperCase()];
+        leagueCodes = [
+          leagueParam.toUpperCase()
+        ];
       }
 
       try {
@@ -3324,21 +3502,32 @@ export default {
       date.getUTCDay();
 
     /*
-     * API-FOOTBALL:
-     * pełny tygodniowy refresh jest dzielony na 5 partii,
-     * po jednej na każdy poniedziałkowy slot cron.
-     * Dzięki temu nie przekraczamy limitu 10 req/min.
+     * API-FOOTBALL
+     *
+     * Poniedziałek:
+     *
+     * 03:00 -> E0-E3 + EC
+     * 08:00 -> SC0-SC3 + D1
+     * 13:00 -> D2 + I1-I2 + SP1-SP2
+     * 18:00 -> F1-F2 + N1 + B1
+     * 23:00 -> P1 + T1 + G1
+     *
+     * Łącznie 22 ligi.
      */
 
     const apiSlot =
-      API_REFRESH_HOURS.indexOf(hour);
+      API_REFRESH_HOURS.indexOf(
+        hour
+      );
 
     if (
       day === 1 &&
       apiSlot >= 0
     ) {
       const apiLeagues =
-        API_REFRESH_PARTS[apiSlot];
+        API_REFRESH_PARTS[
+          apiSlot
+        ];
 
       ctx.waitUntil(
         (async () => {
@@ -3353,8 +3542,12 @@ export default {
             console.log(
               'API-Football weekly batch FINISHED',
               JSON.stringify({
-                slot: apiSlot + 1,
-                leagues: apiLeagues,
+                slot:
+                  apiSlot + 1,
+
+                leagues:
+                  apiLeagues,
+
                 result
               })
             );
@@ -3371,8 +3564,7 @@ export default {
     }
 
     /*
-     * FOOTBALL-DATA:
-     * dotychczasowa rotacja.
+     * FOOTBALL-DATA
      */
 
     const slot =
@@ -3533,7 +3725,9 @@ async function testApiFootball(
 
     return {
       ok: true,
-      api: data
+
+      api:
+        data
     };
   } catch (e) {
     return {
