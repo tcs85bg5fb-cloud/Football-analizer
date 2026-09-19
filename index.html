@@ -5,47 +5,287 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111111">
 <title>Football Stats Analyzer</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f2f2f7;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{max-width:1050px;margin:auto;padding:14px}
-.card{background:#fff;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 1px 5px #0001}
-h1{margin:0 0 4px;font-size:28px}
-h2{margin:0 0 10px;font-size:20px}
-.muted{color:#6e6e73;font-size:13px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-label{display:block;font-weight:600;font-size:13px;margin-bottom:6px}
-select,input[type=date]{width:100%;padding:13px;border:1px solid #c7c7cc;border-radius:11px;background:#fff;font-size:17px}
-input[type=search]{width:100%;padding:11px 12px;border:1px solid #c7c7cc;border-radius:10px;background:#fff;font-size:16px}
-button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:11px;background:#111;color:#fff;font-size:17px;font-weight:700}
-button.secondary{background:#fff;color:#171717;border:1px solid #c7c7cc}
-.tabs{display:flex;gap:8px;overflow:auto;margin:8px 0}
-.tab{white-space:nowrap;border:1px solid #d1d1d6;background:#fff;color:#171717;padding:9px 12px;border-radius:10px;font-weight:600}
-.tab.active{background:#111;color:#fff}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px;border-bottom:1px solid #eee;text-align:right;white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
-th{font-weight:700;background:#fafafa}
-.scroll{overflow-x:auto}
-.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#eee;font-size:12px;font-weight:600}
-.metric{font-size:22px;font-weight:700}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.note{background:#f2f2f7;border-radius:12px;padding:11px;margin-top:10px}
-.small{font-size:12px;color:#6e6e73}
-.section-title{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.empty{padding:12px 0;color:#6e6e73}
+*{
+  box-sizing:border-box
+}
+
+body{
+  margin:0;
+  background:#f2f2f7;
+  color:#171717;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+
+main{
+  max-width:1050px;
+  margin:auto;
+  padding:14px
+}
+
+.card{
+  background:#fff;
+  border-radius:18px;
+  padding:18px;
+  margin:12px 0;
+  box-shadow:0 1px 5px #0001
+}
+
+h1{
+  margin:0 0 4px;
+  font-size:28px
+}
+
+h2{
+  margin:0 0 10px;
+  font-size:20px
+}
+
+.muted{
+  color:#6e6e73;
+  font-size:13px
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+
+.grid3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px
+}
+
+label{
+  display:block;
+  font-weight:600;
+  font-size:13px;
+  margin-bottom:6px
+}
+
+select,
+input[type=date]{
+  width:100%;
+  padding:13px;
+  border:1px solid #c7c7cc;
+  border-radius:11px;
+  background:#fff;
+  font-size:17px
+}
+
+input[type=search]{
+  width:100%;
+  padding:13px 14px;
+  border:1px solid #c7c7cc;
+  border-radius:11px;
+  background:#fff;
+  font-size:17px;
+  outline:none;
+  -webkit-appearance:none
+}
+
+input[type=search]:focus{
+  border-color:#111;
+  box-shadow:0 0 0 2px #1111
+}
+
+button{
+  width:100%;
+  margin-top:12px;
+  padding:14px;
+  border:0;
+  border-radius:11px;
+  background:#111;
+  color:#fff;
+  font-size:17px;
+  font-weight:700
+}
+
+button.secondary{
+  background:#fff;
+  color:#171717;
+  border:1px solid #c7c7cc
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  overflow:auto;
+  margin:8px 0
+}
+
+.tab{
+  white-space:nowrap;
+  border:1px solid #d1d1d6;
+  background:#fff;
+  color:#171717;
+  padding:9px 12px;
+  border-radius:10px;
+  font-weight:600
+}
+
+.tab.active{
+  background:#111;
+  color:#fff
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px
+}
+
+th,
+td{
+  padding:8px;
+  border-bottom:1px solid #eee;
+  text-align:right;
+  white-space:nowrap
+}
+
+th:first-child,
+td:first-child{
+  text-align:left
+}
+
+th{
+  font-weight:700;
+  background:#fafafa
+}
+
+.scroll{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:8px;
+  background:#eee;
+  font-size:12px;
+  font-weight:600
+}
+
+.two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.small{
+  font-size:12px;
+  color:#6e6e73
+}
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center
+}
+
+.empty{
+  padding:12px 0;
+  color:#6e6e73
+}
+
 .selected-team{
   margin-top:8px;
-  padding:10px 12px;
+  padding:11px 12px;
   border-radius:11px;
   background:#f2f2f7;
   font-weight:700;
-  min-height:40px
+  min-height:42px
 }
-.search-wrap{margin-top:8px}
-.fixture-league{margin-top:16px}
-.fixture-league:first-child{margin-top:0}
+
+/* =========================
+   WYSZUKIWARKA DRUŻYN
+   ========================= */
+
+.team-search{
+  position:relative;
+  margin-top:8px
+}
+
+.team-search input{
+  width:100%
+}
+
+.team-results{
+  position:absolute;
+  left:0;
+  right:0;
+  top:calc(100% + 5px);
+  z-index:100;
+  background:#fff;
+  border:1px solid #d1d1d6;
+  border-radius:12px;
+  box-shadow:0 5px 18px #0002;
+  max-height:260px;
+  overflow-y:auto;
+  display:none
+}
+
+.team-results.show{
+  display:block
+}
+
+.team-result{
+  padding:12px 14px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+  font-size:16px
+}
+
+.team-result:last-child{
+  border-bottom:0
+}
+
+.team-result:active{
+  background:#f2f2f7
+}
+
+.team-result.selected{
+  font-weight:700;
+  background:#f2f2f7
+}
+
+.team-no-results{
+  padding:12px 14px;
+  color:#6e6e73;
+  font-size:14px
+}
+
+/* =========================
+   PORÓWNANIE
+   ========================= */
+
+.better{
+  font-weight:800
+}
+
+.subhead{
+  font-size:13px;
+  color:#6e6e73;
+  margin:-4px 0 10px
+}
+
+/* =========================
+   MECZE
+   ========================= */
+
+.fixture-league{
+  margin-top:16px
+}
+
+.fixture-league:first-child{
+  margin-top:0
+}
+
 .fixture-league-title{
   display:flex;
   justify-content:space-between;
@@ -55,6 +295,7 @@ th{font-weight:700;background:#fafafa}
   padding-bottom:8px;
   margin-bottom:4px
 }
+
 .fixture-row{
   display:grid;
   grid-template-columns:58px 1fr 1fr 72px;
@@ -63,157 +304,420 @@ th{font-weight:700;background:#fafafa}
   padding:11px 0;
   border-bottom:1px solid #eee
 }
-.fixture-time{text-align:left;font-weight:700}
-.fixture-team{text-align:right}
-.fixture-team.away{text-align:left}
-.fixture-score{text-align:center;font-weight:800}
-.fixture-ref{font-size:11px;color:#6e6e73;text-align:right}
-.better{font-weight:800}
-.subhead{font-size:13px;color:#6e6e73;margin:-4px 0 10px}
+
+.fixture-time{
+  text-align:left;
+  font-weight:700
+}
+
+.fixture-team{
+  text-align:right
+}
+
+.fixture-team.away{
+  text-align:left
+}
+
+.fixture-score{
+  text-align:center;
+  font-weight:800
+}
+
+.fixture-ref{
+  font-size:11px;
+  color:#6e6e73;
+  text-align:right
+}
+
+/* =========================
+   TABELA OSTATNICH MECZÓW
+   ========================= */
+
+.form-table th,
+.form-table td{
+  text-align:right
+}
+
+.form-table th:first-child,
+.form-table td:first-child{
+  text-align:left
+}
+
+.form-table .opponent{
+  text-align:left;
+  font-weight:600
+}
+
+.form-table .result{
+  text-align:center;
+  font-weight:800
+}
+
+.form-table .win{
+  font-weight:800
+}
+
+.form-table .loss{
+  font-weight:800
+}
+
+.form-table .draw{
+  font-weight:800
+}
+
+/* =========================
+   MOBILE
+   ========================= */
 
 @media(max-width:700px){
- .grid,.two{grid-template-columns:1fr}
- .grid3{grid-template-columns:1fr 1fr}
- main{padding:10px}
- table{font-size:13px}
- h1{font-size:25px}
- .fixture-row{grid-template-columns:48px 1fr 1fr}
- .fixture-ref{grid-column:2/4;text-align:left}
+
+  .grid,
+  .two{
+    grid-template-columns:1fr
+  }
+
+  .grid3{
+    grid-template-columns:1fr 1fr
+  }
+
+  main{
+    padding:10px
+  }
+
+  table{
+    font-size:13px
+  }
+
+  h1{
+    font-size:25px
+  }
+
+  .fixture-row{
+    grid-template-columns:48px 1fr 1fr
+  }
+
+  .fixture-ref{
+    grid-column:2/4;
+    text-align:left
+  }
+
+  .team-results{
+    max-height:240px
+  }
 }
 </style>
 </head>
 
 <body>
+
 <main>
 
 <section class="card">
-  <h1>⚽ Football Stats Analyzer</h1>
-  <div class="muted">Porównanie drużyn na podstawie danych z D1.</div>
 
-  <div class="tabs">
-    <button id="tabAnalysis" class="tab active" type="button">Analiza</button>
-    <button id="tabFixtures" class="tab" type="button">Mecze</button>
+  <h1>⚽ Football Stats Analyzer</h1>
+
+  <div class="muted">
+    Porównanie drużyn na podstawie danych z D1.
   </div>
 
-  <div id="status" class="small">Ładowanie danych…</div>
+  <div class="tabs">
+
+    <button
+      id="tabAnalysis"
+      class="tab active"
+      type="button"
+    >
+      Analiza
+    </button>
+
+    <button
+      id="tabFixtures"
+      class="tab"
+      type="button"
+    >
+      Mecze
+    </button>
+
+  </div>
+
+  <div id="status" class="small">
+    Ładowanie danych…
+  </div>
+
 </section>
+
+
+<!-- =====================================================
+     ANALIZA
+     ===================================================== -->
 
 <div id="analysisView">
 
 <section class="card">
+
   <div class="grid">
 
+    <!-- GOSPODARZ -->
+
     <div>
+
       <label>Gospodarz</label>
 
-      <div class="search-wrap">
+      <div
+        class="team-search"
+        id="homeSearchWrap"
+      >
+
         <input
           id="homeSearch"
           type="search"
           placeholder="Szukaj drużyny…"
           autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
         >
+
+        <div
+          id="homeResults"
+          class="team-results"
+        ></div>
+
       </div>
 
-      <select id="home"></select>
+      <select
+        id="home"
+        style="display:none"
+      ></select>
 
-      <div id="homeSelected" class="selected-team">✓ —</div>
+      <div
+        id="homeSelected"
+        class="selected-team"
+      >
+        ✓ —
+      </div>
+
     </div>
 
+
+    <!-- GOŚĆ -->
+
     <div>
+
       <label>Gość</label>
 
-      <div class="search-wrap">
+      <div
+        class="team-search"
+        id="awaySearchWrap"
+      >
+
         <input
           id="awaySearch"
           type="search"
           placeholder="Szukaj drużyny…"
           autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
         >
+
+        <div
+          id="awayResults"
+          class="team-results"
+        ></div>
+
       </div>
 
-      <select id="away"></select>
+      <select
+        id="away"
+        style="display:none"
+      ></select>
 
-      <div id="awaySelected" class="selected-team">✓ —</div>
+      <div
+        id="awaySelected"
+        class="selected-team"
+      >
+        ✓ —
+      </div>
+
     </div>
 
   </div>
 
-  <div class="grid3" style="margin-top:12px">
+
+  <div
+    class="grid3"
+    style="margin-top:12px"
+  >
 
     <div>
+
       <label>Mecze do analizy</label>
 
       <select id="sample">
-        <option value="5" selected>5</option>
-        <option value="10">10</option>
-        <option value="15">15</option>
-        <option value="20">20</option>
-        <option value="30">30</option>
-        <option value="50">50</option>
-        <option value="all">All</option>
+
+        <option value="5" selected>
+          5
+        </option>
+
+        <option value="10">
+          10
+        </option>
+
+        <option value="15">
+          15
+        </option>
+
+        <option value="20">
+          20
+        </option>
+
+        <option value="30">
+          30
+        </option>
+
+        <option value="50">
+          50
+        </option>
+
+        <option value="all">
+          All
+        </option>
+
       </select>
+
     </div>
 
+
     <div>
+
       <label>Sposób analizy</label>
 
       <select id="venueMode">
-        <option value="split" selected>Home / Away</option>
-        <option value="all">Wszystkie mecze</option>
+
+        <option
+          value="split"
+          selected
+        >
+          Home / Away
+        </option>
+
+        <option value="all">
+          Wszystkie mecze
+        </option>
+
       </select>
+
     </div>
 
+
     <div>
+
       <label>Sędzia</label>
+
       <select id="referee"></select>
+
     </div>
 
   </div>
 
-  <div class="search-wrap">
+
+  <div
+    class="team-search"
+    style="margin-top:8px"
+  >
+
     <input
       id="refSearch"
       type="search"
       placeholder="Szukaj sędziego…"
       autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
     >
+
   </div>
 
-  <button id="analyze" type="button">Analizuj mecz</button>
+
+  <button
+    id="analyze"
+    type="button"
+  >
+    Analizuj mecz
+  </button>
+
 </section>
+
 
 <div id="results"></div>
 
 </div>
 
-<div id="fixturesView" style="display:none">
+
+<!-- =====================================================
+     TERMINARZ
+     ===================================================== -->
+
+<div
+  id="fixturesView"
+  style="display:none"
+>
 
 <section class="card">
 
   <div class="section-title">
+
     <h2>📅 Mecze</h2>
-    <span id="fixtureCount" class="badge">—</span>
+
+    <span
+      id="fixtureCount"
+      class="badge"
+    >
+      —
+    </span>
+
   </div>
+
 
   <div class="grid">
 
     <div>
+
       <label>Data</label>
-      <input id="fixtureDate" type="date">
+
+      <input
+        id="fixtureDate"
+        type="date"
+      >
+
     </div>
 
+
     <div>
+
       <label>Opcjonalnie liga</label>
 
       <select id="fixtureLeague">
-        <option value="">Wszystkie ligi</option>
+
+        <option value="">
+          Wszystkie ligi
+        </option>
+
       </select>
+
     </div>
 
   </div>
 
-  <button id="loadFixtures" type="button">Pokaż mecze</button>
+
+  <button
+    id="loadFixtures"
+    type="button"
+  >
+    Pokaż mecze
+  </button>
+
 
   <div
     id="fixtureStatus"
@@ -223,11 +727,13 @@ th{font-weight:700;background:#fafafa}
 
 </section>
 
+
 <div id="fixturesResults"></div>
 
 </div>
 
 </main>
+
 
 <script>
 
@@ -236,7 +742,13 @@ let TEAMS=[];
 let REFEREES=[];
 let SOURCE_COLUMNS=[];
 
+
+/* =====================================================
+   LIGI
+   ===================================================== */
+
 const LEAGUE_ORDER=[
+
  ['E0','Premier League','England'],
  ['E1','Championship','England'],
  ['E2','League One','England'],
@@ -261,189 +773,251 @@ const LEAGUE_ORDER=[
  ['F2','Ligue 2','France'],
 
  ['N1','Eredivisie','Netherlands'],
+
  ['B1','Jupiler League','Belgium'],
+
  ['P1','Liga Portugal','Portugal'],
+
  ['T1','Süper Lig','Turkey'],
+
  ['G1','Super League','Greece']
+
 ];
+
+
+/* =====================================================
+   POBIERANIE DANYCH
+   ===================================================== */
 
 async function loadLiveData(){
 
- const res=await fetch(
-   '/api/matches?limit=2000',
-   {cache:'no-store'}
- );
+  const res=await fetch(
+    '/api/matches?limit=2000',
+    {
+      cache:'no-store'
+    }
+  );
 
- if(!res.ok){
-   throw new Error(
-     'Nie udało się pobrać danych z bazy D1.'
-   );
- }
+  if(!res.ok){
 
- const payload=await res.json();
+    throw new Error(
+      'Nie udało się pobrać danych z bazy D1.'
+    );
 
- if(!payload.ok){
-   throw new Error(
-     payload.error||'API D1 zwróciło błąd.'
-   );
- }
+  }
 
- const rows=[];
- const cols=new Set();
 
- (payload.matches||[]).forEach(match=>{
+  const payload=await res.json();
 
-   const raw=
-     match.raw_data &&
-     typeof match.raw_data==='object'
-       ? match.raw_data
-       : {};
 
-   const m={
+  if(!payload.ok){
 
-     ...raw,
+    throw new Error(
+      payload.error ||
+      'API D1 zwróciło błąd.'
+    );
 
-     Season:match.season,
+  }
 
-     Date:
-       raw.Date ||
-       formatISODate(match.match_date),
 
-     HomeTeam:match.home_team,
-     AwayTeam:match.away_team,
-     Referee:match.referee,
+  const rows=[];
+  const cols=new Set();
 
-     FTHG:match.home_goals,
-     FTAG:match.away_goals,
-     FTR:match.result,
 
-     HTHG:match.home_ht_goals,
-     HTAG:match.away_ht_goals,
-     HTR:match.ht_result,
+  (payload.matches||[]).forEach(match=>{
 
-     HS:match.home_shots,
-     AS:match.away_shots,
+    const raw=
+      match.raw_data &&
+      typeof match.raw_data==='object'
+        ? match.raw_data
+        : {};
 
-     HST:match.home_shots_on_target,
-     AST:match.away_shots_on_target,
 
-     HxG:match.home_xg,
-     AxG:match.away_xg,
+    const m={
 
-     HC:match.home_corners,
-     AC:match.away_corners,
+      ...raw,
 
-     HF:match.home_fouls,
-     AF:match.away_fouls,
+      Season:match.season,
 
-     HY:match.home_yellow_cards,
-     AY:match.away_yellow_cards,
+      Date:
+        raw.Date ||
+        formatISODate(
+          match.match_date
+        ),
 
-     HR:match.home_red_cards,
-     AR:match.away_red_cards,
+      HomeTeam:match.home_team,
+      AwayTeam:match.away_team,
+      Referee:match.referee,
 
-     HP:match.home_possession,
-     AP:match.away_possession
-   };
+      FTHG:match.home_goals,
+      FTAG:match.away_goals,
+      FTR:match.result,
 
-   rows.push(m);
+      HTHG:match.home_ht_goals,
+      HTAG:match.away_ht_goals,
+      HTR:match.ht_result,
 
-   Object.keys(raw).forEach(k=>cols.add(k));
+      HS:match.home_shots,
+      AS:match.away_shots,
 
- });
+      HST:match.home_shots_on_target,
+      AST:match.away_shots_on_target,
 
- DATA=rows;
- SOURCE_COLUMNS=[...cols];
+      HxG:match.home_xg,
+      AxG:match.away_xg,
 
- TEAMS=[
-   ...new Set(
-     DATA
-       .flatMap(m=>[
-         m.HomeTeam,
-         m.AwayTeam
-       ])
-       .filter(Boolean)
-   )
- ].sort(
-   (a,b)=>a.localeCompare(b,'pl')
- );
+      HC:match.home_corners,
+      AC:match.away_corners,
 
- REFEREES=[
-   ...new Set(
-     DATA
-       .map(m=>m.Referee)
-       .filter(Boolean)
-   )
- ].sort(sortBySurname);
+      HF:match.home_fouls,
+      AF:match.away_fouls,
 
- return payload;
+      HY:match.home_yellow_cards,
+      AY:match.away_yellow_cards,
+
+      HR:match.home_red_cards,
+      AR:match.away_red_cards,
+
+      HP:match.home_possession,
+      AP:match.away_possession
+
+    };
+
+
+    rows.push(m);
+
+    Object.keys(raw).forEach(k=>{
+      cols.add(k);
+    });
+
+  });
+
+
+  DATA=rows;
+
+  SOURCE_COLUMNS=[...cols];
+
+
+  TEAMS=[
+    ...new Set(
+      DATA
+        .flatMap(m=>[
+          m.HomeTeam,
+          m.AwayTeam
+        ])
+        .filter(Boolean)
+    )
+  ].sort(
+    (a,b)=>
+      a.localeCompare(
+        b,
+        'pl'
+      )
+  );
+
+
+  REFEREES=[
+    ...new Set(
+      DATA
+        .map(m=>m.Referee)
+        .filter(Boolean)
+    )
+  ].sort(sortBySurname);
+
+
+  return payload;
+
 }
+
+
+/* =====================================================
+   HELPERY
+   ===================================================== */
 
 function formatISODate(v){
 
- if(!v)return '';
+  if(!v)return '';
 
- const m=String(v).match(
-   /^(\d{4})-(\d{2})-(\d{2})/
- );
+  const m=
+    String(v).match(
+      /^(\d{4})-(\d{2})-(\d{2})/
+    );
 
- return m
-   ? `${m[3]}/${m[2]}/${m[1]}`
-   : String(v);
+  return m
+    ? `${m[3]}/${m[2]}/${m[1]}`
+    : String(v);
+
 }
+
 
 function dateVal(s){
 
- if(!s)return 0;
+  if(!s)return 0;
 
- const v=String(s);
- const p=v.split('/');
+  const v=String(s);
 
- if(p.length===3){
+  const p=v.split('/');
 
-   return new Date(
-     +p[2],
-     +p[1]-1,
-     +p[0]
-   ).getTime();
+  if(p.length===3){
 
- }
+    return new Date(
+      +p[2],
+      +p[1]-1,
+      +p[0]
+    ).getTime();
 
- const m=v.match(
-   /^(\d{4})-(\d{2})-(\d{2})/
- );
+  }
 
- return m
-   ? new Date(
-       +m[1],
-       +m[2]-1,
-       +m[3]
-     ).getTime()
-   : 0;
+
+  const m=
+    v.match(
+      /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+  return m
+    ? new Date(
+        +m[1],
+        +m[2]-1,
+        +m[3]
+      ).getTime()
+    : 0;
+
 }
+
 
 const num=v=>{
 
- const x=Number(v);
+  const x=Number(v);
 
- return Number.isFinite(x)
-   ? x
-   : null;
+  return Number.isFinite(x)
+    ? x
+    : null;
+
 };
+
 
 const avg=a=>{
 
- const x=a.filter(v=>v!=null);
+  const x=
+    a.filter(
+      v=>v!=null
+    );
 
- return x.length
-   ? x.reduce((s,v)=>s+v,0)/x.length
-   : null;
+  return x.length
+    ? x.reduce(
+        (s,v)=>s+v,
+        0
+      )/x.length
+    : null;
+
 };
+
 
 const f=x=>
   x==null
     ? '—'
     : x.toFixed(1);
+
 
 const esc=s=>
   String(s??'').replace(
@@ -456,151 +1030,326 @@ const esc=s=>
     }[m])
   );
 
+
 function norm(s){
 
- return String(s??'')
-   .trim()
-   .replace(/\s+/g,' ')
-   .toLocaleLowerCase('pl');
+  return String(s??'')
+    .trim()
+    .replace(/\s+/g,' ')
+    .toLocaleLowerCase('pl');
+
 }
+
 
 function sortBySurname(a,b){
 
- const pa=
-   String(a)
-     .trim()
-     .split(/\s+/);
+  const pa=
+    String(a)
+      .trim()
+      .split(/\s+/);
 
- const pb=
-   String(b)
-     .trim()
-     .split(/\s+/);
+  const pb=
+    String(b)
+      .trim()
+      .split(/\s+/);
 
- return (
-   (pa.at(-1)||'')
-     .localeCompare(
-       pb.at(-1)||'',
-       'pl'
-     )
- ) ||
- String(a).localeCompare(
-   String(b),
-   'pl'
- );
-}
 
-function fillSelect(sel,items){
+  return (
 
- sel.innerHTML='';
+    (pa.at(-1)||'')
+      .localeCompare(
+        pb.at(-1)||'',
+        'pl'
+      )
 
- items.forEach(t=>{
+  ) ||
 
-   const o=document.createElement('option');
-
-   o.value=t;
-   o.textContent=t;
-
-   sel.appendChild(o);
-
- });
+  String(a).localeCompare(
+    String(b),
+    'pl'
+  );
 
 }
 
-function filterSelect(
-  searchId,
-  selectId,
+
+/* =====================================================
+   SELECT
+   ===================================================== */
+
+function fillSelect(
+  sel,
   items
 ){
 
- const q=
-   document
-     .getElementById(searchId)
-     .value
-     .trim()
-     .toLocaleLowerCase('pl');
+  sel.innerHTML='';
 
- const current=
-   document
-     .getElementById(selectId)
-     .value;
+  items.forEach(t=>{
 
- const filtered=q
-   ? items.filter(
-       x=>x
-         .toLocaleLowerCase('pl')
-         .includes(q)
-     )
-   : items;
+    const o=
+      document.createElement(
+        'option'
+      );
 
- fillSelect(
-   document.getElementById(selectId),
-   filtered
- );
+    o.value=t;
+    o.textContent=t;
 
- if(filtered.includes(current)){
+    sel.appendChild(o);
 
-   document.getElementById(selectId).value=
-     current;
-
- }
-
- updateSelectedTeams();
+  });
 
 }
 
-function clearTeamSearch(
+
+/* =====================================================
+   WYSZUKIWARKA DRUŻYN
+   ===================================================== */
+
+function setupTeamSearch(
   searchId,
+  resultsId,
   selectId
 ){
 
- const input=
-   document.getElementById(searchId);
+  const input=
+    document.getElementById(
+      searchId
+    );
 
- if(input.value){
+  const results=
+    document.getElementById(
+      resultsId
+    );
 
-   input.value='';
+  const select=
+    document.getElementById(
+      selectId
+    );
 
-   fillSelect(
-     document.getElementById(selectId),
-     TEAMS
-   );
 
-   const select=
-     document.getElementById(selectId);
+  function render(){
 
-   if(TEAMS.includes(select.value)){
+    const q=
+      norm(input.value);
 
-     select.value=select.value;
 
-   }
+    const current=
+      select.value;
 
- }
 
- updateSelectedTeams();
+    let filtered=
+      q
+        ? TEAMS.filter(
+            team=>
+              norm(team)
+                .includes(q)
+          )
+        : TEAMS;
+
+
+    /*
+      Przy pustym polu nie pokazujemy od razu
+      wszystkich 425 drużyn.
+      Pokazujemy maksymalnie 20.
+    */
+
+    filtered=
+      filtered.slice(
+        0,
+        20
+      );
+
+
+    if(!filtered.length){
+
+      results.innerHTML=
+        `
+        <div class="team-no-results">
+          Brak pasujących drużyn.
+        </div>
+        `;
+
+      results.classList.add(
+        'show'
+      );
+
+      return;
+
+    }
+
+
+    results.innerHTML=
+      filtered.map(team=>{
+
+        const selected=
+          norm(team)===norm(current)
+            ? ' selected'
+            : '';
+
+        return `
+          <div
+            class="team-result${selected}"
+            data-team="${esc(team)}"
+          >
+            ${esc(team)}
+          </div>
+        `;
+
+      }).join('');
+
+
+    results.classList.add(
+      'show'
+    );
+
+
+    results
+      .querySelectorAll(
+        '.team-result'
+      )
+      .forEach(item=>{
+
+        item.addEventListener(
+          'mousedown',
+          e=>{
+            e.preventDefault();
+          }
+        );
+
+
+        item.addEventListener(
+          'click',
+          ()=>{
+
+            const team=
+              item.dataset.team;
+
+
+            select.value=team;
+
+
+            /*
+              Najważniejsze:
+              po wyborze wyszukiwarka
+              natychmiast się czyści.
+            */
+
+            input.value='';
+
+
+            results.classList.remove(
+              'show'
+            );
+
+
+            updateSelectedTeams();
+
+            analyze();
+
+          }
+        );
+
+      });
+
+  }
+
+
+  input.addEventListener(
+    'input',
+    render
+  );
+
+
+  input.addEventListener(
+    'focus',
+    ()=>{
+
+      render();
+
+    }
+  );
+
+
+  input.addEventListener(
+    'keydown',
+    e=>{
+
+      if(e.key==='Escape'){
+
+        input.value='';
+
+        results.classList.remove(
+          'show'
+        );
+
+        return;
+
+      }
+
+
+      if(e.key==='Enter'){
+
+        const first=
+          results.querySelector(
+            '.team-result'
+          );
+
+        if(first){
+
+          first.click();
+
+          e.preventDefault();
+
+        }
+
+      }
+
+    }
+  );
+
+
+  return {
+    render
+  };
 
 }
+
+
+/* =====================================================
+   WYBRANE DRUŻYNY
+   ===================================================== */
 
 function updateSelectedTeams(){
 
- document.getElementById(
-   'homeSelected'
- ).textContent=
-   '✓ '+
-   (
-     document.getElementById('home').value
-     ||'—'
-   );
+  const home=
+    document.getElementById(
+      'home'
+    ).value;
 
- document.getElementById(
-   'awaySelected'
- ).textContent=
-   '✓ '+
-   (
-     document.getElementById('away').value
-     ||'—'
-   );
+  const away=
+    document.getElementById(
+      'away'
+    ).value;
+
+
+  document.getElementById(
+    'homeSelected'
+  ).textContent=
+    '✓ '+
+    (home||'—');
+
+
+  document.getElementById(
+    'awaySelected'
+  ).textContent=
+    '✓ '+
+    (away||'—');
 
 }
+
+
+/* =====================================================
+   STATYSTYKI
+   ===================================================== */
 
 function stats(
   team,
@@ -608,242 +1357,310 @@ function stats(
   limit
 ){
 
- let r=DATA
-   .filter(m=>
-     venue==='home'
-       ? m.HomeTeam===team
-       : venue==='away'
-         ? m.AwayTeam===team
-         : (
-             m.HomeTeam===team ||
-             m.AwayTeam===team
-           )
-   )
-   .sort(
-     (a,b)=>
-       dateVal(b.Date)-dateVal(a.Date)
-   );
+  let r=
+    DATA
+      .filter(m=>{
 
- if(limit!=='all'){
+        if(venue==='home'){
+          return norm(m.HomeTeam)===norm(team);
+        }
 
-   r=r.slice(
-     0,
-     Number(limit)
-   );
+        if(venue==='away'){
+          return norm(m.AwayTeam)===norm(team);
+        }
 
- }
+        return (
+          norm(m.HomeTeam)===norm(team) ||
+          norm(m.AwayTeam)===norm(team)
+        );
 
- const get=(m,k)=>num(m[k]);
+      })
+      .sort(
+        (a,b)=>
+          dateVal(b.Date)-
+          dateVal(a.Date)
+      );
 
- const own=(m,k)=>
-   venue==='home'
-     ? get(m,k[0])
-     : venue==='away'
-       ? get(m,k[1])
-       : (
-           m.HomeTeam===team
-             ? get(m,k[0])
-             : get(m,k[1])
-         );
 
- const opp=(m,k)=>
-   venue==='home'
-     ? get(m,k[1])
-     : venue==='away'
-       ? get(m,k[0])
-       : (
-           m.HomeTeam===team
-             ? get(m,k[1])
-             : get(m,k[0])
-         );
+  if(limit!=='all'){
 
- return {
+    r=
+      r.slice(
+        0,
+        Number(limit)
+      );
 
-   matches:r.length,
+  }
 
-   goals:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['FTHG','FTAG']
-         )
-       )
-     ),
 
-   goalsAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['FTHG','FTAG']
-         )
-       )
-     ),
+  const get=(
+    m,
+    k
+  )=>num(m[k]);
 
-   shots:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['HS','AS']
-         )
-       )
-     ),
 
-   shotsAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['HS','AS']
-         )
-       )
-     ),
+  const own=(
+    m,
+    k
+  )=>{
 
-   on:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['HST','AST']
-         )
-       )
-     ),
+    if(venue==='home'){
+      return get(
+        m,
+        k[0]
+      );
+    }
 
-   onAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['HST','AST']
-         )
-       )
-     ),
+    if(venue==='away'){
+      return get(
+        m,
+        k[1]
+      );
+    }
 
-   xg:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['HxG','AxG']
-         )
-       )
-     ),
+    return norm(m.HomeTeam)===norm(team)
+      ? get(m,k[0])
+      : get(m,k[1]);
 
-   xgAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['HxG','AxG']
-         )
-       )
-     ),
+  };
 
-   corners:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['HC','AC']
-         )
-       )
-     ),
 
-   cornersAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['HC','AC']
-         )
-       )
-     ),
+  const opp=(
+    m,
+    k
+  )=>{
 
-   fouls:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['HF','AF']
-         )
-       )
-     ),
+    if(venue==='home'){
+      return get(
+        m,
+        k[1]
+      );
+    }
 
-   foulsAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['HF','AF']
-         )
-       )
-     ),
+    if(venue==='away'){
+      return get(
+        m,
+        k[0]
+      );
+    }
 
-   yellow:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['HY','AY']
-         )
-       )
-     ),
+    return norm(m.HomeTeam)===norm(team)
+      ? get(m,k[1])
+      : get(m,k[0]);
 
-   yellowAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['HY','AY']
-         )
-       )
-     ),
+  };
 
-   red:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['HR','AR']
-         )
-       )
-     ),
 
-   redAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['HR','AR']
-         )
-       )
-     ),
+  return {
 
-   possession:
-     avg(
-       r.map(
-         m=>own(
-           m,
-           ['HP','AP']
-         )
-       )
-     ),
+    matches:r.length,
 
-   possessionAgainst:
-     avg(
-       r.map(
-         m=>opp(
-           m,
-           ['HP','AP']
-         )
-       )
-     )
 
- };
+    goals:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['FTHG','FTAG']
+          )
+        )
+      ),
+
+
+    goalsAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['FTHG','FTAG']
+          )
+        )
+      ),
+
+
+    shots:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['HS','AS']
+          )
+        )
+      ),
+
+
+    shotsAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['HS','AS']
+          )
+        )
+      ),
+
+
+    on:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['HST','AST']
+          )
+        )
+      ),
+
+
+    onAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['HST','AST']
+          )
+        )
+      ),
+
+
+    xg:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['HxG','AxG']
+          )
+        )
+      ),
+
+
+    xgAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['HxG','AxG']
+          )
+        )
+      ),
+
+
+    corners:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['HC','AC']
+          )
+        )
+      ),
+
+
+    cornersAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['HC','AC']
+          )
+        )
+      ),
+
+
+    fouls:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['HF','AF']
+          )
+        )
+      ),
+
+
+    foulsAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['HF','AF']
+          )
+        )
+      ),
+
+
+    yellow:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['HY','AY']
+          )
+        )
+      ),
+
+
+    yellowAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['HY','AY']
+          )
+        )
+      ),
+
+
+    red:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['HR','AR']
+          )
+        )
+      ),
+
+
+    redAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['HR','AR']
+          )
+        )
+      ),
+
+
+    possession:
+      avg(
+        r.map(
+          m=>own(
+            m,
+            ['HP','AP']
+          )
+        )
+      ),
+
+
+    possessionAgainst:
+      avg(
+        r.map(
+          m=>opp(
+            m,
+            ['HP','AP']
+          )
+        )
+      )
+
+  };
 
 }
+
+
+/* =====================================================
+   PORÓWNANIE
+   ===================================================== */
 
 function compareCell(
   left,
@@ -851,44 +1668,56 @@ function compareCell(
   higherIsBetter=true
 ){
 
- if(
-   left==null ||
-   right==null
- ){
-   return [
-     f(left),
-     f(right)
-   ];
- }
+  if(
+    left==null ||
+    right==null
+  ){
 
- let lBetter=false;
- let rBetter=false;
+    return [
+      f(left),
+      f(right)
+    ];
 
- if(higherIsBetter){
+  }
 
-   lBetter=left>right;
-   rBetter=right>left;
 
- }else{
+  let lBetter=false;
+  let rBetter=false;
 
-   lBetter=left<right;
-   rBetter=right<left;
 
- }
+  if(higherIsBetter){
 
- return [
+    lBetter=
+      left>right;
 
-   lBetter
-     ? `<b class="better">${f(left)}</b>`
-     : f(left),
+    rBetter=
+      right>left;
 
-   rBetter
-     ? `<b class="better">${f(right)}</b>`
-     : f(right)
+  }else{
 
- ];
+    lBetter=
+      left<right;
+
+    rBetter=
+      right<left;
+
+  }
+
+
+  return [
+
+    lBetter
+      ? `<b class="better">${f(left)}</b>`
+      : f(left),
+
+    rBetter
+      ? `<b class="better">${f(right)}</b>`
+      : f(right)
+
+  ];
 
 }
+
 
 function summaryCompare(
   h,
@@ -897,188 +1726,209 @@ function summaryCompare(
   limit
 ){
 
- const hv=
-   mode==='split'
-     ? 'home'
-     : 'all';
+  const hv=
+    mode==='split'
+      ? 'home'
+      : 'all';
 
- const av=
-   mode==='split'
-     ? 'away'
-     : 'all';
+  const av=
+    mode==='split'
+      ? 'away'
+      : 'all';
 
- const hs=stats(
-   h,
-   hv,
-   limit
- );
 
- const as=stats(
-   a,
-   av,
-   limit
- );
+  const hs=
+    stats(
+      h,
+      hv,
+      limit
+    );
 
- const rows=[
 
-   [
-     'Gole',
-     hs.goals,
-     as.goals,
-     true
-   ],
+  const as=
+    stats(
+      a,
+      av,
+      limit
+    );
 
-   [
-     'Gole stracone',
-     hs.goalsAgainst,
-     as.goalsAgainst,
-     false
-   ],
 
-   [
-     'Strzały',
-     hs.shots,
-     as.shots,
-     true
-   ],
+  const rows=[
 
-   [
-     'Strzały przeciwko',
-     hs.shotsAgainst,
-     as.shotsAgainst,
-     false
-   ],
+    [
+      'Gole',
+      hs.goals,
+      as.goals,
+      true
+    ],
 
-   [
-     'Celne',
-     hs.on,
-     as.on,
-     true
-   ],
+    [
+      'Gole stracone',
+      hs.goalsAgainst,
+      as.goalsAgainst,
+      false
+    ],
 
-   [
-     'Celne przeciwko',
-     hs.onAgainst,
-     as.onAgainst,
-     false
-   ],
+    [
+      'Strzały',
+      hs.shots,
+      as.shots,
+      true
+    ],
 
-   [
-     'xG',
-     hs.xg,
-     as.xg,
-     true
-   ],
+    [
+      'Strzały przeciwko',
+      hs.shotsAgainst,
+      as.shotsAgainst,
+      false
+    ],
 
-   [
-     'xG przeciwko',
-     hs.xgAgainst,
-     as.xgAgainst,
-     false
-   ],
+    [
+      'Celne',
+      hs.on,
+      as.on,
+      true
+    ],
 
-   [
-     'Rożne',
-     hs.corners,
-     as.corners,
-     true
-   ],
+    [
+      'Celne przeciwko',
+      hs.onAgainst,
+      as.onAgainst,
+      false
+    ],
 
-   [
-     'Rożne przeciwko',
-     hs.cornersAgainst,
-     as.cornersAgainst,
-     false
-   ],
+    [
+      'xG',
+      hs.xg,
+      as.xg,
+      true
+    ],
 
-   [
-     'Faule',
-     hs.fouls,
-     as.fouls,
-     true
-   ],
+    [
+      'xG przeciwko',
+      hs.xgAgainst,
+      as.xgAgainst,
+      false
+    ],
 
-   [
-     'Faule przeciwko',
-     hs.foulsAgainst,
-     as.foulsAgainst,
-     false
-   ],
+    [
+      'Rożne',
+      hs.corners,
+      as.corners,
+      true
+    ],
 
-   [
-     'Żółte kartki',
-     hs.yellow,
-     as.yellow,
-     false
-   ],
+    [
+      'Rożne przeciwko',
+      hs.cornersAgainst,
+      as.cornersAgainst,
+      false
+    ],
 
-   [
-     'Żółte przeciwko',
-     hs.yellowAgainst,
-     as.yellowAgainst,
-     false
-   ],
+    [
+      'Faule',
+      hs.fouls,
+      as.fouls,
+      false
+    ],
 
-   [
-     'Czerwone kartki',
-     hs.red,
-     as.red,
-     false
-   ],
+    [
+      'Faule przeciwko',
+      hs.foulsAgainst,
+      as.foulsAgainst,
+      true
+    ],
 
-   [
-     'Czerwone przeciwko',
-     hs.redAgainst,
-     as.redAgainst,
-     false
-   ],
+    [
+      'Żółte kartki',
+      hs.yellow,
+      as.yellow,
+      false
+    ],
 
-   [
-     'Posiadanie %',
-     hs.possession,
-     as.possession,
-     true
-   ],
+    [
+      'Żółte przeciwko',
+      hs.yellowAgainst,
+      as.yellowAgainst,
+      true
+    ],
 
-   [
-     'Posiadanie przeciwnika %',
-     hs.possessionAgainst,
-     as.possessionAgainst,
-     false
-   ]
+    [
+      'Czerwone kartki',
+      hs.red,
+      as.red,
+      false
+    ],
 
- ];
+    [
+      'Czerwone przeciwko',
+      hs.redAgainst,
+      as.redAgainst,
+      true
+    ],
 
- return `
+    [
+      'Posiadanie %',
+      hs.possession,
+      as.possession,
+      true
+    ]
+
+  ];
+
+
+  return `
+
 <section class="card">
 
   <div class="section-title">
-    <h2>📊 Porównanie</h2>
+
+    <h2>
+      📊 Porównanie
+    </h2>
 
     <span class="badge">
+
       ${
         limit==='all'
           ? 'wszystkie mecze'
           : limit+' meczów'
       }
+
     </span>
+
   </div>
 
+
   <div class="subhead">
-    Pogrubienie oznacza korzystniejszą wartość statystyki.
+    Pogrubiona wartość oznacza korzystniejszą statystykę.
   </div>
+
 
   <div class="scroll">
 
     <table>
 
       <thead>
+
         <tr>
-          <th>Statystyka</th>
-          <th>${esc(h)}</th>
-          <th>${esc(a)}</th>
+
+          <th>
+            Statystyka
+          </th>
+
+          <th>
+            ${esc(h)}
+          </th>
+
+          <th>
+            ${esc(a)}
+          </th>
+
         </tr>
+
       </thead>
+
 
       <tbody>
 
@@ -1092,12 +1942,25 @@ function summaryCompare(
                 r[3]
               );
 
+
             return `
+
             <tr>
-              <td>${r[0]}</td>
-              <td>${cells[0]}</td>
-              <td>${cells[1]}</td>
+
+              <td>
+                ${r[0]}
+              </td>
+
+              <td>
+                ${cells[0]}
+              </td>
+
+              <td>
+                ${cells[1]}
+              </td>
+
             </tr>
+
             `;
 
           }).join('')
@@ -1110,9 +1973,15 @@ function summaryCompare(
   </div>
 
 </section>
+
 `;
 
 }
+
+
+/* =====================================================
+   OSTATNIE MECZE
+   ===================================================== */
 
 function teamRows(
   team,
@@ -1120,67 +1989,119 @@ function teamRows(
   limit
 ){
 
- let r=DATA
-   .filter(m=>
-     venue==='home'
-       ? norm(m.HomeTeam)===norm(team)
-       : venue==='away'
-         ? norm(m.AwayTeam)===norm(team)
-         : (
-             norm(m.HomeTeam)===norm(team) ||
-             norm(m.AwayTeam)===norm(team)
-           )
-   )
-   .sort(
-     (a,b)=>
-       dateVal(b.Date)-dateVal(a.Date)
-   );
+  let r=
+    DATA
+      .filter(m=>{
 
- if(limit!=='all'){
+        if(venue==='home'){
+          return norm(m.HomeTeam)===norm(team);
+        }
 
-   r=r.slice(
-     0,
-     Number(limit)
-   );
+        if(venue==='away'){
+          return norm(m.AwayTeam)===norm(team);
+        }
 
- }
+        return (
+          norm(m.HomeTeam)===norm(team) ||
+          norm(m.AwayTeam)===norm(team)
+        );
 
- return r;
+      })
+      .sort(
+        (a,b)=>
+          dateVal(b.Date)-
+          dateVal(a.Date)
+      );
+
+
+  if(limit!=='all'){
+
+    r=
+      r.slice(
+        0,
+        Number(limit)
+      );
+
+  }
+
+
+  return r;
+
 }
 
-function pair(a,b){
 
- return `
-   ${a??'—'}:${b??'—'}
- `;
-}
+/*
+  Zwraca JEDNĄ wartość:
+  statystykę analizowanej drużyny.
 
-function teamStatPair(
+  Nie pokazujemy już:
+  10:12
+
+  tylko:
+  10
+*/
+
+function teamStat(
   m,
   selectedTeam,
   homeKey,
   awayKey
 ){
 
- const selectedIsHome=
-   norm(m.HomeTeam)===norm(selectedTeam);
+  const isHome=
+    norm(m.HomeTeam)===
+    norm(selectedTeam);
 
- const selected=
-   selectedIsHome
-     ? m[homeKey]
-     : m[awayKey];
 
- const opponent=
-   selectedIsHome
-     ? m[awayKey]
-     : m[homeKey];
+  const value=
+    isHome
+      ? m[homeKey]
+      : m[awayKey];
 
- return pair(
-   selected,
-   opponent
- );
+
+  return value==null
+    ? '—'
+    : value;
 
 }
+
+
+function teamXG(
+  m,
+  selectedTeam
+){
+
+  const isHome=
+    norm(m.HomeTeam)===
+    norm(selectedTeam);
+
+
+  const value=
+    isHome
+      ? (
+          m.HxG ??
+          m.xG ??
+          null
+        )
+      : (
+          m.AxG ??
+          null
+        );
+
+
+  if(value==null){
+    return '—';
+  }
+
+
+  const n=num(value);
+
+  return n==null
+    ? esc(value)
+    : n.toFixed(1);
+
+}
+
 
 function formCard(
   team,
@@ -1188,18 +2109,23 @@ function formCard(
   limit
 ){
 
- const r=teamRows(
-   team,
-   venue,
-   limit
- );
+  const r=
+    teamRows(
+      team,
+      venue,
+      limit
+    );
 
- return `
+
+  return `
+
 <section class="card">
 
   <div class="section-title">
 
-    <h2>📈 Ostatnie mecze — ${esc(team)}</h2>
+    <h2>
+      📈 Ostatnie mecze — ${esc(team)}
+    </h2>
 
     <span class="badge">
       ${r.length}
@@ -1207,66 +2133,131 @@ function formCard(
 
   </div>
 
+
   ${
     r.length
 
     ?
 
     `
+
     <div class="scroll">
 
-      <table>
+      <table class="form-table">
 
         <thead>
 
           <tr>
-            <th>Data</th>
-            <th>Przeciwnik</th>
-            <th>Wynik</th>
-            <th>Gole</th>
-            <th>Strzały</th>
-            <th>Celne</th>
-            <th>xG</th>
-            <th>Rożne</th>
-            <th>Faule</th>
-            <th>ŻK</th>
-            <th>CK</th>
-            <th>Posiadanie</th>
+
+            <th>
+              Data
+            </th>
+
+            <th>
+              Przeciwnik
+            </th>
+
+            <th>
+              Wynik
+            </th>
+
+            <th>
+              Gole
+            </th>
+
+            <th>
+              Strzały
+            </th>
+
+            <th>
+              Celne
+            </th>
+
+            <th>
+              xG
+            </th>
+
+            <th>
+              Rożne
+            </th>
+
+            <th>
+              Faule
+            </th>
+
+            <th>
+              ŻK
+            </th>
+
+            <th>
+              CK
+            </th>
+
+            <th>
+              Posiadanie
+            </th>
+
           </tr>
 
         </thead>
 
+
         <tbody>
 
           ${
+
             r.map(m=>{
 
-              const selectedIsHome=
-                norm(m.HomeTeam)===norm(team);
+              const isHome=
+                norm(m.HomeTeam)===
+                norm(team);
+
 
               const opponent=
-                selectedIsHome
+                isHome
                   ? m.AwayTeam
                   : m.HomeTeam;
 
+
+              const result=
+                outcomeFor(
+                  m,
+                  team
+                );
+
+
+              const resultClass=
+                result==='W'
+                  ? 'win'
+                  : result==='L'
+                    ? 'loss'
+                    : result==='D'
+                      ? 'draw'
+                      : '';
+
+
               return `
+
               <tr>
 
                 <td>
                   ${esc(m.Date)}
                 </td>
 
-                <td>
+
+                <td class="opponent">
                   ${esc(opponent)}
                 </td>
 
-                <td>
-                  <b>${esc(outcomeFor(m,team))}</b>
+
+                <td class="result ${resultClass}">
+                  ${result}
                   ${m.FTHG??'—'}:${m.FTAG??'—'}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamStat(
                     m,
                     team,
                     'FTHG',
@@ -1274,8 +2265,9 @@ function formCard(
                   )}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamStat(
                     m,
                     team,
                     'HS',
@@ -1283,8 +2275,9 @@ function formCard(
                   )}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamStat(
                     m,
                     team,
                     'HST',
@@ -1292,17 +2285,17 @@ function formCard(
                   )}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamXG(
                     m,
-                    team,
-                    'HxG',
-                    'AxG'
+                    team
                   )}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamStat(
                     m,
                     team,
                     'HC',
@@ -1310,8 +2303,9 @@ function formCard(
                   )}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamStat(
                     m,
                     team,
                     'HF',
@@ -1319,8 +2313,9 @@ function formCard(
                   )}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamStat(
                     m,
                     team,
                     'HY',
@@ -1328,8 +2323,9 @@ function formCard(
                   )}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamStat(
                     m,
                     team,
                     'HR',
@@ -1337,8 +2333,9 @@ function formCard(
                   )}
                 </td>
 
+
                 <td>
-                  ${teamStatPair(
+                  ${teamStat(
                     m,
                     team,
                     'HP',
@@ -1347,9 +2344,11 @@ function formCard(
                 </td>
 
               </tr>
+
               `;
 
             }).join('')
+
           }
 
         </tbody>
@@ -1357,77 +2356,121 @@ function formCard(
       </table>
 
     </div>
+
     `
 
     :
 
     `
+
     <div class="empty">
       Brak danych.
     </div>
+
     `
   }
 
 </section>
+
 `;
 
 }
+
+
+/* =====================================================
+   WYNIK
+   ===================================================== */
 
 function outcomeFor(
   m,
   team
 ){
 
- if(
-   m.FTHG==null ||
-   m.FTAG==null
- ){
-   return '—';
- }
+  if(
+    m.FTHG==null ||
+    m.FTAG==null
+  ){
 
- const home=Number(m.FTHG);
- const away=Number(m.FTAG);
+    return '—';
 
- if(norm(m.HomeTeam)===norm(team)){
+  }
 
-   return home>away
-     ? 'W'
-     : home<away
-       ? 'L'
-       : 'D';
 
- }
+  const home=
+    Number(m.FTHG);
 
- return away>home
-   ? 'W'
-   : away<home
-     ? 'L'
-     : 'D';
+  const away=
+    Number(m.FTAG);
+
+
+  if(
+    norm(m.HomeTeam)===
+    norm(team)
+  ){
+
+    return home>away
+      ? 'W'
+      : home<away
+        ? 'L'
+        : 'D';
+
+  }
+
+
+  return away>home
+    ? 'W'
+    : away<home
+      ? 'L'
+      : 'D';
+
 }
+
+
+/* =====================================================
+   H2H
+   ===================================================== */
 
 function h2hCard(
   h,
   a
 ){
 
- const r=DATA
-   .filter(m=>
-     (
-       norm(m.HomeTeam)===norm(h) &&
-       norm(m.AwayTeam)===norm(a)
-     ) ||
-     (
-       norm(m.HomeTeam)===norm(a) &&
-       norm(m.AwayTeam)===norm(h)
-     )
-   )
-   .sort(
-     (x,y)=>
-       dateVal(y.Date)-dateVal(x.Date)
-   )
-   .slice(0,10);
+  const r=
+    DATA
+      .filter(m=>
 
- return `
+        (
+          norm(m.HomeTeam)===
+          norm(h) &&
+
+          norm(m.AwayTeam)===
+          norm(a)
+        )
+
+        ||
+
+        (
+          norm(m.HomeTeam)===
+          norm(a) &&
+
+          norm(m.AwayTeam)===
+          norm(h)
+        )
+
+      )
+      .sort(
+        (x,y)=>
+          dateVal(y.Date)-
+          dateVal(x.Date)
+      )
+      .slice(
+        0,
+        10
+      );
+
+
+  return `
+
 <section class="card">
 
   <div class="section-title">
@@ -1442,12 +2485,14 @@ function h2hCard(
 
   </div>
 
+
   ${
     r.length
 
     ?
 
     `
+
     <div class="scroll">
 
       <table>
@@ -1455,31 +2500,144 @@ function h2hCard(
         <thead>
 
           <tr>
-            <th>Data</th>
-            <th>Mecz</th>
-            <th>Wynik</th>
-            <th>Gole</th>
-            <th>Strzały</th>
-            <th>Celne</th>
-            <th>xG</th>
-            <th>Rożne</th>
-            <th>Faule</th>
-            <th>ŻK</th>
-            <th>CK</th>
-            <th>Posiadanie</th>
+
+            <th>
+              Data
+            </th>
+
+            <th>
+              Mecz
+            </th>
+
+            <th>
+              Wynik
+            </th>
+
+            <th>
+              Gole
+            </th>
+
+            <th>
+              Strzały
+            </th>
+
+            <th>
+              Celne
+            </th>
+
+            <th>
+              xG
+            </th>
+
+            <th>
+              Rożne
+            </th>
+
+            <th>
+              Faule
+            </th>
+
+            <th>
+              ŻK
+            </th>
+
+            <th>
+              CK
+            </th>
+
           </tr>
 
         </thead>
 
+
         <tbody>
 
           ${
-            r.map(m=>
-              h2hRow(
-                m,
-                h
-              )
-            ).join('')
+            r.map(m=>{
+
+              return `
+
+              <tr>
+
+                <td>
+                  ${esc(m.Date)}
+                </td>
+
+
+                <td>
+                  ${esc(m.HomeTeam)}
+                  –
+                  ${esc(m.AwayTeam)}
+                </td>
+
+
+                <td>
+                  <b>
+                    ${esc(
+                      outcomeFor(
+                        m,
+                        h
+                      )
+                    )}
+                  </b>
+
+                  ${m.FTHG??'—'}:${m.FTAG??'—'}
+                </td>
+
+
+                <td>
+                  ${m.FTHG??'—'}:${m.FTAG??'—'}
+                </td>
+
+
+                <td>
+                  ${m.HS??'—'}:${m.AS??'—'}
+                </td>
+
+
+                <td>
+                  ${m.HST??'—'}:${m.AST??'—'}
+                </td>
+
+
+                <td>
+                  ${
+                    m.HxG ??
+                    m.xG ??
+                    '—'
+                  }
+                  :
+                  ${
+                    m.AxG ??
+                    '—'
+                  }
+                </td>
+
+
+                <td>
+                  ${m.HC??'—'}:${m.AC??'—'}
+                </td>
+
+
+                <td>
+                  ${m.HF??'—'}:${m.AF??'—'}
+                </td>
+
+
+                <td>
+                  ${m.HY??'—'}:${m.AY??'—'}
+                </td>
+
+
+                <td>
+                  ${m.HR??'—'}:${m.AR??'—'}
+                </td>
+
+              </tr>
+
+              `;
+
+            }).join('')
           }
 
         </tbody>
@@ -1487,161 +2645,93 @@ function h2hCard(
       </table>
 
     </div>
+
     `
 
     :
 
     `
+
     <div class="empty">
       Brak H2H w danych dla tych dwóch drużyn.
     </div>
+
     `
   }
 
 </section>
+
 `;
 
 }
 
-function h2hRow(
-  m,
-  selectedTeam
+
+/* =====================================================
+   SĘDZIA
+   ===================================================== */
+
+function refereeProfile(
+  name
 ){
 
- const outcome=
-   outcomeFor(
-     m,
-     selectedTeam
-   );
+  if(!name)return '';
 
- return `
-<tr>
 
-  <td>
-    ${esc(m.Date)}
-  </td>
+  const r=
+    DATA.filter(
+      m=>m.Referee===name
+    );
 
-  <td>
-    ${esc(m.HomeTeam)}
-    –
-    ${esc(m.AwayTeam)}
-  </td>
 
-  <td>
-    <b>${outcome}</b>
-    ${m.FTHG??'—'}:${m.FTAG??'—'}
-  </td>
+  const av=k=>
+    avg(
+      r.map(
+        m=>num(m[k])
+      )
+    );
 
-  <td>
-    ${pair(
-      m.FTHG,
-      m.FTAG
-    )}
-  </td>
 
-  <td>
-    ${pair(
-      m.HS,
-      m.AS
-    )}
-  </td>
+  const total=(
+    a,
+    b
+  )=>
+    avg(
+      r.map(m=>{
 
-  <td>
-    ${pair(
-      m.HST,
-      m.AST
-    )}
-  </td>
+        const x=
+          num(m[a]);
 
-  <td>
-    ${pair(
-      m.HxG??m.xG,
-      m.AxG
-    )}
-  </td>
+        const y=
+          num(m[b]);
 
-  <td>
-    ${pair(
-      m.HC,
-      m.AC
-    )}
-  </td>
 
-  <td>
-    ${pair(
-      m.HF,
-      m.AF
-    )}
-  </td>
+        return (
+          x!=null &&
+          y!=null
+        )
+          ? x+y
+          : null;
 
-  <td>
-    ${pair(
-      m.HY,
-      m.AY
-    )}
-  </td>
+      })
+    );
 
-  <td>
-    ${pair(
-      m.HR,
-      m.AR
-    )}
-  </td>
 
-  <td>
-    ${pair(
-      m.HP,
-      m.AP
-    )}
-  </td>
+  return `
 
-</tr>
-`;
-
-}
-
-function refereeProfile(name){
-
- if(!name)return '';
-
- const r=
-   DATA.filter(
-     m=>m.Referee===name
-   );
-
- const av=k=>
-   avg(
-     r.map(
-       m=>num(m[k])
-     )
-   );
-
- const total=(a,b)=>
-   avg(
-     r.map(m=>{
-
-       const x=num(m[a]);
-       const y=num(m[b]);
-
-       return x!=null && y!=null
-         ? x+y
-         : null;
-
-     })
-   );
-
- return `
 <section class="card">
 
   <div class="section-title">
 
-    <h2>👨‍⚖️ ${esc(name)}</h2>
+    <h2>
+      👨‍⚖️ ${esc(name)}
+    </h2>
 
     <span class="badge">
       ${r.length} meczów
     </span>
 
   </div>
+
 
   <div class="scroll">
 
@@ -1650,47 +2740,96 @@ function refereeProfile(name){
       <thead>
 
         <tr>
-          <th>Statystyka</th>
-          <th>Średnia na mecz</th>
+
+          <th>
+            Statystyka
+          </th>
+
+          <th>
+            Średnia na mecz
+          </th>
+
         </tr>
 
       </thead>
 
+
       <tbody>
 
         <tr>
-          <td>Faule gospodarzy</td>
-          <td>${f(av('HF'))}</td>
+          <td>
+            Faule gospodarzy
+          </td>
+
+          <td>
+            ${f(av('HF'))}
+          </td>
         </tr>
 
-        <tr>
-          <td>Faule gości</td>
-          <td>${f(av('AF'))}</td>
-        </tr>
 
         <tr>
-          <td>Faule łącznie</td>
-          <td>${f(total('HF','AF'))}</td>
+          <td>
+            Faule gości
+          </td>
+
+          <td>
+            ${f(av('AF'))}
+          </td>
         </tr>
 
-        <tr>
-          <td>Żółte gospodarzy</td>
-          <td>${f(av('HY'))}</td>
-        </tr>
 
         <tr>
-          <td>Żółte gości</td>
-          <td>${f(av('AY'))}</td>
+          <td>
+            Faule łącznie
+          </td>
+
+          <td>
+            ${f(total('HF','AF'))}
+          </td>
         </tr>
 
-        <tr>
-          <td>Żółte łącznie</td>
-          <td>${f(total('HY','AY'))}</td>
-        </tr>
 
         <tr>
-          <td>Czerwone łącznie</td>
-          <td>${f(total('HR','AR'))}</td>
+          <td>
+            Żółte gospodarzy
+          </td>
+
+          <td>
+            ${f(av('HY'))}
+          </td>
+        </tr>
+
+
+        <tr>
+          <td>
+            Żółte gości
+          </td>
+
+          <td>
+            ${f(av('AY'))}
+          </td>
+        </tr>
+
+
+        <tr>
+          <td>
+            Żółte łącznie
+          </td>
+
+          <td>
+            ${f(total('HY','AY'))}
+          </td>
+        </tr>
+
+
+        <tr>
+          <td>
+            Czerwone łącznie
+          </td>
+
+          <td>
+            ${f(total('HR','AR'))}
+          </td>
         </tr>
 
       </tbody>
@@ -1700,892 +2839,1217 @@ function refereeProfile(name){
   </div>
 
 </section>
+
 `;
 
 }
+
+
+/* =====================================================
+   INFO O DANYCH
+   ===================================================== */
 
 function allDataNote(){
 
- return `
-<section class="card">
-
-  <h2>📦 Dane</h2>
-
-  <div class="muted">
-    Dane są pobierane bezpośrednio z D1.
-    ${DATA.length} meczów,
-    ${TEAMS.length} drużyn,
-    ${REFEREES.length} sędziów.
-  </div>
-
-</section>
-`;
-
-}
-
-function analyze(){
-
- const h=
-   document.getElementById('home').value;
-
- const a=
-   document.getElementById('away').value;
-
- if(
-   !h ||
-   !a ||
-   norm(h)===norm(a)
- ){
-
-   document.getElementById(
-     'results'
-   ).innerHTML=
-     '<section class="card">Wybierz dwie różne drużyny.</section>';
-
-   return;
- }
-
- const limit=
-   document.getElementById('sample').value;
-
- const mode=
-   document.getElementById('venueMode').value;
-
- const r=
-   document.getElementById('referee').value;
-
- const hv=
-   mode==='split'
-     ? 'home'
-     : 'all';
-
- const av=
-   mode==='split'
-     ? 'away'
-     : 'all';
-
- document.getElementById(
-   'results'
- ).innerHTML=`
+  return `
 
 <section class="card">
 
   <h2>
-    ${esc(h)}
-    —
-    ${esc(a)}
+    📦 Dane
   </h2>
 
-  <span class="badge">
-    Analiza danych
-  </span>
+  <div class="muted">
 
-  <div
-    class="muted"
-    style="margin-top:8px"
-  >
-    Zakres:
-    ${
-      limit==='all'
-        ? 'wszystkie mecze'
-        : limit+' meczów'
-    }
-    ·
-    Tryb:
-    ${
-      mode==='split'
-        ? 'Home / Away'
-        : 'Wszystkie mecze'
-    }
+    Dane są pobierane bezpośrednio z D1.
+
+    ${DATA.length}
+    meczów,
+
+    ${TEAMS.length}
+    drużyn,
+
+    ${REFEREES.length}
+    sędziów.
+
   </div>
 
 </section>
-
-${summaryCompare(
-  h,
-  a,
-  mode,
-  limit
-)}
-
-${formCard(
-  h,
-  hv,
-  limit
-)}
-
-${formCard(
-  a,
-  av,
-  limit
-)}
-
-${h2hCard(
-  h,
-  a
-)}
-
-${refereeProfile(
-  r
-)}
-
-${allDataNote()}
 
 `;
 
 }
 
+
+/* =====================================================
+   ANALIZA
+   ===================================================== */
+
+function analyze(){
+
+  const h=
+    document.getElementById(
+      'home'
+    ).value;
+
+
+  const a=
+    document.getElementById(
+      'away'
+    ).value;
+
+
+  if(
+    !h ||
+    !a ||
+    norm(h)===norm(a)
+  ){
+
+    document.getElementById(
+      'results'
+    ).innerHTML=
+      `
+      <section class="card">
+        Wybierz dwie różne drużyny.
+      </section>
+      `;
+
+    return;
+
+  }
+
+
+  const limit=
+    document.getElementById(
+      'sample'
+    ).value;
+
+
+  const mode=
+    document.getElementById(
+      'venueMode'
+    ).value;
+
+
+  const referee=
+    document.getElementById(
+      'referee'
+    ).value;
+
+
+  const hv=
+    mode==='split'
+      ? 'home'
+      : 'all';
+
+
+  const av=
+    mode==='split'
+      ? 'away'
+      : 'all';
+
+
+  document.getElementById(
+    'results'
+  ).innerHTML=
+
+  `
+
+  <section class="card">
+
+    <h2>
+      ${esc(h)}
+      —
+      ${esc(a)}
+    </h2>
+
+
+    <span class="badge">
+      Analiza danych
+    </span>
+
+
+    <div
+      class="muted"
+      style="margin-top:8px"
+    >
+
+      Zakres:
+
+      ${
+        limit==='all'
+          ? 'wszystkie mecze'
+          : limit+' meczów'
+      }
+
+      ·
+
+      Tryb:
+
+      ${
+        mode==='split'
+          ? 'Home / Away'
+          : 'Wszystkie mecze'
+      }
+
+    </div>
+
+  </section>
+
+
+  ${summaryCompare(
+    h,
+    a,
+    mode,
+    limit
+  )}
+
+
+  ${formCard(
+    h,
+    hv,
+    limit
+  )}
+
+
+  ${formCard(
+    a,
+    av,
+    limit
+  )}
+
+
+  ${h2hCard(
+    h,
+    a
+  )}
+
+
+  ${refereeProfile(
+    referee
+  )}
+
+
+  ${allDataNote()}
+
+  `;
+
+}
+
+
+/* =====================================================
+   TERMINARZ
+   ===================================================== */
+
 function localDateISO(){
 
- const d=new Date();
+  const d=
+    new Date();
 
- const off=
-   d.getTimezoneOffset();
 
- const x=
-   new Date(
-     d.getTime()-
-     off*60000
-   );
+  const off=
+    d.getTimezoneOffset();
 
- return x
-   .toISOString()
-   .slice(0,10);
+
+  const x=
+    new Date(
+      d.getTime()-
+      off*60000
+    );
+
+
+  return x
+    .toISOString()
+    .slice(
+      0,
+      10
+    );
+
 }
+
 
 function fixtureTeamName(x){
 
- return x?.name ||
-   x?.team?.name ||
-   x?.raw?.name ||
-   '';
+  return (
+    x?.name ||
+    x?.team?.name ||
+    x?.raw?.name ||
+    ''
+  );
+
 }
 
-function fixtureLogo(x){
-
- return x?.logo ||
-   x?.team?.logo ||
-   x?.raw?.logo ||
-   '';
-}
 
 function fixtureDateTime(f){
 
- const raw=
-   f.raw_data &&
-   typeof f.raw_data==='object'
-     ? f.raw_data
-     : {};
+  const raw=
+    f.raw_data &&
+    typeof f.raw_data==='object'
+      ? f.raw_data
+      : {};
 
- const fx=
-   raw.fixture ||
-   f.fixture ||
-   {};
 
- return {
-   date:
-     f.match_date ||
-     fx.date ||
-     '',
+  const fx=
+    raw.fixture ||
+    f.fixture ||
+    {};
 
-   timestamp:
-     fx.timestamp ||
-     null
- };
+
+  return {
+
+    date:
+      f.match_date ||
+      fx.date ||
+      '',
+
+    timestamp:
+      fx.timestamp ||
+      null
+
+  };
 
 }
+
 
 function fixtureStatus(f){
 
- const raw=
-   f.raw_data &&
-   typeof f.raw_data==='object'
-     ? f.raw_data
-     : {};
+  const raw=
+    f.raw_data &&
+    typeof f.raw_data==='object'
+      ? f.raw_data
+      : {};
 
- const fx=
-   raw.fixture ||
-   f.fixture ||
-   {};
 
- return (
-   fx.status?.short ||
-   fx.status?.long ||
-   f.status ||
-   ''
- );
+  const fx=
+    raw.fixture ||
+    f.fixture ||
+    {};
+
+
+  return (
+    fx.status?.short ||
+    fx.status?.long ||
+    f.status ||
+    ''
+  );
 
 }
+
 
 async function loadFixtures(){
 
- const date=
-   document.getElementById(
-     'fixtureDate'
-   ).value;
+  const date=
+    document.getElementById(
+      'fixtureDate'
+    ).value;
 
- const league=
-   document.getElementById(
-     'fixtureLeague'
-   ).value;
 
- if(!date)return;
+  const league=
+    document.getElementById(
+      'fixtureLeague'
+    ).value;
 
- const status=
-   document.getElementById(
-     'fixtureStatus'
-   );
 
- const out=
-   document.getElementById(
-     'fixturesResults'
-   );
+  if(!date)return;
 
- status.textContent=
-   'Pobieranie meczów…';
 
- out.innerHTML='';
+  const status=
+    document.getElementById(
+      'fixtureStatus'
+    );
 
- try{
 
-   const q=
-     new URLSearchParams({
-       date
-     });
+  const out=
+    document.getElementById(
+      'fixturesResults'
+    );
 
-   if(league){
-     q.set(
-       'league',
-       league
-     );
-   }
 
-   const res=
-     await fetch(
-       '/api/fixtures?'+
-       q.toString(),
-       {cache:'no-store'}
-     );
+  status.textContent=
+    'Pobieranie meczów…';
 
-   if(!res.ok){
 
-     throw new Error(
-       'Nie udało się pobrać terminarza.'
-     );
+  out.innerHTML='';
 
-   }
 
-   const payload=
-     await res.json();
+  try{
 
-   if(!payload.ok){
+    const q=
+      new URLSearchParams({
+        date
+      });
 
-     throw new Error(
-       payload.error ||
-       'API terminarza zwróciło błąd.'
-     );
 
-   }
+    if(league){
 
-   let fixtures=
-     payload.fixtures ||
-     payload.matches ||
-     [];
+      q.set(
+        'league',
+        league
+      );
 
-   fixtures=
-     fixtures.filter(f=>{
+    }
 
-       const h=
-         f.home_team ||
-         fixtureTeamName(f.home) ||
-         f.home?.name;
 
-       const a=
-         f.away_team ||
-         fixtureTeamName(f.away) ||
-         f.away?.name;
+    const res=
+      await fetch(
+        '/api/fixtures?'+
+        q.toString(),
+        {
+          cache:'no-store'
+        }
+      );
 
-       return (
-         TEAMS.includes(h) &&
-         TEAMS.includes(a)
-       );
 
-     });
+    if(!res.ok){
 
-   renderFixtures(
-     fixtures,
-     date
-   );
+      throw new Error(
+        'Nie udało się pobrać terminarza.'
+      );
 
-   status.textContent=
-     'Pokazano tylko mecze drużyn obecnych w danych statystycznych.';
+    }
 
- }catch(e){
 
-   status.textContent=
-     e.message;
+    const payload=
+      await res.json();
 
-   out.innerHTML=
-     `
-     <section class="card">
 
-       <div class="empty">
-         Nie udało się pobrać meczów.
-         Spróbuj ponownie.
-       </div>
+    if(!payload.ok){
 
-     </section>
-     `;
+      throw new Error(
+        payload.error ||
+        'API terminarza zwróciło błąd.'
+      );
 
- }
+    }
+
+
+    let fixtures=
+      payload.fixtures ||
+      payload.matches ||
+      [];
+
+
+    fixtures=
+      fixtures.filter(f=>{
+
+        const h=
+          f.home_team ||
+          fixtureTeamName(f.home) ||
+          f.home?.name;
+
+
+        const a=
+          f.away_team ||
+          fixtureTeamName(f.away) ||
+          f.away?.name;
+
+
+        return (
+          TEAMS.includes(h) &&
+          TEAMS.includes(a)
+        );
+
+      });
+
+
+    renderFixtures(
+      fixtures,
+      date
+    );
+
+
+    status.textContent=
+      'Pokazano tylko mecze drużyn obecnych w danych statystycznych.';
+
+
+  }catch(e){
+
+    status.textContent=
+      e.message;
+
+
+    out.innerHTML=
+      `
+
+      <section class="card">
+
+        <div class="empty">
+
+          Nie udało się pobrać meczów.
+          Spróbuj ponownie.
+
+        </div>
+
+      </section>
+
+      `;
+
+  }
 
 }
+
 
 function renderFixtures(
   fixtures,
   date
 ){
 
- const out=
-   document.getElementById(
-     'fixturesResults'
-   );
+  const out=
+    document.getElementById(
+      'fixturesResults'
+    );
 
- document.getElementById(
-   'fixtureCount'
- ).textContent=
-   fixtures.length+
-   ' meczów';
 
- if(!fixtures.length){
+  document.getElementById(
+    'fixtureCount'
+  ).textContent=
+    fixtures.length+
+    ' meczów';
 
-   out.innerHTML=
-     `
-     <section class="card">
-       <div class="empty">
-         Brak meczów dla wybranej daty.
-       </div>
-     </section>
-     `;
 
-   return;
- }
+  if(!fixtures.length){
 
- const map=new Map();
+    out.innerHTML=
+      `
 
- fixtures.forEach(f=>{
+      <section class="card">
 
-   const code=
-     f.league_code ||
-     f.league?.code ||
-     f.raw_data?.league?.code ||
-     '';
+        <div class="empty">
+          Brak meczów dla wybranej daty.
+        </div>
 
-   const found=
-     LEAGUE_ORDER.find(
-       x=>x[0]===code
-     );
+      </section>
 
-   const name=
-     f.league ||
-     f.league_name ||
-     f.league?.name ||
-     f.raw_data?.league?.name ||
-     'Inne';
+      `;
 
-   const country=
-     f.league_country ||
-     f.league?.country ||
-     f.raw_data?.league?.country ||
-     '';
+    return;
 
-   const key=
-     code ||
-     name;
+  }
 
-   if(!map.has(key)){
 
-     map.set(
-       key,
-       {
-         code,
-         name,
-         country,
-         order:
-           found
-             ? LEAGUE_ORDER.indexOf(found)
-             : 999,
-         rows:[]
-       }
-     );
+  const map=
+    new Map();
 
-   }
 
-   map.get(key).rows.push(f);
+  fixtures.forEach(f=>{
 
- });
+    const code=
+      f.league_code ||
+      f.league?.code ||
+      f.raw_data?.league?.code ||
+      '';
 
- const groups=
-   [...map.values()]
-     .sort(
-       (a,b)=>
-         a.order-b.order ||
-         a.country.localeCompare(
-           b.country,
-           'pl'
-         ) ||
-         a.name.localeCompare(
-           b.name,
-           'pl'
-         )
-     );
 
- out.innerHTML=
- `
- <section class="card">
+    const found=
+      LEAGUE_ORDER.find(
+        x=>x[0]===code
+      );
 
-   <div
-     class="small"
-     style="margin-bottom:12px"
-   >
-     Data:
-     <b>
-       ${esc(formatISODate(date))}
-     </b>
-   </div>
 
-   ${
-     groups.map(g=>
+    const name=
+      f.league ||
+      f.league_name ||
+      f.league?.name ||
+      f.raw_data?.league?.name ||
+      'Inne';
 
-       `
-       <div class="fixture-league">
 
-         <div class="fixture-league-title">
+    const country=
+      f.league_country ||
+      f.league?.country ||
+      f.raw_data?.league?.country ||
+      '';
 
-           <b>
-             ${esc(g.name)}
-           </b>
 
-           <span class="badge">
-             ${esc(
-               g.country ||
-               g.code
-             )}
-           </span>
+    const key=
+      code ||
+      name;
 
-         </div>
 
-         ${
-           g.rows
-             .sort(
-               (a,b)=>
-                 (
-                   fixtureDateTime(a)
-                     .timestamp ||
-                   0
-                 )-
-                 (
-                   fixtureDateTime(b)
-                     .timestamp ||
-                   0
-                 )
-             )
-             .map(fixtureRow)
-             .join('')
-         }
+    if(!map.has(key)){
 
-       </div>
-       `
+      map.set(
+        key,
+        {
+          code,
+          name,
+          country,
+          order:
+            found
+              ? LEAGUE_ORDER.indexOf(
+                  found
+                )
+              : 999,
+          rows:[]
+        }
+      );
 
-     ).join('')
-   }
+    }
 
- </section>
- `;
+
+    map
+      .get(key)
+      .rows
+      .push(f);
+
+  });
+
+
+  const groups=
+    [...map.values()]
+      .sort(
+        (a,b)=>
+          a.order-b.order ||
+
+          a.country.localeCompare(
+            b.country,
+            'pl'
+          ) ||
+
+          a.name.localeCompare(
+            b.name,
+            'pl'
+          )
+      );
+
+
+  out.innerHTML=
+    `
+
+    <section class="card">
+
+      <div
+        class="small"
+        style="margin-bottom:12px"
+      >
+
+        Data:
+
+        <b>
+          ${esc(
+            formatISODate(
+              date
+            )
+          )}
+        </b>
+
+      </div>
+
+
+      ${
+        groups
+          .map(g=>`
+
+            <div class="fixture-league">
+
+              <div class="fixture-league-title">
+
+                <b>
+                  ${esc(g.name)}
+                </b>
+
+                <span class="badge">
+
+                  ${esc(
+                    g.country ||
+                    g.code
+                  )}
+
+                </span>
+
+              </div>
+
+
+              ${
+                g.rows
+                  .sort(
+                    (a,b)=>
+                      (
+                        fixtureDateTime(a)
+                          .timestamp ||
+                        0
+                      )-
+                      (
+                        fixtureDateTime(b)
+                          .timestamp ||
+                        0
+                      )
+                  )
+                  .map(
+                    fixtureRow
+                  )
+                  .join('')
+              }
+
+            </div>
+
+          `)
+          .join('')
+      }
+
+    </section>
+
+    `;
 
 }
+
 
 function fixtureRow(f){
 
- const h=
-   f.home_team ||
-   fixtureTeamName(f.home) ||
-   f.raw_data?.teams?.home?.name ||
-   '—';
+  const h=
+    f.home_team ||
+    fixtureTeamName(f.home) ||
+    f.raw_data?.teams?.home?.name ||
+    '—';
 
- const a=
-   f.away_team ||
-   fixtureTeamName(f.away) ||
-   f.raw_data?.teams?.away?.name ||
-   '—';
 
- const raw=
-   f.raw_data &&
-   typeof f.raw_data==='object'
-     ? f.raw_data
-     : {};
+  const a=
+    f.away_team ||
+    fixtureTeamName(f.away) ||
+    f.raw_data?.teams?.away?.name ||
+    '—';
 
- const fx=
-   raw.fixture ||
-   {};
 
- const ts=
-   fx.timestamp
-     ? new Date(
-         Number(fx.timestamp)*
-         1000
-       )
-     : null;
+  const raw=
+    f.raw_data &&
+    typeof f.raw_data==='object'
+      ? f.raw_data
+      : {};
 
- const time=
-   ts
-     ? ts.toLocaleTimeString(
-         'pl-PL',
-         {
-           hour:'2-digit',
-           minute:'2-digit'
-         }
-       )
-     : '—';
 
- const scoreHome=
-   f.home_goals ??
-   raw.goals?.home;
+  const fx=
+    raw.fixture ||
+    {};
 
- const scoreAway=
-   f.away_goals ??
-   raw.goals?.away;
 
- const played=
-   scoreHome!=null &&
-   scoreAway!=null;
+  const ts=
+    fx.timestamp
+      ? new Date(
+          Number(
+            fx.timestamp
+          )*1000
+        )
+      : null;
 
- const ref=
-   f.referee ||
-   raw.fixture?.referee ||
-   '';
 
- const status=
-   fixtureStatus(f);
+  const time=
+    ts
+      ? ts.toLocaleTimeString(
+          'pl-PL',
+          {
+            hour:'2-digit',
+            minute:'2-digit'
+          }
+        )
+      : '—';
 
- return `
- <div class="fixture-row">
 
-   <div class="fixture-time">
-     ${esc(time)}
-   </div>
+  const scoreHome=
+    f.home_goals ??
+    raw.goals?.home;
 
-   <div class="fixture-team">
-     ${esc(h)}
-   </div>
 
-   <div class="fixture-team away">
-     ${esc(a)}
-   </div>
+  const scoreAway=
+    f.away_goals ??
+    raw.goals?.away;
 
-   <div class="fixture-score">
-     ${
-       played
-         ? `${scoreHome}:${scoreAway}`
-         : esc(status||'—')
-     }
-   </div>
 
-   ${
-     ref
-       ? `
-       <div class="fixture-ref">
-         Sędzia:
-         ${esc(ref)}
-       </div>
-       `
-       : ''
-   }
+  const played=
+    scoreHome!=null &&
+    scoreAway!=null;
 
- </div>
- `;
+
+  const ref=
+    f.referee ||
+    raw.fixture?.referee ||
+    '';
+
+
+  const status=
+    fixtureStatus(f);
+
+
+  return `
+
+  <div class="fixture-row">
+
+    <div class="fixture-time">
+      ${esc(time)}
+    </div>
+
+
+    <div class="fixture-team">
+      ${esc(h)}
+    </div>
+
+
+    <div class="fixture-team away">
+      ${esc(a)}
+    </div>
+
+
+    <div class="fixture-score">
+
+      ${
+        played
+          ? `${scoreHome}:${scoreAway}`
+          : esc(
+              status ||
+              '—'
+            )
+      }
+
+    </div>
+
+
+    ${
+      ref
+        ? `
+
+          <div class="fixture-ref">
+
+            Sędzia:
+            ${esc(ref)}
+
+          </div>
+
+        `
+        : ''
+    }
+
+  </div>
+
+  `;
+
+}
+
+
+/* =====================================================
+   ZMIANA WIDOKU
+   ===================================================== */
+
+function showView(
+  which
+){
+
+  const analysis=
+    which==='analysis';
+
+
+  document.getElementById(
+    'analysisView'
+  ).style.display=
+    analysis
+      ? 'block'
+      : 'none';
+
+
+  document.getElementById(
+    'fixturesView'
+  ).style.display=
+    analysis
+      ? 'none'
+      : 'block';
+
+
+  document.getElementById(
+    'tabAnalysis'
+  ).classList.toggle(
+    'active',
+    analysis
+  );
+
+
+  document.getElementById(
+    'tabFixtures'
+  ).classList.toggle(
+    'active',
+    !analysis
+  );
 
 }
 
-function showView(which){
 
- const analysis=
-   which==='analysis';
-
- document.getElementById(
-   'analysisView'
- ).style.display=
-   analysis
-     ? 'block'
-     : 'none';
-
- document.getElementById(
-   'fixturesView'
- ).style.display=
-   analysis
-     ? 'none'
-     : 'block';
-
- document.getElementById(
-   'tabAnalysis'
- ).classList.toggle(
-   'active',
-   analysis
- );
-
- document.getElementById(
-   'tabFixtures'
- ).classList.toggle(
-   'active',
-   !analysis
- );
-
-}
+/* =====================================================
+   START
+   ===================================================== */
 
 async function boot(){
 
- const status=
-   document.getElementById(
-     'status'
-   );
+  const status=
+    document.getElementById(
+      'status'
+    );
 
- status.textContent=
-   'Pobieranie danych z bazy D1…';
 
- try{
+  status.textContent=
+    'Pobieranie danych z bazy D1…';
 
-   await loadLiveData();
 
-   fillSelect(
-     document.getElementById('home'),
-     TEAMS
-   );
+  try{
 
-   fillSelect(
-     document.getElementById('away'),
-     TEAMS
-   );
+    await loadLiveData();
 
-   fillSelect(
-     document.getElementById('referee'),
-     ['',...REFEREES]
-   );
 
-   document.getElementById(
-     'home'
-   ).value=
-     TEAMS.includes('Arsenal')
-       ? 'Arsenal'
-       : TEAMS[0]||'';
+    fillSelect(
+      document.getElementById(
+        'home'
+      ),
+      TEAMS
+    );
 
-   document.getElementById(
-     'away'
-   ).value=
-     TEAMS.includes('Liverpool')
-       ? 'Liverpool'
-       : TEAMS.find(
-           t=>
-             t!==document.getElementById(
-               'home'
-             ).value
-         ) ||
-         TEAMS[1] ||
-         '';
 
-   updateSelectedTeams();
+    fillSelect(
+      document.getElementById(
+        'away'
+      ),
+      TEAMS
+    );
 
-   const fl=
-     document.getElementById(
-       'fixtureLeague'
-     );
 
-   LEAGUE_ORDER.forEach(x=>{
+    fillSelect(
+      document.getElementById(
+        'referee'
+      ),
+      [
+        '',
+        ...REFEREES
+      ]
+    );
 
-     const o=
-       document.createElement(
-         'option'
-       );
 
-     o.value=x[0];
+    /*
+      Domyślne drużyny
+    */
 
-     o.textContent=
-       x[1]+
-       ' · '+
-       x[2];
+    document.getElementById(
+      'home'
+    ).value=
+      TEAMS.includes(
+        'Arsenal'
+      )
+        ? 'Arsenal'
+        : TEAMS[0] ||
+          '';
 
-     fl.appendChild(o);
 
-   });
+    document.getElementById(
+      'away'
+    ).value=
+      TEAMS.includes(
+        'Liverpool'
+      )
+        ? 'Liverpool'
+        : (
+            TEAMS.find(
+              t=>
+                t!==
+                document.getElementById(
+                  'home'
+                ).value
+            ) ||
+            TEAMS[1] ||
+            ''
+          );
 
-   document.getElementById(
-     'fixtureDate'
-   ).value=
-     localDateISO();
 
-   document.getElementById(
-     'analyze'
-   ).onclick=
-     analyze;
+    updateSelectedTeams();
 
-   document.getElementById(
-     'sample'
-   ).onchange=
-     analyze;
 
-   document.getElementById(
-     'venueMode'
-   ).onchange=
-     analyze;
+    /*
+      Uruchomienie wyszukiwarek
+    */
 
-   document.getElementById(
-     'referee'
-   ).onchange=
-     analyze;
+    setupTeamSearch(
+      'homeSearch',
+      'homeResults',
+      'home'
+    );
 
-   document.getElementById(
-     'home'
-   ).onchange=
-     ()=>{
-       clearTeamSearch(
-         'homeSearch',
-         'home'
-       );
-       analyze();
-     };
 
-   document.getElementById(
-     'away'
-   ).onchange=
-     ()=>{
-       clearTeamSearch(
-         'awaySearch',
-         'away'
-       );
-       analyze();
-     };
+    setupTeamSearch(
+      'awaySearch',
+      'awayResults',
+      'away'
+    );
 
-   document.getElementById(
-     'homeSearch'
-   ).oninput=
-     ()=>{
-       filterSelect(
-         'homeSearch',
-         'home',
-         TEAMS
-       );
-     };
 
-   document.getElementById(
-     'awaySearch'
-   ).oninput=
-     ()=>{
-       filterSelect(
-         'awaySearch',
-         'away',
-         TEAMS
-       );
-     };
+    /*
+      Liga terminarza
+    */
 
-   document.getElementById(
-     'refSearch'
-   ).oninput=
-     ()=>{
+    const fl=
+      document.getElementById(
+        'fixtureLeague'
+      );
 
-       const q=
-         document.getElementById(
-           'refSearch'
-         )
-         .value
-         .trim()
-         .toLocaleLowerCase('pl');
 
-       const items=
-         q
-           ? REFEREES.filter(
-               x=>
-                 x
-                   .toLocaleLowerCase('pl')
-                   .includes(q)
-             )
-           : REFEREES;
+    LEAGUE_ORDER.forEach(x=>{
 
-       const cur=
-         document.getElementById(
-           'referee'
-         ).value;
+      const o=
+        document.createElement(
+          'option'
+        );
 
-       fillSelect(
-         document.getElementById(
-           'referee'
-         ),
-         ['',...items]
-       );
 
-       if(items.includes(cur)){
+      o.value=x[0];
 
-         document.getElementById(
-           'referee'
-         ).value=
-           cur;
 
-       }
+      o.textContent=
+        x[1]+
+        ' · '+
+        x[2];
 
-       analyze();
 
-     };
+      fl.appendChild(o);
 
-   document.getElementById(
-     'loadFixtures'
-   ).onclick=
-     loadFixtures;
+    });
 
-   document.getElementById(
-     'tabAnalysis'
-   ).onclick=
-     ()=>showView(
-       'analysis'
-     );
 
-   document.getElementById(
-     'tabFixtures'
-   ).onclick=
-     ()=>showView(
-       'fixtures'
-     );
+    /*
+      Data terminarza
+    */
 
-   status.textContent=
-     `D1: ${DATA.length} meczów, ${TEAMS.length} drużyn i ${REFEREES.length} sędziów.`;
+    document.getElementById(
+      'fixtureDate'
+    ).value=
+      localDateISO();
 
-   analyze();
 
- }catch(e){
+    /*
+      Przyciski
+    */
 
-   console.error(e);
+    document.getElementById(
+      'analyze'
+    ).onclick=
+      analyze;
 
-   status.textContent=
-     e.message ||
-     'Nie udało się pobrać danych z D1.';
 
-   document.getElementById(
-     'results'
-   ).innerHTML=
-     `
-     <section class="card">
+    document.getElementById(
+      'sample'
+    ).onchange=
+      analyze;
 
-       <h2>
-         Nie udało się załadować danych
-       </h2>
 
-       <div class="muted">
-         Spróbuj odświeżyć stronę.
-       </div>
+    document.getElementById(
+      'venueMode'
+    ).onchange=
+      analyze;
 
-     </section>
-     `;
 
- }
+    document.getElementById(
+      'referee'
+    ).onchange=
+      analyze;
+
+
+    /*
+      Wyszukiwanie sędziego
+    */
+
+    document.getElementById(
+      'refSearch'
+    ).oninput=
+      ()=>{
+
+        const input=
+          document.getElementById(
+            'refSearch'
+          );
+
+
+        const q=
+          norm(
+            input.value
+          );
+
+
+        const items=
+          q
+            ? REFEREES.filter(
+                x=>
+                  norm(x)
+                    .includes(q)
+              )
+            : REFEREES;
+
+
+        const current=
+          document.getElementById(
+            'referee'
+          ).value;
+
+
+        fillSelect(
+          document.getElementById(
+            'referee'
+          ),
+          [
+            '',
+            ...items
+          ]
+        );
+
+
+        if(
+          items.includes(
+            current
+          )
+        ){
+
+          document.getElementById(
+            'referee'
+          ).value=
+            current;
+
+        }
+
+
+        analyze();
+
+      };
+
+
+    /*
+      Czyszczenie wyszukiwarki sędziego
+      po wyborze
+    */
+
+    document.getElementById(
+      'referee'
+    ).onchange=
+      ()=>{
+
+        document.getElementById(
+          'refSearch'
+        ).value='';
+
+        analyze();
+
+      };
+
+
+    /*
+      Terminarz
+    */
+
+    document.getElementById(
+      'loadFixtures'
+    ).onclick=
+      loadFixtures;
+
+
+    /*
+      Zakładki
+    */
+
+    document.getElementById(
+      'tabAnalysis'
+    ).onclick=
+      ()=>showView(
+        'analysis'
+      );
+
+
+    document.getElementById(
+      'tabFixtures'
+    ).onclick=
+      ()=>showView(
+        'fixtures'
+      );
+
+
+    /*
+      Kliknięcie poza wyszukiwarką
+      zamyka listę wyników.
+    */
+
+    document.addEventListener(
+      'click',
+      e=>{
+
+        if(
+          !e.target.closest(
+            '#homeSearchWrap'
+          )
+        ){
+
+          document
+            .getElementById(
+              'homeResults'
+            )
+            .classList.remove(
+              'show'
+            );
+
+        }
+
+
+        if(
+          !e.target.closest(
+            '#awaySearchWrap'
+          )
+        ){
+
+          document
+            .getElementById(
+              'awayResults'
+            )
+            .classList.remove(
+              'show'
+            );
+
+        }
+
+      }
+    );
+
+
+    status.textContent=
+      `D1: ${DATA.length} meczów, ${TEAMS.length} drużyn i ${REFEREES.length} sędziów.`;
+
+
+    /*
+      Pierwsza analiza
+    */
+
+    analyze();
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    status.textContent=
+      e.message ||
+      'Nie udało się pobrać danych z D1.';
+
+
+    document.getElementById(
+      'results'
+    ).innerHTML=
+      `
+
+      <section class="card">
+
+        <h2>
+          Nie udało się załadować danych
+        </h2>
+
+        <div class="muted">
+          Spróbuj odświeżyć stronę.
+        </div>
+
+      </section>
+
+      `;
+
+  }
 
 }
+
 
 boot();
 
