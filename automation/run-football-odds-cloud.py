@@ -94,6 +94,14 @@ def run_one_fixture(base: str, password: str, run_id: str, fixture: dict):
     return fixture, result
 
 
+def is_expected_superbet_skip(error: Exception) -> bool:
+    text = str(error).lower()
+    return (
+        "brak snapshotu marketów superbet" in text
+        or "brak snapshotu marketow superbet" in text
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -160,11 +168,13 @@ def main() -> int:
             "requested": 0,
             "ok": 0,
             "skipped": 0,
+            "snapshot_skips": 0,
             "errors": 0,
             "quotes": 0,
             "predictions": 0,
             "shadow_predictions": 0,
         },
+        "skip_samples": [],
         "error_samples": [],
     }
 
@@ -240,6 +250,23 @@ def main() -> int:
                             f"quotes={result.get('quotes', 0)}"
                         )
                     except Exception as exc:
+                        if is_expected_superbet_skip(exc):
+                            summary["direct"]["skipped"] += 1
+                            summary["direct"]["snapshot_skips"] += 1
+                            if len(summary["skip_samples"]) < 10:
+                                summary["skip_samples"].append(
+                                    {
+                                        "fixture_id": fixture.get("fixture_id"),
+                                        "match": label,
+                                        "reason": str(exc),
+                                    }
+                                )
+                            print(
+                                f"  [{done}/{len(fixtures)}] SKIP {label} | "
+                                "Superbet nie udostępnił jeszcze snapshotu marketów."
+                            )
+                            continue
+
                         summary["direct"]["errors"] += 1
                         if len(summary["error_samples"]) < 10:
                             summary["error_samples"].append(
@@ -285,9 +312,10 @@ def main() -> int:
     print()
     print("=" * 100)
     print(
-        "KONIEC | status={status} | direct OK={ok} | błędy={errors} | quotes={quotes} | prognozy={pred}".format(
+        "KONIEC | status={status} | direct OK={ok} | skip={skipped} | błędy={errors} | quotes={quotes} | prognozy={pred}".format(
             status=finish_status,
             ok=summary["direct"]["ok"],
+            skipped=summary["direct"]["skipped"],
             errors=summary["direct"]["errors"],
             quotes=summary["direct"]["quotes"],
             pred=summary["direct"]["predictions"],
