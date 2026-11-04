@@ -1,0 +1,110 @@
+name: Football Analyzer Cloud Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "data = API-Football; discovery = OddsPAPI + Superbet; odds = Superbet only; all = everything"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - data
+          - discovery
+          - odds
+
+  schedule:
+    # API-Football -> D1: 3x dziennie (UTC)
+    - cron: "17 1,9,17 * * *"
+
+    # OddsPAPI discovery -> Superbet -> model: 1x dziennie (UTC)
+    # Przy ~6 requestach / run to ok. 180 requestów / miesiąc.
+    - cron: "47 2 * * *"
+
+    # Superbet Direct -> model: 3x dziennie, bez OddsPAPI
+    - cron: "17 5,13,21 * * *"
+
+concurrency:
+  group: football-analyzer-cloud-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"
+  API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Decide mode
+        id: mode
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            MODE="${{ inputs.mode }}"
+          elif [[ "${{ github.event.schedule }}" == "17 1,9,17 * * *" ]]; then
+            MODE="data"
+          elif [[ "${{ github.event.schedule }}" == "47 2 * * *" ]]; then
+            MODE="discovery"
+          else
+            MODE="odds"
+          fi
+
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "Mode: $MODE"
+
+      - name: Validate secrets
+        shell: bash
+        run: |
+          test -n "$ADMIN_PASSWORD" || (echo "Missing GitHub secret ADMIN_PASSWORD" && exit 2)
+
+          MODE="${{ steps.mode.outputs.mode }}"
+          if [[ "$MODE" == "data" || "$MODE" == "all" ]]; then
+            test -n "$API_FOOTBALL_KEY" || (echo "Missing GitHub secret API_FOOTBALL_KEY" && exit 2)
+          fi
+
+      - name: API-Football -> D1 (all supported competitions)
+        if: steps.mode.outputs.mode == 'data' || steps.mode.outputs.mode == 'all'
+        run: |
+          python automation/sync-football-data-cloud.py \
+            --sync \
+            --scope all \
+            --force \
+            --pause 0.35
+
+      - name: OddsPAPI discovery -> Superbet Direct -> model
+        if: steps.mode.outputs.mode == 'discovery' || steps.mode.outputs.mode == 'all'
+        run: |
+          python automation/run-football-odds-cloud.py \
+            --workers 3
+
+      - name: Superbet Direct -> model (no OddsPAPI request)
+        if: steps.mode.outputs.mode == 'odds'
+        run: |
+          python automation/run-football-odds-cloud.py \
+            --skip-discovery \
+            --workers 3
+
+      - name: Upload sync report
+        if: always() && (steps.mode.outputs.mode == 'data' || steps.mode.outputs.mode == 'all')
+        uses: actions/upload-artifact@v4
+        with:
+          name: football-sync-report-${{ github.run_id }}
+          path: analysis-sync-report.json
+          if-no-files-found: ignore
+          retention-days: 14
