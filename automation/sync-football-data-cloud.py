@@ -1023,12 +1023,39 @@ def main():
         )
 
         try:
-            summary = sync_one(
-                api_key,
-                args.base,
-                password,
-                competition,
-            )
+            summary = None
+            max_d1_attempts = 3
+
+            for d1_attempt in range(1, max_d1_attempts + 1):
+                try:
+                    summary = sync_one(
+                        api_key,
+                        args.base,
+                        password,
+                        competition,
+                    )
+                    break
+
+                except Exception as sync_exc:
+                    message = str(sync_exc)
+                    overloaded = (
+                        "D1 DB is overloaded" in message
+                        or "Too many resources consumed" in message
+                    )
+
+                    if (
+                        not overloaded
+                        or d1_attempt >= max_d1_attempts
+                    ):
+                        raise
+
+                    retry_delay = 12 * d1_attempt
+                    print(
+                        f"  D1 przeciążone — retry "
+                        f"{d1_attempt + 1}/{max_d1_attempts} "
+                        f"za {retry_delay}s..."
+                    )
+                    time.sleep(retry_delay)
 
             report["results"].append(
                 {
