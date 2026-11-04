@@ -85,7 +85,7 @@ jobs:
             --sync \
             --scope all \
             --force \
-            --pause 0.35
+            --pause 1.25
 
       - name: OddsPAPI discovery -> Superbet Direct -> model
         if: steps.mode.outputs.mode == 'discovery' || steps.mode.outputs.mode == 'all'
