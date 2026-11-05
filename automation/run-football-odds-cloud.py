@@ -13,7 +13,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
 WORKER_DEFAULT = "https://football-analyzer.2w77ywngkv.workers.dev"
-MAX_WORKERS_DEFAULT = 3
+MAX_WORKERS_DEFAULT = 2
+D1_OVERLOAD_RETRY_DELAYS = (12, 24, 36)
 
 
 def now_iso() -> str:
@@ -80,18 +81,43 @@ def mapped_targets(base: str, password: str, run_id: str):
     return body, list(body.get("fixtures") or [])
 
 
+def is_d1_overloaded(error: Exception) -> bool:
+    text = str(error).lower()
+    return (
+        "d1 db is overloaded" in text
+        or "too many resources consumed within a 10 second window" in text
+    )
+
+
 def run_one_fixture(base: str, password: str, run_id: str, fixture: dict):
     fixture_id = int(fixture["fixture_id"])
-    body = request_json(
-        base,
-        password,
-        "/admin/sync/superbet-model",
-        method="POST",
-        payload={"run_id": run_id, "fixture_id": fixture_id},
-        timeout=180,
-    )
-    result = body.get("result") or {}
-    return fixture, result
+    retries = 0
+
+    for attempt in range(len(D1_OVERLOAD_RETRY_DELAYS) + 1):
+        try:
+            body = request_json(
+                base,
+                password,
+                "/admin/sync/superbet-model",
+                method="POST",
+                payload={"run_id": run_id, "fixture_id": fixture_id},
+                timeout=180,
+            )
+            result = body.get("result") or {}
+            return fixture, result, retries
+        except Exception as exc:
+            if not is_d1_overloaded(exc) or attempt >= len(D1_OVERLOAD_RETRY_DELAYS):
+                raise
+
+            delay = D1_OVERLOAD_RETRY_DELAYS[attempt]
+            retries += 1
+            print(
+                f"  D1 overload fixture={fixture_id} | "
+                f"retry {retries}/{len(D1_OVERLOAD_RETRY_DELAYS)} za {delay}s"
+            )
+            time.sleep(delay)
+
+    raise RuntimeError(f"Nie udało się przetworzyć fixture_id={fixture_id}.")
 
 
 def is_expected_superbet_skip(error: Exception) -> bool:
@@ -173,6 +199,8 @@ def main() -> int:
             "quotes": 0,
             "predictions": 0,
             "shadow_predictions": 0,
+            "d1_retries": 0,
+            "d1_recovered": 0,
         },
         "skip_samples": [],
         "error_samples": [],
@@ -234,7 +262,11 @@ def main() -> int:
                     done += 1
                     label = f"{fixture.get('home', '?')} - {fixture.get('away', '?')}"
                     try:
-                        _, result = future.result()
+                        _, result, d1_retries = future.result()
+                        summary["direct"]["d1_retries"] += int(d1_retries or 0)
+                        if d1_retries:
+                            summary["direct"]["d1_recovered"] += 1
+
                         if result.get("skipped"):
                             summary["direct"]["skipped"] += 1
                         else:
@@ -248,6 +280,7 @@ def main() -> int:
                         print(
                             f"  [{done}/{len(fixtures)}] OK {label} | "
                             f"quotes={result.get('quotes', 0)}"
+                            + (f" | D1 retry={d1_retries}" if d1_retries else "")
                         )
                     except Exception as exc:
                         if is_expected_superbet_skip(exc):
@@ -312,13 +345,15 @@ def main() -> int:
     print()
     print("=" * 100)
     print(
-        "KONIEC | status={status} | direct OK={ok} | skip={skipped} | błędy={errors} | quotes={quotes} | prognozy={pred}".format(
+        "KONIEC | status={status} | direct OK={ok} | skip={skipped} | błędy={errors} | quotes={quotes} | prognozy={pred} | D1 retry={d1_retries} | D1 recovered={d1_recovered}".format(
             status=finish_status,
             ok=summary["direct"]["ok"],
             skipped=summary["direct"]["skipped"],
             errors=summary["direct"]["errors"],
             quotes=summary["direct"]["quotes"],
             pred=summary["direct"]["predictions"],
+            d1_retries=summary["direct"]["d1_retries"],
+            d1_recovered=summary["direct"]["d1_recovered"],
         )
     )
     print("=" * 100)
