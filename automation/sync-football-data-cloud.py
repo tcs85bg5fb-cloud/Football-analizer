@@ -26,11 +26,6 @@ SCHEDULE_PAST_DAYS = 2
 API_MIN_INTERVAL = 0.35
 CATALOG_CACHE_SECONDS = 6 * 3600
 
-# I Liga / II Liga mają konserwatywne flagi coverage w katalogu API-Football,
-# ale synchronizujemy je warunkowo i zapisujemy statystyki tylko wtedy,
-# gdy endpoint /fixtures faktycznie je zwraca.
-FORCED_POLISH_TIP_LEAGUE_IDS = {107, 109}
-
 _last_api_request = 0.0
 
 
@@ -301,54 +296,6 @@ def api_get(
             ) from exc
 
     raise RuntimeError("API-Football: brak odpowiedzi.")
-
-
-def force_polish_tip_competitions(competitions):
-    rows = [dict(row) for row in competitions]
-    present = set()
-
-    for row in rows:
-        try:
-            league_id = int(row.get("league_id"))
-        except Exception:
-            continue
-
-        if league_id not in FORCED_POLISH_TIP_LEAGUE_IDS:
-            continue
-
-        present.add(league_id)
-        row["eligible"] = True
-        row["analysis_only"] = False
-        row["tip_scope"] = True
-        row["forced_tip_scope"] = True
-        row["type"] = "LEAGUE"
-        row["category"] = "POLAND_FORCED_TIPS"
-
-    fallback = {
-        107: "I Liga",
-        109: "II Liga - East",
-    }
-
-    for league_id, name in fallback.items():
-        if league_id in present:
-            continue
-
-        rows.append(
-            {
-                "league_id": league_id,
-                "season": 2026,
-                "name": name,
-                "country": "Poland",
-                "type": "LEAGUE",
-                "category": "POLAND_FORCED_TIPS",
-                "eligible": True,
-                "analysis_only": False,
-                "tip_scope": True,
-                "forced_tip_scope": True,
-            }
-        )
-
-    return rows
 
 
 def fmt_comp(row):
@@ -872,8 +819,8 @@ def main():
         refresh=args.refresh_catalog,
     )
 
-    competitions = force_polish_tip_competitions(
-        list(catalog.get("competitions") or [])
+    competitions = list(
+        catalog.get("competitions") or []
     )
 
     eligible = [
@@ -915,14 +862,6 @@ def main():
     print(
         f"Nowe tylko do Analizy:     "
         f"{len(analysis_only)}"
-    )
-    forced_poland = [
-        row for row in eligible
-        if row.get("forced_tip_scope")
-    ]
-    print(
-        f"Polska wymuszona do Typów: "
-        f"{len(forced_poland)} (I Liga + II Liga; statystyki tylko jeśli API je zwróci)"
     )
     print(
         f"Odrzucone przez coverage:  "
