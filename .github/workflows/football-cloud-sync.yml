@@ -91,14 +91,14 @@ jobs:
         if: steps.mode.outputs.mode == 'discovery' || steps.mode.outputs.mode == 'all'
         run: |
           python automation/run-football-odds-cloud.py \
-            --workers 3
+            --workers 2
 
       - name: Superbet Direct -> model (no OddsPAPI request)
         if: steps.mode.outputs.mode == 'odds'
         run: |
           python automation/run-football-odds-cloud.py \
             --skip-discovery \
-            --workers 3
+            --workers 2
 
       - name: Upload sync report
         if: always() && (steps.mode.outputs.mode == 'data' || steps.mode.outputs.mode == 'all')
